@@ -3,6 +3,7 @@ import { howItWorksAnchors } from "@/components/site/home-links";
 export const howItWorksProcessSteps = [
   {
     title: "Enter duration",
+    command: "/set-duration",
     summary:
       "Enter the duration that matches the actual segment, intro, break, or timed prompt.",
     detail:
@@ -14,6 +15,7 @@ export const howItWorksProcessSteps = [
   },
   {
     title: "Choose style and format",
+    command: "/set-style-format",
     summary:
       "Choose a style and output format that stays readable over footage and fits the edit.",
     detail:
@@ -25,6 +27,7 @@ export const howItWorksProcessSteps = [
   },
   {
     title: "Download and import into your editor",
+    command: "/handoff-to-edit",
     summary:
       "Download the file and place it in your editor before you move into rendering or publishing.",
     detail:
@@ -39,30 +42,35 @@ export const howItWorksProcessSteps = [
 export const editingWorkflows = [
   {
     id: howItWorksAnchors.apps.capcut,
+    stage: "editor",
     title: "CapCut",
     detail:
       "Import the overlay as its own asset, place it above the base footage, and trim it to the exact segment that needs the countdown. This is the fast path for short-form edits and repurposed clips.",
   },
   {
     id: howItWorksAnchors.apps.premierePro,
+    stage: "editor",
     title: "Premiere Pro",
     detail:
       "Drop the timer onto a higher video track, align the first frame with the spoken or visual cue, and keep it separate from captions and motion graphics so swaps stay easy later.",
   },
   {
     id: howItWorksAnchors.apps.finalCutPro,
+    stage: "editor",
     title: "Final Cut Pro",
     detail:
       "Treat the timer like a composited element. Keep it connected above the primary storyline, confirm safe-zone placement, and duplicate the setup when you need repeated countdown segments.",
   },
   {
     id: howItWorksAnchors.apps.tiktok,
+    stage: "publishing",
     title: "TikTok",
     detail:
       "After the edit is finished, prioritize vertical framing, avoid subtitle collisions near the bottom third, and preview the countdown on a phone-sized frame before publishing. A clean 9:16 layout matters more than decorative styling.",
   },
   {
     id: howItWorksAnchors.apps.youtube,
+    stage: "publishing",
     title: "YouTube",
     detail:
       "Once the timeline is locked, use the overlay for intros, breaks, tutorials, or live-event holding scenes. Check readability at desktop and mobile sizes before you export and publish the final video.",

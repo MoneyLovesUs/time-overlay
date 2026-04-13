@@ -1,3 +1,5 @@
+import { buildLocalizedPath, defaultLocale, type AppLocale } from "@/lib/i18n";
+
 export const qaAnchors = {
   groups: {
     basics: "overlay-timer-basics",
@@ -26,11 +28,15 @@ export const howItWorksAnchors = {
   },
 } as const;
 
-export const homeLinks = {
-  howItWorksWorkflow: `/how-it-works#${howItWorksAnchors.workflow}`,
-  qaExportQuestions: `/qa#${qaAnchors.questions.exportQuestions}`,
-  qaTransparentExports: `/qa#${qaAnchors.questions.transparentExports}`,
-  qaBestStyles: `/qa#${qaAnchors.questions.bestStyles}`,
-  qaPlacementGuide: `/qa#${qaAnchors.questions.placementGuide}`,
-  qaLiveToolStatus: `/qa#${qaAnchors.questions.liveToolStatus}`,
-} as const;
+export function createHomeLinks(locale: AppLocale = defaultLocale) {
+  return {
+    howItWorksWorkflow: `${buildLocalizedPath("/how-it-works", locale)}#${howItWorksAnchors.workflow}`,
+    qaExportQuestions: `${buildLocalizedPath("/qa", locale)}#${qaAnchors.questions.exportQuestions}`,
+    qaTransparentExports: `${buildLocalizedPath("/qa", locale)}#${qaAnchors.questions.transparentExports}`,
+    qaBestStyles: `${buildLocalizedPath("/qa", locale)}#${qaAnchors.questions.bestStyles}`,
+    qaPlacementGuide: `${buildLocalizedPath("/qa", locale)}#${qaAnchors.questions.placementGuide}`,
+    qaLiveToolStatus: `${buildLocalizedPath("/qa", locale)}#${qaAnchors.questions.liveToolStatus}`,
+  } as const;
+}
+
+export const homeLinks = createHomeLinks();

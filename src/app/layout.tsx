@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { siteConfig } from "@/lib/site";
+import { defaultLocale, getDictionary } from "@/lib/i18n";
+import { getLocalizedNavItems, siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -48,14 +49,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const dictionary = await getDictionary(defaultLocale);
+  const navItems = getLocalizedNavItems(defaultLocale, dictionary);
+
   return (
     <html
-      lang="en"
+      lang={defaultLocale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
@@ -69,9 +73,24 @@ export default function RootLayout({
         </div>
 
         <div className="relative flex min-h-full flex-1 flex-col">
-          <SiteHeader />
+          <SiteHeader
+            locale={defaultLocale}
+            navItems={navItems}
+            shellLabel={dictionary.header.shellLabel}
+            siteName={siteConfig.name}
+          />
           <div className="relative z-10 flex-1">{children}</div>
-          <SiteFooter />
+          <SiteFooter
+            navItems={navItems}
+            siteDescription={dictionary.site.description}
+            siteName={siteConfig.name}
+            systemRailLabel={dictionary.footer.systemRail}
+            publicStatusLabel={dictionary.footer.publicStatus}
+            identityTitle={dictionary.footer.identityTitle}
+            exploreTitle={dictionary.footer.exploreTitle}
+            legalTitle={dictionary.footer.legalTitle}
+            legalNotice={dictionary.footer.legalNotice}
+          />
         </div>
       </body>
     </html>

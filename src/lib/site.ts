@@ -1,4 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, MetadataRoute } from "next";
+
+import {
+  buildLanguageAlternates,
+  buildLocalizedPath,
+  defaultLocale,
+  enabledLocales,
+  type AppLocale,
+  type SiteDictionary,
+} from "./i18n.ts";
 
 const defaultSiteUrl = "https://overlaytimer.tools";
 
@@ -28,39 +37,58 @@ export const siteConfig = {
   url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL),
   description:
     "Overlay timer tools for creators who need clean, readable countdowns in recordings and live streams.",
-  navItems: [
-    { href: "/", label: "Timer overview" },
-    { href: "/qa", label: "Timer Q&A" },
-    { href: "/how-it-works", label: "Workflow guide" },
-  ],
 } as const;
 
-function normalizePublicPath(path: string): string {
-  const trimmed = path.trim();
+export const publicRouteDefinitions = [
+  {
+    href: "/",
+    key: "overview",
+    changeFrequency: "weekly",
+    priority: 1,
+  },
+  {
+    href: "/qa",
+    key: "qa",
+    changeFrequency: "weekly",
+    priority: 0.8,
+  },
+  {
+    href: "/how-it-works",
+    key: "howItWorks",
+    changeFrequency: "weekly",
+    priority: 0.8,
+  },
+] as const;
 
-  if (!trimmed || trimmed === "/") {
-    return "/";
-  }
-
-  return `/${trimmed.replace(/^\/+|\/+$/g, "")}`;
+export function getLocalizedNavItems(
+  locale: AppLocale,
+  dictionary: SiteDictionary,
+) {
+  return publicRouteDefinitions.map((route) => ({
+    href: buildLocalizedPath(route.href, locale),
+    label: dictionary.nav[route.key],
+  }));
 }
 
 export function createPageMetadata({
   title,
   description,
   path,
+  locale = defaultLocale,
 }: {
   title: string;
   description: string;
   path: string;
+  locale?: AppLocale;
 }): Metadata {
-  const canonicalPath = normalizePublicPath(path);
+  const canonicalPath = buildLocalizedPath(path, locale);
 
   return {
     title,
     description,
     alternates: {
       canonical: canonicalPath,
+      languages: buildLanguageAlternates(path),
     },
     openGraph: {
       title,
@@ -75,4 +103,26 @@ export function createPageMetadata({
       description,
     },
   };
+}
+
+export function buildSitemapEntries(): MetadataRoute.Sitemap {
+  const lastModified = new Date();
+
+  return publicRouteDefinitions.map((route) => ({
+    url: new URL(buildLocalizedPath(route.href), siteConfig.url).toString(),
+    lastModified,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+    alternates:
+      enabledLocales.length > 1
+        ? {
+            languages: Object.fromEntries(
+              enabledLocales.map((locale) => [
+                locale,
+                new URL(buildLocalizedPath(route.href, locale), siteConfig.url).toString(),
+              ]),
+            ),
+          }
+        : undefined,
+  }));
 }

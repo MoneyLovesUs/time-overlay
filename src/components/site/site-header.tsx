@@ -3,10 +3,26 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { siteConfig } from "@/lib/site";
+import type { AppLocale } from "@/lib/i18n";
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  locale: AppLocale;
+  navItems: readonly {
+    href: string;
+    label: string;
+  }[];
+  shellLabel: string;
+  siteName: string;
+};
+
+export function SiteHeader({
+  locale,
+  navItems,
+  shellLabel,
+  siteName,
+}: SiteHeaderProps) {
   const pathname = usePathname();
+  const localizedHomeHref = locale === "en" ? "/" : `/${locale}`;
 
   return (
     <header className="relative z-20 px-3 pt-3 sm:px-4 sm:pt-4">
@@ -14,7 +30,7 @@ export function SiteHeader() {
         <div className="cyber-panel cyber-chamfer flex flex-col gap-4 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div className="flex min-w-0 items-center justify-between gap-3 sm:justify-start">
             <Link
-              href="/"
+              href={localizedHomeHref}
               className="inline-flex min-w-0 items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-foreground transition-colors hover:text-primary"
             >
               <span
@@ -22,16 +38,16 @@ export function SiteHeader() {
                 className="flex items-center gap-2 text-primary"
               >
                 <span className="relative flex h-3 w-3 items-center justify-center">
-                  <span className="absolute inset-0 rounded-full bg-primary/25 blur-[6px]" />
-                  <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
-                </span>
-                <span className="h-px w-6 bg-gradient-to-r from-primary via-tertiary to-transparent" />
+                <span className="absolute inset-0 rounded-full bg-primary/25 blur-[6px]" />
+                <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
               </span>
-              <span className="truncate">{siteConfig.name}</span>
+              <span className="h-px w-6 bg-gradient-to-r from-primary via-tertiary to-transparent" />
+              </span>
+              <span className="truncate">{siteName}</span>
             </Link>
 
             <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-              Public Shell
+              {shellLabel}
             </span>
           </div>
 
@@ -39,9 +55,9 @@ export function SiteHeader() {
             aria-label="Primary"
             className="flex flex-wrap items-center gap-x-1 gap-y-2 sm:justify-end"
           >
-            {siteConfig.navItems.map((item, index) => {
+            {navItems.map((item, index) => {
               const isCurrentPage =
-                item.href === "/"
+                item.href === localizedHomeHref
                   ? pathname === item.href
                   : pathname === item.href || pathname.startsWith(`${item.href}/`);
 

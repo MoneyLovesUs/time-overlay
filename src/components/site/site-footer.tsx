@@ -1,8 +1,31 @@
 import Link from "next/link";
 
-import { siteConfig } from "@/lib/site";
+type SiteFooterProps = {
+  navItems: readonly {
+    href: string;
+    label: string;
+  }[];
+  siteDescription: string;
+  siteName: string;
+  systemRailLabel: string;
+  publicStatusLabel: string;
+  identityTitle: string;
+  exploreTitle: string;
+  legalTitle: string;
+  legalNotice: string;
+};
 
-export function SiteFooter() {
+export function SiteFooter({
+  navItems,
+  siteDescription,
+  siteName,
+  systemRailLabel,
+  publicStatusLabel,
+  identityTitle,
+  exploreTitle,
+  legalTitle,
+  legalNotice,
+}: SiteFooterProps) {
   return (
     <footer className="relative z-20 px-3 pb-4 pt-8 sm:px-4 sm:pb-5">
       <div className="mx-auto max-w-6xl">
@@ -10,7 +33,7 @@ export function SiteFooter() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border/60 pb-3">
               <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-                System Rail
+                {systemRailLabel}
               </p>
               <span
                 aria-hidden="true"
@@ -19,30 +42,30 @@ export function SiteFooter() {
                 {"//"}
               </span>
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground/55">
-                Public Status
+                {publicStatusLabel}
               </p>
             </div>
 
             <div className="grid gap-6 sm:grid-cols-3 sm:gap-5">
               <div className="flex flex-col gap-2 border-b border-border/50 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
-                  Identity
+                  {identityTitle}
                 </p>
                 <p className="text-sm font-medium text-foreground/92">
-                  {siteConfig.name}
+                  {siteName}
                 </p>
                 <p className="max-w-xs text-sm leading-6 text-muted-foreground/80">
-                  {siteConfig.description}
+                  {siteDescription}
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 border-b border-border/50 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:px-1 sm:pr-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
-                  Explore
+                  {exploreTitle}
                 </p>
                 <nav aria-label="Footer">
                   <ul className="flex flex-col gap-2">
-                    {siteConfig.navItems.map((item) => (
+                    {navItems.map((item) => (
                       <li key={item.href}>
                         <Link
                           href={item.href}
@@ -64,10 +87,10 @@ export function SiteFooter() {
 
               <div className="flex flex-col gap-2">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
-                  Legal
+                  {legalTitle}
                 </p>
                 <p className="text-sm leading-6 text-muted-foreground/78">
-                  Privacy policy and terms pages are being prepared.
+                  {legalNotice}
                 </p>
               </div>
             </div>

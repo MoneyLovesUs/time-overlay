@@ -9,7 +9,7 @@ import {
   type SiteDictionary,
 } from "./i18n.ts";
 
-const defaultSiteUrl = "https://overlaytimer.tools";
+const defaultSiteUrl = "https://timeoverlay.co";
 
 function normalizeSiteUrl(value: string | undefined): string {
   if (!value) {

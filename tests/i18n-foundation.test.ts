@@ -9,7 +9,11 @@ import {
   getDictionary,
   knownLocales,
 } from "../src/lib/i18n.ts";
-import { createPageMetadata } from "../src/lib/site.ts";
+import {
+  buildSitemapEntries,
+  createPageMetadata,
+  siteConfig,
+} from "../src/lib/site.ts";
 
 test("locale config keeps english enabled and chinese as a known future locale", () => {
   assert.equal(defaultLocale, "en");
@@ -44,6 +48,13 @@ test("createPageMetadata keeps english canonicals unchanged while only one local
 
   assert.equal(metadata.alternates?.canonical, "/");
   assert.equal(metadata.alternates?.languages, undefined);
+});
+
+test("default site config and sitemap entries point at the production domain", () => {
+  const [homeEntry] = buildSitemapEntries();
+
+  assert.equal(siteConfig.url, "https://timeoverlay.co");
+  assert.equal(homeEntry?.url, "https://timeoverlay.co/");
 });
 
 test("english dictionary is available for shared site chrome", async () => {

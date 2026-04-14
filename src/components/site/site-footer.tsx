@@ -15,16 +15,18 @@ type SiteFooterProps = {
   legalNotice: string;
 };
 
+const footerLinks = [
+  { href: "/#tool", label: "Generator" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/#export-formats", label: "Formats" },
+] as const;
+
 export function SiteFooter({
-  navItems,
   siteDescription,
   siteName,
   systemRailLabel,
   publicStatusLabel,
   identityTitle,
-  exploreTitle,
-  legalTitle,
-  legalNotice,
 }: SiteFooterProps) {
   return (
     <footer className="relative z-20 px-3 pb-4 pt-8 sm:px-4 sm:pb-5">
@@ -61,11 +63,11 @@ export function SiteFooter({
 
               <div className="flex flex-col gap-3 border-b border-border/50 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:px-1 sm:pr-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
-                  {exploreTitle}
+                  Jump
                 </p>
                 <nav aria-label="Footer">
                   <ul className="flex flex-col gap-2">
-                    {navItems.map((item) => (
+                    {footerLinks.map((item) => (
                       <li key={item.href}>
                         <Link
                           href={item.href}
@@ -87,10 +89,11 @@ export function SiteFooter({
 
               <div className="flex flex-col gap-2">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
-                  {legalTitle}
+                  Product
                 </p>
                 <p className="text-sm leading-6 text-muted-foreground/78">
-                  {legalNotice}
+                  One local-first tool page for countdown overlays, compact FAQ,
+                  and export format guidance.
                 </p>
               </div>
             </div>

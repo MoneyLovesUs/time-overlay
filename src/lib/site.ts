@@ -36,7 +36,7 @@ export const siteConfig = {
   name: "Time Overlay",
   url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL),
   description:
-    "Overlay timer tools for creators who need clean, readable countdowns in recordings and live streams.",
+    "A local-first overlay timer generator for building countdown assets and exporting PNG sequence or WebM from one tool page.",
 } as const;
 
 export const publicRouteDefinitions = [
@@ -45,18 +45,6 @@ export const publicRouteDefinitions = [
     key: "overview",
     changeFrequency: "weekly",
     priority: 1,
-  },
-  {
-    href: "/qa",
-    key: "qa",
-    changeFrequency: "weekly",
-    priority: 0.8,
-  },
-  {
-    href: "/how-it-works",
-    key: "howItWorks",
-    changeFrequency: "weekly",
-    priority: 0.8,
   },
 ] as const;
 

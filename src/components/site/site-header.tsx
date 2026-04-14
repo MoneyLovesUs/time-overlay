@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import type { AppLocale } from "@/lib/i18n";
 
@@ -17,12 +14,14 @@ type SiteHeaderProps = {
 
 export function SiteHeader({
   locale,
-  navItems,
   shellLabel,
   siteName,
 }: SiteHeaderProps) {
-  const pathname = usePathname();
   const localizedHomeHref = locale === "en" ? "/" : `/${locale}`;
+  const toolLinks = [
+    { href: `${localizedHomeHref}#tool`, label: "Tool" },
+    { href: `${localizedHomeHref}#faq`, label: "FAQ" },
+  ] as const;
 
   return (
     <header className="relative z-20 px-3 pt-3 sm:px-4 sm:pt-4">
@@ -38,10 +37,10 @@ export function SiteHeader({
                 className="flex items-center gap-2 text-primary"
               >
                 <span className="relative flex h-3 w-3 items-center justify-center">
-                <span className="absolute inset-0 rounded-full bg-primary/25 blur-[6px]" />
-                <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
-              </span>
-              <span className="h-px w-6 bg-gradient-to-r from-primary via-tertiary to-transparent" />
+                  <span className="absolute inset-0 rounded-full bg-primary/25 blur-[6px]" />
+                  <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
+                </span>
+                <span className="h-px w-6 bg-gradient-to-r from-primary via-tertiary to-transparent" />
               </span>
               <span className="truncate">{siteName}</span>
             </Link>
@@ -55,44 +54,28 @@ export function SiteHeader({
             aria-label="Primary"
             className="flex flex-wrap items-center gap-x-1 gap-y-2 sm:justify-end"
           >
-            {navItems.map((item, index) => {
-              const isCurrentPage =
-                item.href === localizedHomeHref
-                  ? pathname === item.href
-                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-              return (
-                <div key={item.href} className="flex items-center">
-                  {index > 0 ? (
-                    <span
-                      aria-hidden="true"
-                      className="mx-1.5 font-mono text-[10px] uppercase tracking-[0.28em] text-border"
-                    >
-                      {"//"}
-                    </span>
-                  ) : null}
-                  <Link
-                    href={item.href}
-                    aria-current={isCurrentPage ? "page" : undefined}
-                    className={`group relative px-1.5 py-1 font-mono text-[11px] uppercase tracking-[0.22em] transition-colors focus-visible:text-foreground ${
-                      isCurrentPage
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
+            {toolLinks.map((item, index) => (
+              <div key={item.href} className="flex items-center">
+                {index > 0 ? (
+                  <span
+                    aria-hidden="true"
+                    className="mx-1.5 font-mono text-[10px] uppercase tracking-[0.28em] text-border"
                   >
-                    <span>{item.label}</span>
-                    <span
-                      aria-hidden="true"
-                      className={`absolute inset-x-1.5 bottom-0 h-px origin-left bg-gradient-to-r from-primary via-tertiary to-transparent transition-transform duration-200 ${
-                        isCurrentPage
-                          ? "scale-x-100"
-                          : "scale-x-0 group-hover:scale-x-100 group-focus-visible:scale-x-100"
-                      }`}
-                    />
-                  </Link>
-                </div>
-              );
-            })}
+                    {"//"}
+                  </span>
+                ) : null}
+                <Link
+                  href={item.href}
+                  className="group relative px-1.5 py-1 font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground"
+                >
+                  <span>{item.label}</span>
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-1.5 bottom-0 h-px origin-left scale-x-0 bg-gradient-to-r from-primary via-tertiary to-transparent transition-transform duration-200 group-hover:scale-x-100 group-focus-visible:scale-x-100"
+                  />
+                </Link>
+              </div>
+            ))}
           </nav>
         </div>
       </div>

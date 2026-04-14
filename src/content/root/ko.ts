@@ -6,6 +6,13 @@ const koRootPageContent = {
     description:
       "브라우저에서 바로 오버레이 타이머를 만들고 실시간 미리보기를 확인한 뒤, 한 페이지의 로컬 우선 도구에서 PNG 시퀀스 또는 WebM으로 내보내세요.",
   },
+  generatorHero: {
+    eyebrow: "Time Overlay",
+    heading:
+      "길이를 설정하고 프레임을 미리본 뒤, 타이머 에셋을 내보내세요.",
+    intro:
+      "첫 시도 추천값: `30s`, `PNG sequence`, `bottom-right`.",
+  },
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
@@ -22,9 +29,9 @@ const koRootPageContent = {
       jumpTitle: "바로가기",
       productTitle: "제품",
       jumpLinks: [
-        { href: "/#tool", label: "생성기" },
-        { href: "/#faq", label: "FAQ" },
-        { href: "/#export-formats", label: "포맷" },
+        { anchorId: "tool", label: "생성기" },
+        { anchorId: "faq", label: "FAQ" },
+        { anchorId: "export-formats", label: "포맷" },
       ],
       productDescription:
         "카운트다운 오버레이, 간결한 FAQ, 내보내기 포맷 가이드를 한 곳에 모은 로컬 우선 단일 도구 페이지입니다.",

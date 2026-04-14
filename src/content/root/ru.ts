@@ -6,6 +6,13 @@ const ruRootPageContent = {
     description:
       "Создавайте таймер-оверлей прямо в браузере, смотрите предпросмотр вживую и экспортируйте PNG Sequence или WebM на одной local-first странице.",
   },
+  generatorHero: {
+    eyebrow: "Time Overlay",
+    heading:
+      "Задайте длительность, проверьте кадр в предпросмотре и экспортируйте готовый таймер.",
+    intro:
+      "Рекомендуемый первый запуск: `30s`, `PNG sequence`, `bottom-right`.",
+  },
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
@@ -22,9 +29,9 @@ const ruRootPageContent = {
       jumpTitle: "Переходы",
       productTitle: "Продукт",
       jumpLinks: [
-        { href: "/#tool", label: "Генератор" },
-        { href: "/#faq", label: "FAQ" },
-        { href: "/#export-formats", label: "Форматы" },
+        { anchorId: "tool", label: "Генератор" },
+        { anchorId: "faq", label: "FAQ" },
+        { anchorId: "export-formats", label: "Форматы" },
       ],
       productDescription:
         "Одна local-first страница инструмента для оверлеев с таймером, компактного FAQ и рекомендаций по форматам экспорта.",

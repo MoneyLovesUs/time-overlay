@@ -6,6 +6,12 @@ const jaRootPageContent = {
     description:
       "ブラウザ上でオーバーレイタイマーを作成し、ライブプレビューで確認して、PNGシーケンスまたはWebMを書き出せるローカルファーストの単一ツールページです。",
   },
+  generatorHero: {
+    eyebrow: "Time Overlay",
+    heading:
+      "長さを設定してフレームをプレビューし、タイマー素材を書き出しましょう。",
+    intro: "最初の推奨設定: `30s`, `PNG sequence`, `bottom-right`.",
+  },
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
@@ -22,9 +28,9 @@ const jaRootPageContent = {
       jumpTitle: "ジャンプ",
       productTitle: "プロダクト",
       jumpLinks: [
-        { href: "/#tool", label: "ジェネレーター" },
-        { href: "/#faq", label: "FAQ" },
-        { href: "/#export-formats", label: "形式" },
+        { anchorId: "tool", label: "ジェネレーター" },
+        { anchorId: "faq", label: "FAQ" },
+        { anchorId: "export-formats", label: "形式" },
       ],
       productDescription:
         "カウントダウンオーバーレイ、コンパクトなFAQ、書き出し形式のガイドを1ページにまとめたローカルファーストツールです。",

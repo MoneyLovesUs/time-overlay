@@ -6,6 +6,13 @@ const frRootPageContent = {
     description:
       "Créez un timer overlay directement dans le navigateur, prévisualisez-le en direct et exportez en PNG Sequence ou WebM depuis une seule page local-first.",
   },
+  generatorHero: {
+    eyebrow: "Time Overlay",
+    heading:
+      "Définissez la durée, prévisualisez l'image, puis exportez votre asset de timer.",
+    intro:
+      "Premier essai recommandé : `30s`, `PNG sequence`, `bottom-right`.",
+  },
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
@@ -22,9 +29,9 @@ const frRootPageContent = {
       jumpTitle: "Accès rapide",
       productTitle: "Produit",
       jumpLinks: [
-        { href: "/#tool", label: "Générateur" },
-        { href: "/#faq", label: "FAQ" },
-        { href: "/#export-formats", label: "Formats" },
+        { anchorId: "tool", label: "Générateur" },
+        { anchorId: "faq", label: "FAQ" },
+        { anchorId: "export-formats", label: "Formats" },
       ],
       productDescription:
         "Une seule page d'outil local-first pour les overlays de compte à rebours, une FAQ compacte et un guide des formats d'export.",

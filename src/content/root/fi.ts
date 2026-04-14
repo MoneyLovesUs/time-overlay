@@ -6,6 +6,13 @@ const fiRootPageContent = {
     description:
       "Rakenna overlay-ajastin suoraan selaimessa, esikatsele sitä livenä ja vie tiedostot PNG Sequence- tai WebM-muodossa yhdeltä local-first-työkalusivulta.",
   },
+  generatorHero: {
+    eyebrow: "Time Overlay",
+    heading:
+      "Aseta kesto, esikatsele ruutu ja vie sitten ajastinassetti.",
+    intro:
+      "Suositeltu ensimmäinen kokeilu: `30s`, `PNG sequence`, `bottom-right`.",
+  },
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
@@ -22,9 +29,9 @@ const fiRootPageContent = {
       jumpTitle: "Siirry",
       productTitle: "Tuote",
       jumpLinks: [
-        { href: "/#tool", label: "Generaattori" },
-        { href: "/#faq", label: "FAQ" },
-        { href: "/#export-formats", label: "Formaatit" },
+        { anchorId: "tool", label: "Generaattori" },
+        { anchorId: "faq", label: "FAQ" },
+        { anchorId: "export-formats", label: "Formaatit" },
       ],
       productDescription:
         "Yksi local-first-työkalusivu lähtölaskenta-overlayssa, tiiviissä FAQ:ssa ja vientimuotojen ohjeissa.",

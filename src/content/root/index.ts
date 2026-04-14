@@ -14,18 +14,17 @@ export const rootContentLoaders = {
   fi: () => import("./fi").then((module) => module.default),
 } satisfies Record<EnabledLocale, () => Promise<RootPageContent>>;
 
-function resolveEnabledLocale(locale: string): EnabledLocale {
-  if (isEnabledLocale(locale)) {
-    return locale;
+function assertEnabledLocale(locale: string): asserts locale is EnabledLocale {
+  if (!isEnabledLocale(locale)) {
+    throw new Error(`Unsupported locale: ${locale}`);
   }
-
-  return defaultLocale;
 }
 
 export async function getRootPageContent(
-  locale: EnabledLocale | string = defaultLocale,
+  locale: EnabledLocale = defaultLocale,
 ): Promise<RootPageContent> {
-  return rootContentLoaders[resolveEnabledLocale(locale)]();
+  assertEnabledLocale(locale);
+  return rootContentLoaders[locale]();
 }
 
 export type { RootPageContent } from "./types";

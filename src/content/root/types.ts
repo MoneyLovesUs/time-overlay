@@ -8,6 +8,11 @@ export type RootPageContent = {
     title: string;
     description: string;
   };
+  generatorHero: {
+    eyebrow: string;
+    heading: string;
+    intro: string;
+  };
   siteChrome: {
     siteName: string;
     siteDescription: string;
@@ -23,7 +28,7 @@ export type RootPageContent = {
       jumpTitle: string;
       productTitle: string;
       jumpLinks: readonly {
-        href: string;
+        anchorId: string;
         label: string;
       }[];
       productDescription: string;

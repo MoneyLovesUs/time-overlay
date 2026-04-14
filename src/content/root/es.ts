@@ -6,6 +6,13 @@ const esRootPageContent = {
     description:
       "Crea un temporizador overlay directamente en el navegador, previsualízalo en vivo y exporta recursos en PNG Sequence o WebM desde una sola página local-first.",
   },
+  generatorHero: {
+    eyebrow: "Time Overlay",
+    heading:
+      "Define la duración, previsualiza el fotograma y después exporta tu recurso de temporizador.",
+    intro:
+      "Primera prueba recomendada: `30s`, `PNG sequence`, `bottom-right`.",
+  },
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
@@ -22,9 +29,9 @@ const esRootPageContent = {
       jumpTitle: "Ir a",
       productTitle: "Producto",
       jumpLinks: [
-        { href: "/#tool", label: "Generador" },
-        { href: "/#faq", label: "FAQ" },
-        { href: "/#export-formats", label: "Formatos" },
+        { anchorId: "tool", label: "Generador" },
+        { anchorId: "faq", label: "FAQ" },
+        { anchorId: "export-formats", label: "Formatos" },
       ],
       productDescription:
         "Una sola página local-first para overlays de cuenta regresiva, FAQ compacta y guía de formatos de exportación.",

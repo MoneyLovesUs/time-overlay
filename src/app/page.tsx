@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { GeneratorShell } from "@/components/generator/generator-shell";
-import { RootSeoSection } from "@/components/site/root-seo-section";
+import { getRootPageContent } from "@/content/root";
+import { RootPage } from "@/components/site/root-page";
 import { createPageMetadata } from "@/lib/site";
 
 export const metadata: Metadata = createPageMetadata({
@@ -11,11 +11,8 @@ export const metadata: Metadata = createPageMetadata({
   path: "/",
 });
 
-export default function Home() {
-  return (
-    <>
-      <GeneratorShell />
-      <RootSeoSection />
-    </>
-  );
+export default async function Home() {
+  const content = await getRootPageContent("en");
+
+  return <RootPage locale="en" content={content} />;
 }

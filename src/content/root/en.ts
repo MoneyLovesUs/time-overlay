@@ -39,6 +39,11 @@ const enRootPageContent = {
     themePresetPicker: {
       title: "Theme preset",
       description: "Pick a starting look, then adjust controls only if needed.",
+      presetLabels: {
+        "minimal-neon": "Minimal Neon",
+        "broadcast-alert": "Broadcast Alert",
+        "calm-studio": "Calm Studio",
+      },
     },
     controlPanel: {
       title: "Controls",
@@ -46,12 +51,39 @@ const enRootPageContent = {
       timerSetupTitle: "Timer setup",
       durationLabel: "Duration (seconds)",
       displayFormatLabel: "Display format",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "Canvas",
       resolutionPresetLabel: "Resolution preset",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "Background mode",
       styleTitle: "Style",
       fontFamilyLabel: "Font family",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "Anchor",
+      anchorOptions: {
+        "top-left": "Top Left",
+        "top-center": "Top Center",
+        "top-right": "Top Right",
+        "center-left": "Center Left",
+        center: "Center",
+        "center-right": "Center Right",
+        "bottom-left": "Bottom Left",
+        "bottom-center": "Bottom Center",
+        "bottom-right": "Bottom Right",
+      },
       transparentOptionLabel: "Transparent",
       solidOptionLabel: "Solid",
     },
@@ -76,6 +108,10 @@ const enRootPageContent = {
       webmDescription:
         "Good for lightweight local video export on supported browsers.",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "Quality",
       launchNoteTitle: "Launch note",
       launchNoteFallback:
@@ -84,8 +120,30 @@ const enRootPageContent = {
       exportButtonBusy: "Exporting...",
       exportStatusTitle: "Export status",
       exportStatusIdle: "Idle. Choose a format and start a local export.",
-      standardQualityLabel: "Standard",
-      highQualityLabel: "High",
+      qualityOptions: {
+        standard: "Standard",
+        high: "High",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "This browser cannot spin up a background worker, so local video export is disabled. Use PNG sequence on a modern desktop browser instead.",
+        webmUnavailableError:
+          "WebM export is not available in this browser. PNG sequence remains the safest fallback.",
+        heavyExportWarning:
+          "This export is likely to be heavy on memory and CPU. Consider 720p, 30 seconds, or PNG sequence if your browser starts to struggle.",
+        pngSequenceInfo:
+          "PNG sequence is the most reliable local-first handoff for editors, especially when transparency matters.",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "Export ready: {fileName}",
+        preparingWebm: "Preparing local WebM export",
+        preparingPngSequence: "Preparing local PNG sequence export",
+        exportWorkerUnavailable:
+          "Export worker is unavailable in this browser session.",
+        webmFailedUnexpectedly: "WebM export failed unexpectedly.",
+        pngSequenceFailedUnexpectedly:
+          "PNG sequence export failed unexpectedly.",
+      },
     },
   },
   seoSection: {

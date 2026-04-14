@@ -47,7 +47,7 @@ export function RootPage({ locale, content }: RootPageProps) {
         shellLabel={content.siteChrome.header.shellLabel}
         siteName={content.siteChrome.siteName}
       />
-      <GeneratorShell />
+      <GeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
       <RootSeoSection locale={locale} seoSection={content.seoSection} />
       <SiteFooter
         navItems={footerNavItems}

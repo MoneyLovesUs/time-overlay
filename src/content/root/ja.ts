@@ -41,6 +41,11 @@ const jaRootPageContent = {
       title: "テーマプリセット",
       description:
         "まずは見た目のプリセットを選び、必要なときだけコントロールを微調整してください。",
+      presetLabels: {
+        "minimal-neon": "ミニマルネオン",
+        "broadcast-alert": "放送アラート",
+        "calm-studio": "カームスタジオ",
+      },
     },
     controlPanel: {
       title: "コントロール",
@@ -48,12 +53,39 @@ const jaRootPageContent = {
       timerSetupTitle: "タイマー設定",
       durationLabel: "長さ（秒）",
       displayFormatLabel: "表示フォーマット",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "キャンバス",
       resolutionPresetLabel: "解像度プリセット",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "背景モード",
       styleTitle: "スタイル",
       fontFamilyLabel: "フォントファミリー",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "アンカー",
+      anchorOptions: {
+        "top-left": "左上",
+        "top-center": "上中央",
+        "top-right": "右上",
+        "center-left": "左中央",
+        center: "中央",
+        "center-right": "右中央",
+        "bottom-left": "左下",
+        "bottom-center": "下中央",
+        "bottom-right": "右下",
+      },
       transparentOptionLabel: "透明",
       solidOptionLabel: "単色",
     },
@@ -78,6 +110,10 @@ const jaRootPageContent = {
       webmDescription:
         "対応ブラウザで軽量なローカル動画を書き出すのに適しています。",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "品質",
       launchNoteTitle: "リリースノート",
       launchNoteFallback:
@@ -87,8 +123,30 @@ const jaRootPageContent = {
       exportStatusTitle: "書き出しステータス",
       exportStatusIdle:
         "待機中です。形式を選んでローカル書き出しを開始してください。",
-      standardQualityLabel: "標準",
-      highQualityLabel: "高品質",
+      qualityOptions: {
+        standard: "標準",
+        high: "高品質",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "このブラウザではバックグラウンド worker を起動できないため、ローカル動画書き出しは無効です。最新のデスクトップブラウザで PNG シーケンスを利用してください。",
+        webmUnavailableError:
+          "このブラウザでは WebM 書き出しを利用できません。PNG シーケンスが最も安全な代替手段です。",
+        heavyExportWarning:
+          "この書き出しはメモリと CPU に大きな負荷をかける可能性があります。ブラウザが重くなる場合は 720p、30 秒、または PNG シーケンスを検討してください。",
+        pngSequenceInfo:
+          "PNG シーケンスは、特に透過が重要なときに編集ソフトへ渡す最も信頼できるローカルファースト形式です。",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "書き出し完了: {fileName}",
+        preparingWebm: "ローカル WebM 書き出しを準備中",
+        preparingPngSequence: "ローカル PNG シーケンス書き出しを準備中",
+        exportWorkerUnavailable:
+          "このブラウザセッションでは export worker を利用できません。",
+        webmFailedUnexpectedly: "WebM 書き出しが予期せず失敗しました。",
+        pngSequenceFailedUnexpectedly:
+          "PNG シーケンス書き出しが予期せず失敗しました。",
+      },
     },
   },
   seoSection: {

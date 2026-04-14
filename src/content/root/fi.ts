@@ -42,6 +42,11 @@ const fiRootPageContent = {
       title: "Teemaesiasetus",
       description:
         "Valitse ensin lähtötyyli ja säädä asetuksia vain tarvittaessa.",
+      presetLabels: {
+        "minimal-neon": "Minimal Neon",
+        "broadcast-alert": "Broadcast Alert",
+        "calm-studio": "Calm Studio",
+      },
     },
     controlPanel: {
       title: "Asetukset",
@@ -49,12 +54,39 @@ const fiRootPageContent = {
       timerSetupTitle: "Ajastimen asetukset",
       durationLabel: "Kesto (sekuntia)",
       displayFormatLabel: "Näyttömuoto",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "Canvas",
       resolutionPresetLabel: "Tarkkuusesiasetus",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "Taustatila",
       styleTitle: "Tyyli",
       fontFamilyLabel: "Fonttiperhe",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "Ankkuri",
+      anchorOptions: {
+        "top-left": "Ylävasen",
+        "top-center": "Yläkeskellä",
+        "top-right": "Yläoikea",
+        "center-left": "Keskellä vasen",
+        center: "Keskellä",
+        "center-right": "Keskellä oikea",
+        "bottom-left": "Alavasen",
+        "bottom-center": "Alhaalla keskellä",
+        "bottom-right": "Alaoikea",
+      },
       transparentOptionLabel: "Läpinäkyvä",
       solidOptionLabel: "Yksivärinen",
     },
@@ -79,6 +111,10 @@ const fiRootPageContent = {
       webmDescription:
         "Hyvä kevyeen paikalliseen videovientiin tuetuissa selaimissa.",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "Laatu",
       launchNoteTitle: "Julkaisuhuomio",
       launchNoteFallback:
@@ -88,8 +124,30 @@ const fiRootPageContent = {
       exportStatusTitle: "Viennin tila",
       exportStatusIdle:
         "Valmiustila. Valitse muoto ja käynnistä paikallinen vienti.",
-      standardQualityLabel: "Perus",
-      highQualityLabel: "Korkea",
+      qualityOptions: {
+        standard: "Perus",
+        high: "Korkea",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "Tämä selain ei pysty käynnistämään taustaworkeria, joten paikallinen videovienti on pois käytöstä. Käytä PNG Sequencea modernissa työpöytäselaimessa.",
+        webmUnavailableError:
+          "WebM-vienti ei ole käytettävissä tässä selaimessa. PNG Sequence pysyy turvallisimpana varavaihtoehtona.",
+        heavyExportWarning:
+          "Tämä vienti kuormittaa todennäköisesti muistia ja CPU:ta paljon. Harkitse 720p:tä, 30 sekuntia tai PNG Sequencea, jos selain alkaa hidastua.",
+        pngSequenceInfo:
+          "PNG Sequence on luotettavin local-first-siirtotapa editoreille, erityisesti kun läpinäkyvyys on tärkeää.",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "Vienti valmis: {fileName}",
+        preparingWebm: "Valmistellaan paikallista WebM-vientiä",
+        preparingPngSequence: "Valmistellaan paikallista PNG Sequence -vientiä",
+        exportWorkerUnavailable:
+          "Export worker ei ole käytettävissä tässä selainistunnossa.",
+        webmFailedUnexpectedly: "WebM-vienti epäonnistui odottamatta.",
+        pngSequenceFailedUnexpectedly:
+          "PNG Sequence -vienti epäonnistui odottamatta.",
+      },
     },
   },
   seoSection: {

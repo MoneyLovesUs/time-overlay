@@ -14,6 +14,7 @@ import { ControlPanel } from "@/components/generator/control-panel";
 import { ExportPanel } from "@/components/generator/export-panel";
 import { PreviewPanel } from "@/components/generator/preview-panel";
 import { ThemePresetPicker } from "@/components/generator/theme-preset-picker";
+import type { RootPageContent } from "@/content/root/types";
 import {
   DEFAULT_EXPORT_PROGRESS_STATE,
   DEFAULT_GENERATOR_SETTINGS,
@@ -42,7 +43,12 @@ import type {
 } from "@/lib/generator/types";
 import type { ExportWorkerMessage } from "@/lib/generator/export/job";
 
-export function GeneratorShell() {
+type GeneratorShellProps = {
+  hero: RootPageContent["generatorHero"];
+  ui: RootPageContent["generatorUi"];
+};
+
+export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [settings, setSettings] = useState<GeneratorSettings>(() => ({
     ...DEFAULT_GENERATOR_SETTINGS,
   }));
@@ -58,10 +64,37 @@ export function GeneratorShell() {
   const startedAtRef = useRef<number | null>(null);
   const exportWorkerRef = useRef<Worker | null>(null);
   const exportTotalsRef = useRef(0);
+  const formatTemplate = (
+    template: string,
+    replacements: Record<string, string | number>,
+  ) =>
+    Object.entries(replacements).reduce(
+      (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
+      template,
+    );
   const exportAdvisory = useMemo(
     () => getExportAdvisory(settings, support),
     [settings, support],
   );
+  const localizeProgressMessage = (
+    progress: ExportProgressState,
+  ): ExportProgressState => {
+    if (
+      progress.stage === "rendering-frames" ||
+      progress.stage === "encoding" ||
+      progress.stage === "packaging"
+    ) {
+      return {
+        ...progress,
+        message:
+          progress.stage === "packaging"
+            ? `${progress.completedFrames}/${progress.totalFrames}`
+            : `${progress.completedFrames}/${progress.totalFrames}`,
+      };
+    }
+
+    return progress;
+  };
 
   const updateSettings = (updater: (current: GeneratorSettings) => GeneratorSettings) => {
     startTransition(() => {
@@ -276,7 +309,7 @@ export function GeneratorShell() {
 
     worker.onmessage = (event: MessageEvent<ExportWorkerMessage>) => {
       if (event.data.kind === "progress") {
-        setExportProgress(event.data.payload);
+        setExportProgress(localizeProgressMessage(event.data.payload));
         return;
       }
 
@@ -286,26 +319,36 @@ export function GeneratorShell() {
           stage: "complete",
           completedFrames: exportTotalsRef.current,
           totalFrames: exportTotalsRef.current,
-          message: `Export ready: ${event.data.payload.fileName}`,
+          message: formatTemplate(
+            ui.exportPanel.runtimeMessages.exportReadyTemplate,
+            { fileName: event.data.payload.fileName },
+          ),
         });
         downloadBlob(event.data.payload.blob, event.data.payload.fileName);
         return;
       }
 
       setIsExporting(false);
-      setExportProgress({
-        stage: "error",
-        completedFrames: 0,
-        totalFrames: 0,
-        message: event.data.payload.message,
-      });
+        setExportProgress({
+          stage: "error",
+          completedFrames: 0,
+          totalFrames: 0,
+          message:
+            event.data.payload.message ??
+            (event.data.payload.code === "pngSequenceFailedUnexpectedly"
+              ? ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly
+              : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly),
+        });
     };
 
     return () => {
       worker.terminate();
       exportWorkerRef.current = null;
     };
-  }, []);
+  }, [
+    ui.exportPanel.runtimeMessages.exportReadyTemplate,
+    ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly,
+  ]);
 
   const handleExport = async () => {
     const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
@@ -316,7 +359,7 @@ export function GeneratorShell() {
         stage: "error",
         completedFrames: 0,
         totalFrames: 0,
-        message: "Export worker is unavailable in this browser session.",
+        message: ui.exportPanel.runtimeMessages.exportWorkerUnavailable,
       });
       return;
     }
@@ -330,15 +373,15 @@ export function GeneratorShell() {
       totalFrames,
       message:
         settings.export.format === "webm"
-          ? "Preparing local WebM export"
-          : "Preparing local PNG sequence export",
+          ? ui.exportPanel.runtimeMessages.preparingWebm
+          : ui.exportPanel.runtimeMessages.preparingPngSequence,
     });
 
     if (settings.export.format === "webm") {
       try {
         const result = await exportWebmLocally(settings, {
           onProgress: (progress) => {
-            setExportProgress(progress);
+            setExportProgress(localizeProgressMessage(progress));
           },
         });
 
@@ -347,7 +390,10 @@ export function GeneratorShell() {
           stage: "complete",
           completedFrames: totalFrames,
           totalFrames,
-          message: `Export ready: ${result.fileName}`,
+          message: formatTemplate(
+            ui.exportPanel.runtimeMessages.exportReadyTemplate,
+            { fileName: result.fileName },
+          ),
         });
         downloadBlob(result.blob, result.fileName);
       } catch (error) {
@@ -359,7 +405,7 @@ export function GeneratorShell() {
           message:
             error instanceof Error
               ? error.message
-              : "WebM export failed unexpectedly.",
+              : ui.exportPanel.runtimeMessages.webmFailedUnexpectedly,
         });
       }
 
@@ -390,13 +436,13 @@ export function GeneratorShell() {
           <div className="rounded-none border border-border/70 bg-background/35 px-4 py-4 sm:px-5">
             <div className="flex flex-col gap-2">
               <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-primary">
-                Time Overlay
+                {hero.eyebrow}
               </p>
               <h1 className="text-xl font-semibold tracking-[-0.03em] text-foreground sm:text-2xl">
-                Set the duration, preview the frame, then export your timer asset.
+                {hero.heading}
               </h1>
               <p className="text-sm leading-6 text-muted-foreground">
-                Recommended first try: `30s`, `PNG sequence`, `bottom-right`.
+                {hero.intro}
               </p>
             </div>
           </div>
@@ -405,12 +451,14 @@ export function GeneratorShell() {
             presets={GENERATOR_THEME_PRESETS}
             activePresetId={settings.themePresetId}
             onSelectPreset={handleThemePresetChange}
+            ui={ui.themePresetPicker}
           />
 
           <div className="grid gap-5 xl:grid-cols-[20rem_minmax(0,1fr)_18rem]">
             <ControlPanel
               settings={settings}
               canvasPresets={GENERATOR_CANVAS_PRESETS}
+              ui={ui.controlPanel}
               onDurationChange={handleDurationChange}
               onDisplayFormatChange={handleDisplayFormatChange}
               onResolutionPresetChange={handleResolutionPresetChange}
@@ -420,6 +468,7 @@ export function GeneratorShell() {
             />
             <PreviewPanel
               settings={deferredSettings}
+              ui={ui.previewPanel}
               elapsedSeconds={elapsedSeconds}
               isPlaying={isPlaying}
               onPause={handlePause}
@@ -433,6 +482,7 @@ export function GeneratorShell() {
               isExporting={isExporting}
               onExport={handleExport}
               settings={settings}
+              ui={ui.exportPanel}
               onFormatChange={handleFormatChange}
               onFpsChange={handleFpsChange}
               onQualityChange={handleQualityChange}

@@ -24,6 +24,7 @@ describe("getExportAdvisory", () => {
     );
 
     expect(advisory.severity).toBe("info");
+    expect(advisory.code).toBe("pngSequenceInfo");
     expect(advisory.disabledFormats).toEqual([]);
   });
 });

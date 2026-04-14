@@ -42,6 +42,11 @@ const deRootPageContent = {
       title: "Theme-Preset",
       description:
         "Wähle einen Start-Look und passe die Controls nur bei Bedarf an.",
+      presetLabels: {
+        "minimal-neon": "Minimal Neon",
+        "broadcast-alert": "Broadcast Alert",
+        "calm-studio": "Calm Studio",
+      },
     },
     controlPanel: {
       title: "Steuerung",
@@ -49,12 +54,39 @@ const deRootPageContent = {
       timerSetupTitle: "Timer-Setup",
       durationLabel: "Dauer (Sekunden)",
       displayFormatLabel: "Anzeigeformat",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "Canvas",
       resolutionPresetLabel: "Auflösungs-Preset",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "Hintergrundmodus",
       styleTitle: "Stil",
       fontFamilyLabel: "Schriftfamilie",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "Anker",
+      anchorOptions: {
+        "top-left": "Oben links",
+        "top-center": "Oben Mitte",
+        "top-right": "Oben rechts",
+        "center-left": "Mitte links",
+        center: "Mitte",
+        "center-right": "Mitte rechts",
+        "bottom-left": "Unten links",
+        "bottom-center": "Unten Mitte",
+        "bottom-right": "Unten rechts",
+      },
       transparentOptionLabel: "Transparent",
       solidOptionLabel: "Vollfarbe",
     },
@@ -79,6 +111,10 @@ const deRootPageContent = {
       webmDescription:
         "Gut für leichten lokalen Videoexport auf unterstützten Browsern.",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "Qualität",
       launchNoteTitle: "Hinweis",
       launchNoteFallback:
@@ -88,8 +124,30 @@ const deRootPageContent = {
       exportStatusTitle: "Exportstatus",
       exportStatusIdle:
         "Leerlauf. Wähle ein Format und starte einen lokalen Export.",
-      standardQualityLabel: "Standard",
-      highQualityLabel: "Hoch",
+      qualityOptions: {
+        standard: "Standard",
+        high: "Hoch",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "Dieser Browser kann keinen Hintergrund-Worker starten, daher ist lokaler Videoexport deaktiviert. Nutze PNG Sequence in einem modernen Desktop-Browser.",
+        webmUnavailableError:
+          "WebM-Export ist in diesem Browser nicht verfügbar. PNG Sequence bleibt der sicherste Fallback.",
+        heavyExportWarning:
+          "Dieser Export wird voraussichtlich viel Speicher und CPU beanspruchen. Erwäge 720p, 30 Sekunden oder PNG Sequence, wenn der Browser ins Straucheln gerät.",
+        pngSequenceInfo:
+          "PNG Sequence ist der zuverlässigste Local-First-Handoff für Editoren, besonders wenn Transparenz wichtig ist.",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "Export bereit: {fileName}",
+        preparingWebm: "Lokalen WebM-Export vorbereiten",
+        preparingPngSequence: "Lokalen PNG-Sequence-Export vorbereiten",
+        exportWorkerUnavailable:
+          "Der Export-Worker ist in dieser Browser-Sitzung nicht verfügbar.",
+        webmFailedUnexpectedly: "Der WebM-Export ist unerwartet fehlgeschlagen.",
+        pngSequenceFailedUnexpectedly:
+          "Der PNG-Sequence-Export ist unerwartet fehlgeschlagen.",
+      },
     },
   },
   seoSection: {

@@ -42,6 +42,11 @@ const ptRootPageContent = {
       title: "Preset de tema",
       description:
         "Escolha um visual inicial e ajuste os controles apenas quando necessário.",
+      presetLabels: {
+        "minimal-neon": "Neon minimalista",
+        "broadcast-alert": "Alerta broadcast",
+        "calm-studio": "Estúdio calmo",
+      },
     },
     controlPanel: {
       title: "Controles",
@@ -49,12 +54,39 @@ const ptRootPageContent = {
       timerSetupTitle: "Configuração do timer",
       durationLabel: "Duração (segundos)",
       displayFormatLabel: "Formato de exibição",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "Canvas",
       resolutionPresetLabel: "Preset de resolução",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "Modo de fundo",
       styleTitle: "Estilo",
       fontFamilyLabel: "Família da fonte",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "Âncora",
+      anchorOptions: {
+        "top-left": "Topo esquerdo",
+        "top-center": "Topo centro",
+        "top-right": "Topo direito",
+        "center-left": "Centro esquerdo",
+        center: "Centro",
+        "center-right": "Centro direito",
+        "bottom-left": "Base esquerda",
+        "bottom-center": "Base centro",
+        "bottom-right": "Base direita",
+      },
       transparentOptionLabel: "Transparente",
       solidOptionLabel: "Sólido",
     },
@@ -79,6 +111,10 @@ const ptRootPageContent = {
       webmDescription:
         "Boa opção para exportação local de vídeo leve em navegadores compatíveis.",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "Qualidade",
       launchNoteTitle: "Nota de lançamento",
       launchNoteFallback:
@@ -88,8 +124,30 @@ const ptRootPageContent = {
       exportStatusTitle: "Status da exportação",
       exportStatusIdle:
         "Inativo. Escolha um formato e inicie uma exportação local.",
-      standardQualityLabel: "Padrão",
-      highQualityLabel: "Alta",
+      qualityOptions: {
+        standard: "Padrão",
+        high: "Alta",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "Este navegador não consegue iniciar um worker em segundo plano, então a exportação local de vídeo fica desativada. Use PNG Sequence em um navegador de desktop moderno.",
+        webmUnavailableError:
+          "A exportação em WebM não está disponível neste navegador. PNG Sequence continua sendo o fallback mais seguro.",
+        heavyExportWarning:
+          "Esta exportação provavelmente vai exigir bastante memória e CPU. Considere 720p, 30 segundos ou PNG Sequence se o navegador começar a sofrer.",
+        pngSequenceInfo:
+          "PNG Sequence é o handoff local-first mais confiável para editores, especialmente quando a transparência importa.",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "Exportação pronta: {fileName}",
+        preparingWebm: "Preparando exportação local em WebM",
+        preparingPngSequence: "Preparando exportação local em PNG Sequence",
+        exportWorkerUnavailable:
+          "O worker de exportação não está disponível nesta sessão do navegador.",
+        webmFailedUnexpectedly: "A exportação em WebM falhou inesperadamente.",
+        pngSequenceFailedUnexpectedly:
+          "A exportação em PNG Sequence falhou inesperadamente.",
+      },
     },
   },
   seoSection: {

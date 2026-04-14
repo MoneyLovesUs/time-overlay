@@ -31,7 +31,8 @@ export type ExportWorkerMessage =
   | {
       kind: "error";
       payload: {
-        message: string;
+        code?: "pngSequenceFailedUnexpectedly";
+        message?: string;
       };
     };
 
@@ -53,11 +54,4 @@ export function createExportJobPlan({
       return `frame-${String(frameIndex + 1).padStart(4, "0")}.png`;
     },
   };
-}
-
-export function getExportProgressMessage(
-  completedFrames: number,
-  totalFrames: number,
-) {
-  return `Rendering frame ${completedFrames} of ${totalFrames}`;
 }

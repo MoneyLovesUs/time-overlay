@@ -1,6 +1,7 @@
 import { Download, FileStack, Film } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { RootPageContent } from "@/content/root/types";
 import type { ExportAdvisory, LocalExportSupport } from "@/lib/generator/feature-detection";
 import type {
   ExportProgressState,
@@ -12,6 +13,7 @@ import type {
 type ExportPanelProps = {
   settings: GeneratorSettings;
   advisory: ExportAdvisory;
+  ui: RootPageContent["generatorUi"]["exportPanel"];
   exportProgress: ExportProgressState;
   isExporting: boolean;
   onExport: () => void;
@@ -27,6 +29,7 @@ const fieldClassName =
 export function ExportPanel({
   settings,
   advisory,
+  ui,
   exportProgress,
   isExporting,
   onExport,
@@ -41,18 +44,28 @@ export function ExportPanel({
       : advisory.severity === "warning"
         ? "border-secondary/35 bg-secondary/10 text-foreground"
         : "border-tertiary/30 bg-tertiary/8 text-foreground";
+  const advisoryMessage =
+    advisory.code === "workerSupportError"
+      ? ui.advisoryMessages.workerSupportError
+      : advisory.code === "webmUnavailableError"
+        ? ui.advisoryMessages.webmUnavailableError
+        : advisory.code === "heavyExportWarning"
+          ? ui.advisoryMessages.heavyExportWarning
+          : advisory.code === "pngSequenceInfo"
+            ? ui.advisoryMessages.pngSequenceInfo
+            : null;
 
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-        <span>Export</span>
-        <span className="text-primary">Delivery bay</span>
+        <span>{ui.title}</span>
+        <span className="text-primary">{ui.subtitle}</span>
       </div>
 
       <div className="space-y-6 px-5 py-5">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-            Output format
+            {ui.outputFormatTitle}
           </p>
           <div className="mt-4 grid gap-3">
             <label className="flex items-start gap-3 border border-border/80 bg-background/65 px-3 py-3 text-sm">
@@ -67,10 +80,10 @@ export function ExportPanel({
               <span>
                 <span className="flex items-center gap-2 font-medium text-foreground">
                   <FileStack className="size-4 text-primary" />
-                  PNG Sequence
+                  {ui.pngSequenceLabel}
                 </span>
                 <span className="mt-1 block text-muted-foreground">
-                  Most reliable for editors and transparent handoff.
+                  {ui.pngSequenceDescription}
                 </span>
               </span>
             </label>
@@ -87,10 +100,10 @@ export function ExportPanel({
               <span>
                 <span className="flex items-center gap-2 font-medium text-foreground">
                   <Film className="size-4 text-tertiary" />
-                  WebM
+                  {ui.webmLabel}
                 </span>
                 <span className="mt-1 block text-muted-foreground">
-                  Good for lightweight local video export on supported browsers.
+                  {ui.webmDescription}
                 </span>
               </span>
             </label>
@@ -99,19 +112,19 @@ export function ExportPanel({
 
         <div>
           <label className="block text-sm font-medium text-foreground">
-            FPS
+            {ui.fpsLabel}
             <select
               className={fieldClassName}
               onChange={(event) => onFpsChange(Number(event.target.value))}
               value={settings.export.fps}
             >
-              <option value={24}>24 fps</option>
-              <option value={30}>30 fps</option>
+              <option value={24}>{ui.fpsOptions[24]}</option>
+              <option value={30}>{ui.fpsOptions[30]}</option>
             </select>
           </label>
 
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Quality
+            {ui.qualityLabel}
             <select
               className={fieldClassName}
               onChange={(event) =>
@@ -119,19 +132,18 @@ export function ExportPanel({
               }
               value={settings.export.quality}
             >
-              <option value="standard">Standard</option>
-              <option value="high">High</option>
+              <option value="standard">{ui.qualityOptions.standard}</option>
+              <option value="high">{ui.qualityOptions.high}</option>
             </select>
           </label>
         </div>
 
         <div className={`rounded-none border px-4 py-4 ${advisoryClassName}`}>
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-            Launch note
+            {ui.launchNoteTitle}
           </p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {advisory.message ??
-              "Export remains local-first in the MVP. If a format is unsupported in the current browser, the UI will steer users toward PNG sequence."}
+            {advisoryMessage ?? ui.launchNoteFallback}
           </p>
         </div>
 
@@ -140,16 +152,16 @@ export function ExportPanel({
           disabled={isExporting || advisory.severity === "error"}
           onClick={onExport}
         >
-          <span>{isExporting ? "Exporting..." : "Export asset"}</span>
+          <span>{isExporting ? ui.exportButtonBusy : ui.exportButtonIdle}</span>
           <Download className="size-4" />
         </Button>
 
         <div className="rounded-none border border-border/80 bg-background/65 px-4 py-3 text-sm text-muted-foreground">
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-            Export status
+            {ui.exportStatusTitle}
           </p>
           <p className="mt-2 leading-6">
-            {exportProgress.message || "Idle. Choose a format and start a local export."}
+            {exportProgress.message || ui.exportStatusIdle}
           </p>
         </div>
       </div>

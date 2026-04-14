@@ -7,10 +7,12 @@ import type {
   ResolutionPresetId,
   TimerDisplayFormat,
 } from "@/lib/generator/types";
+import type { RootPageContent } from "@/content/root/types";
 
 type ControlPanelProps = {
   settings: GeneratorSettings;
   canvasPresets: readonly CanvasPreset[];
+  ui: RootPageContent["generatorUi"]["controlPanel"];
   onDurationChange: (durationSeconds: number) => void;
   onDisplayFormatChange: (displayFormat: TimerDisplayFormat) => void;
   onResolutionPresetChange: (resolutionPresetId: ResolutionPresetId) => void;
@@ -25,6 +27,7 @@ const fieldClassName =
 export function ControlPanel({
   settings,
   canvasPresets,
+  ui,
   onDurationChange,
   onDisplayFormatChange,
   onResolutionPresetChange,
@@ -35,17 +38,17 @@ export function ControlPanel({
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-        <span>Controls</span>
-        <span className="text-primary">Input stack</span>
+        <span>{ui.title}</span>
+        <span className="text-primary">{ui.subtitle}</span>
       </div>
 
       <div className="space-y-6 px-5 py-5">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-            Timer setup
+            {ui.timerSetupTitle}
           </p>
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Duration (seconds)
+            {ui.durationLabel}
             <input
               className={fieldClassName}
               onChange={(event) => onDurationChange(Number(event.target.value))}
@@ -57,7 +60,7 @@ export function ControlPanel({
             />
           </label>
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Display format
+            {ui.displayFormatLabel}
             <select
               className={fieldClassName}
               onChange={(event) =>
@@ -65,19 +68,19 @@ export function ControlPanel({
               }
               value={settings.timer.displayFormat}
             >
-              <option value="ss">SS</option>
-              <option value="mm:ss">MM:SS</option>
-              <option value="hh:mm:ss">HH:MM:SS</option>
+              <option value="ss">{ui.displayFormatOptions.ss}</option>
+              <option value="mm:ss">{ui.displayFormatOptions["mm:ss"]}</option>
+              <option value="hh:mm:ss">{ui.displayFormatOptions["hh:mm:ss"]}</option>
             </select>
           </label>
         </div>
 
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-            Canvas
+            {ui.canvasTitle}
           </p>
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Resolution preset
+            {ui.resolutionPresetLabel}
             <select
               className={fieldClassName}
               onChange={(event) =>
@@ -87,13 +90,13 @@ export function ControlPanel({
             >
               {canvasPresets.map((preset) => (
                 <option key={preset.id} value={preset.id}>
-                  {preset.label}
+                  {ui.resolutionPresetOptions[preset.id]}
                 </option>
               ))}
             </select>
           </label>
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Background mode
+            {ui.backgroundModeLabel}
             <select
               className={fieldClassName}
               onChange={(event) =>
@@ -101,18 +104,18 @@ export function ControlPanel({
               }
               value={settings.canvas.backgroundMode}
             >
-              <option value="transparent">Transparent</option>
-              <option value="solid">Solid</option>
+              <option value="transparent">{ui.transparentOptionLabel}</option>
+              <option value="solid">{ui.solidOptionLabel}</option>
             </select>
           </label>
         </div>
 
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-            Style
+            {ui.styleTitle}
           </p>
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Font family
+            {ui.fontFamilyLabel}
             <select
               className={fieldClassName}
               onChange={(event) =>
@@ -120,12 +123,12 @@ export function ControlPanel({
               }
               value={settings.textStyle.fontFamily}
             >
-              <option value="geist-mono">Geist Mono</option>
-              <option value="geist-sans">Geist Sans</option>
+              <option value="geist-mono">{ui.fontFamilyOptions["geist-mono"]}</option>
+              <option value="geist-sans">{ui.fontFamilyOptions["geist-sans"]}</option>
             </select>
           </label>
           <label className="mt-4 block text-sm font-medium text-foreground">
-            Anchor
+            {ui.anchorLabel}
             <select
               className={fieldClassName}
               onChange={(event) =>
@@ -133,15 +136,15 @@ export function ControlPanel({
               }
               value={settings.placement.anchor}
             >
-              <option value="top-left">Top Left</option>
-              <option value="top-center">Top Center</option>
-              <option value="top-right">Top Right</option>
-              <option value="center-left">Center Left</option>
-              <option value="center">Center</option>
-              <option value="center-right">Center Right</option>
-              <option value="bottom-left">Bottom Left</option>
-              <option value="bottom-center">Bottom Center</option>
-              <option value="bottom-right">Bottom Right</option>
+              <option value="top-left">{ui.anchorOptions["top-left"]}</option>
+              <option value="top-center">{ui.anchorOptions["top-center"]}</option>
+              <option value="top-right">{ui.anchorOptions["top-right"]}</option>
+              <option value="center-left">{ui.anchorOptions["center-left"]}</option>
+              <option value="center">{ui.anchorOptions.center}</option>
+              <option value="center-right">{ui.anchorOptions["center-right"]}</option>
+              <option value="bottom-left">{ui.anchorOptions["bottom-left"]}</option>
+              <option value="bottom-center">{ui.anchorOptions["bottom-center"]}</option>
+              <option value="bottom-right">{ui.anchorOptions["bottom-right"]}</option>
             </select>
           </label>
         </div>

@@ -1,25 +1,28 @@
 import { cn } from "@/lib/utils";
+import type { RootPageContent } from "@/content/root/types";
 import type { RenderThemePresetId, ThemePreset } from "@/lib/generator/types";
 
 type ThemePresetPickerProps = {
   presets: readonly ThemePreset[];
   activePresetId: RenderThemePresetId;
   onSelectPreset: (presetId: RenderThemePresetId) => void;
+  ui: RootPageContent["generatorUi"]["themePresetPicker"];
 };
 
 export function ThemePresetPicker({
   presets,
   activePresetId,
   onSelectPreset,
+  ui,
 }: ThemePresetPickerProps) {
   return (
     <section className="flex flex-col gap-3 rounded-none border border-border/70 bg-background/40 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-          Theme preset
+          {ui.title}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Pick a starting look, then adjust controls only if needed.
+          {ui.description}
         </p>
       </div>
 
@@ -39,7 +42,7 @@ export function ThemePresetPicker({
                   : "border-border/80 bg-background/60 text-muted-foreground hover:border-tertiary/50 hover:text-foreground",
               )}
             >
-              {preset.label}
+              {ui.presetLabels[preset.id]}
             </button>
           );
         })}

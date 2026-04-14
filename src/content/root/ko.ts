@@ -42,6 +42,11 @@ const koRootPageContent = {
       title: "테마 프리셋",
       description:
         "기본 스타일을 먼저 고르고, 필요할 때만 컨트롤을 세부 조정하세요.",
+      presetLabels: {
+        "minimal-neon": "미니멀 네온",
+        "broadcast-alert": "브로드캐스트 알림",
+        "calm-studio": "차분한 스튜디오",
+      },
     },
     controlPanel: {
       title: "컨트롤",
@@ -49,12 +54,39 @@ const koRootPageContent = {
       timerSetupTitle: "타이머 설정",
       durationLabel: "길이(초)",
       displayFormatLabel: "표시 형식",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "캔버스",
       resolutionPresetLabel: "해상도 프리셋",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "배경 모드",
       styleTitle: "스타일",
       fontFamilyLabel: "글꼴 패밀리",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "앵커",
+      anchorOptions: {
+        "top-left": "왼쪽 위",
+        "top-center": "위 중앙",
+        "top-right": "오른쪽 위",
+        "center-left": "왼쪽 중앙",
+        center: "정중앙",
+        "center-right": "오른쪽 중앙",
+        "bottom-left": "왼쪽 아래",
+        "bottom-center": "아래 중앙",
+        "bottom-right": "오른쪽 아래",
+      },
       transparentOptionLabel: "투명",
       solidOptionLabel: "단색",
     },
@@ -79,6 +111,10 @@ const koRootPageContent = {
       webmDescription:
         "지원 브라우저에서 가벼운 로컬 영상 내보내기에 적합합니다.",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "품질",
       launchNoteTitle: "출시 노트",
       launchNoteFallback:
@@ -88,8 +124,30 @@ const koRootPageContent = {
       exportStatusTitle: "내보내기 상태",
       exportStatusIdle:
         "대기 중입니다. 포맷을 선택하고 로컬 내보내기를 시작하세요.",
-      standardQualityLabel: "표준",
-      highQualityLabel: "고품질",
+      qualityOptions: {
+        standard: "표준",
+        high: "고품질",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "이 브라우저는 백그라운드 워커를 시작할 수 없어 로컬 비디오 내보내기가 비활성화됩니다. 최신 데스크톱 브라우저에서 PNG 시퀀스를 사용하세요.",
+        webmUnavailableError:
+          "이 브라우저에서는 WebM 내보내기를 사용할 수 없습니다. PNG 시퀀스가 가장 안전한 대안으로 남습니다.",
+        heavyExportWarning:
+          "이 내보내기는 메모리와 CPU를 많이 사용할 가능성이 큽니다. 브라우저가 버거워지면 720p, 30초 또는 PNG 시퀀스를 고려하세요.",
+        pngSequenceInfo:
+          "PNG 시퀀스는 특히 투명도가 중요할 때 편집기에 전달하기 가장 안정적인 로컬 우선 형식입니다.",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "내보내기 준비 완료: {fileName}",
+        preparingWebm: "로컬 WebM 내보내기 준비 중",
+        preparingPngSequence: "로컬 PNG 시퀀스 내보내기 준비 중",
+        exportWorkerUnavailable:
+          "이 브라우저 세션에서는 export worker를 사용할 수 없습니다.",
+        webmFailedUnexpectedly: "WebM 내보내기가 예기치 않게 실패했습니다.",
+        pngSequenceFailedUnexpectedly:
+          "PNG 시퀀스 내보내기가 예기치 않게 실패했습니다.",
+      },
     },
   },
   seoSection: {

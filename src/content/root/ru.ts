@@ -42,6 +42,11 @@ const ruRootPageContent = {
       title: "Пресет темы",
       description:
         "Выберите стартовый стиль, а затем при необходимости подстройте параметры.",
+      presetLabels: {
+        "minimal-neon": "Минимал неон",
+        "broadcast-alert": "Эфирная тревога",
+        "calm-studio": "Спокойная студия",
+      },
     },
     controlPanel: {
       title: "Управление",
@@ -49,12 +54,39 @@ const ruRootPageContent = {
       timerSetupTitle: "Настройка таймера",
       durationLabel: "Длительность (секунды)",
       displayFormatLabel: "Формат отображения",
+      displayFormatOptions: {
+        ss: "SS",
+        "mm:ss": "MM:SS",
+        "hh:mm:ss": "HH:MM:SS",
+      },
       canvasTitle: "Холст",
       resolutionPresetLabel: "Пресет разрешения",
+      resolutionPresetOptions: {
+        "landscape-720": "1280x720 / 16:9",
+        "landscape-1080": "1920x1080 / 16:9",
+        "portrait-720": "720x1280 / 9:16",
+        "portrait-1080": "1080x1920 / 9:16",
+        "square-1080": "1080x1080 / 1:1",
+      },
       backgroundModeLabel: "Режим фона",
       styleTitle: "Стиль",
       fontFamilyLabel: "Семейство шрифта",
+      fontFamilyOptions: {
+        "geist-mono": "Geist Mono",
+        "geist-sans": "Geist Sans",
+      },
       anchorLabel: "Якорь",
+      anchorOptions: {
+        "top-left": "Верх слева",
+        "top-center": "Верх по центру",
+        "top-right": "Верх справа",
+        "center-left": "Центр слева",
+        center: "Центр",
+        "center-right": "Центр справа",
+        "bottom-left": "Низ слева",
+        "bottom-center": "Низ по центру",
+        "bottom-right": "Низ справа",
+      },
       transparentOptionLabel: "Прозрачный",
       solidOptionLabel: "Сплошной",
     },
@@ -79,6 +111,10 @@ const ruRootPageContent = {
       webmDescription:
         "Подходит для легкого локального видеоэкспорта в поддерживаемых браузерах.",
       fpsLabel: "FPS",
+      fpsOptions: {
+        24: "24 FPS",
+        30: "30 FPS",
+      },
       qualityLabel: "Качество",
       launchNoteTitle: "Примечание",
       launchNoteFallback:
@@ -88,8 +124,30 @@ const ruRootPageContent = {
       exportStatusTitle: "Статус экспорта",
       exportStatusIdle:
         "Ожидание. Выберите формат и запустите локальный экспорт.",
-      standardQualityLabel: "Стандарт",
-      highQualityLabel: "Высокое",
+      qualityOptions: {
+        standard: "Стандарт",
+        high: "Высокое",
+      },
+      advisoryMessages: {
+        workerSupportError:
+          "Этот браузер не может запустить фоновый worker, поэтому локальный видеоэкспорт отключен. Используйте PNG Sequence в современном настольном браузере.",
+        webmUnavailableError:
+          "Экспорт в WebM недоступен в этом браузере. PNG Sequence остается самым безопасным резервным вариантом.",
+        heavyExportWarning:
+          "Этот экспорт, вероятно, будет сильно нагружать память и CPU. Попробуйте 720p, 30 секунд или PNG Sequence, если браузер начинает тормозить.",
+        pngSequenceInfo:
+          "PNG Sequence — самый надежный local-first формат передачи в редакторы, особенно когда важна прозрачность.",
+      },
+      runtimeMessages: {
+        exportReadyTemplate: "Экспорт готов: {fileName}",
+        preparingWebm: "Подготовка локального экспорта WebM",
+        preparingPngSequence: "Подготовка локального экспорта PNG Sequence",
+        exportWorkerUnavailable:
+          "Worker экспорта недоступен в этой сессии браузера.",
+        webmFailedUnexpectedly: "Экспорт WebM неожиданно завершился ошибкой.",
+        pngSequenceFailedUnexpectedly:
+          "Экспорт PNG Sequence неожиданно завершился ошибкой.",
+      },
     },
   },
   seoSection: {

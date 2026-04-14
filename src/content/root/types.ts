@@ -1,3 +1,12 @@
+import type {
+  ExportQualityPreset,
+  FontFamilyPreset,
+  PlacementAnchor,
+  RenderThemePresetId,
+  ResolutionPresetId,
+  TimerDisplayFormat,
+} from "@/lib/generator/types";
+
 export type RootFaqItem = {
   question: string;
   answer: string;
@@ -57,6 +66,7 @@ export type RootPageContent = {
     themePresetPicker: {
       title: string;
       description: string;
+      presetLabels: Record<RenderThemePresetId, string>;
     };
     controlPanel: {
       title: string;
@@ -64,12 +74,16 @@ export type RootPageContent = {
       timerSetupTitle: string;
       durationLabel: string;
       displayFormatLabel: string;
+      displayFormatOptions: Record<TimerDisplayFormat, string>;
       canvasTitle: string;
       resolutionPresetLabel: string;
+      resolutionPresetOptions: Record<ResolutionPresetId, string>;
       backgroundModeLabel: string;
       styleTitle: string;
       fontFamilyLabel: string;
+      fontFamilyOptions: Record<FontFamilyPreset, string>;
       anchorLabel: string;
+      anchorOptions: Record<PlacementAnchor, string>;
       transparentOptionLabel: string;
       solidOptionLabel: string;
     };
@@ -92,6 +106,7 @@ export type RootPageContent = {
       webmLabel: string;
       webmDescription: string;
       fpsLabel: string;
+      fpsOptions: Record<24 | 30, string>;
       qualityLabel: string;
       launchNoteTitle: string;
       launchNoteFallback: string;
@@ -99,8 +114,21 @@ export type RootPageContent = {
       exportButtonBusy: string;
       exportStatusTitle: string;
       exportStatusIdle: string;
-      standardQualityLabel: string;
-      highQualityLabel: string;
+      qualityOptions: Record<ExportQualityPreset, string>;
+      advisoryMessages: {
+        workerSupportError: string;
+        webmUnavailableError: string;
+        heavyExportWarning: string;
+        pngSequenceInfo: string;
+      };
+      runtimeMessages: {
+        exportReadyTemplate: string;
+        preparingWebm: string;
+        preparingPngSequence: string;
+        exportWorkerUnavailable: string;
+        webmFailedUnexpectedly: string;
+        pngSequenceFailedUnexpectedly: string;
+      };
     };
   };
   seoSection: {

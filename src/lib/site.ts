@@ -5,6 +5,7 @@ import {
   buildLocalizedPath,
   defaultLocale,
   enabledLocales,
+  type EnabledLocale,
   type AppLocale,
   type SiteDictionary,
 } from "./i18n.ts";
@@ -39,7 +40,7 @@ export const siteConfig = {
     "A local-first overlay timer generator for building countdown assets and exporting PNG sequence or WebM from one tool page.",
 } as const;
 
-const homepageAnchorMatrix = [
+export const homepageAnchorModel = [
   { path: "/#tool", key: "overview" },
   { path: "/#faq", key: "qa" },
   { path: "/#export-formats", key: "howItWorks" },
@@ -49,7 +50,7 @@ type HomepageRouteDefinition = {
   readonly href: "/";
   readonly changeFrequency: "weekly";
   readonly priority: 1;
-  readonly anchors: typeof homepageAnchorMatrix;
+  readonly anchors: typeof homepageAnchorModel;
 };
 
 export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
@@ -57,12 +58,12 @@ export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
     href: "/",
     changeFrequency: "weekly",
     priority: 1,
-    anchors: homepageAnchorMatrix,
+    anchors: homepageAnchorModel,
   },
 ] as const;
 
 export function getLocalizedNavItems(locale: AppLocale, dictionary: SiteDictionary) {
-  return homepageAnchorMatrix.map((item) => ({
+  return homepageAnchorModel.map((item) => ({
     href: buildLocalizedPath(item.path, locale),
     label: dictionary.nav[item.key],
   }));
@@ -103,26 +104,43 @@ export function createPageMetadata({
   };
 }
 
+export async function createRootPageMetadata(
+  locale: EnabledLocale = defaultLocale,
+): Promise<Metadata> {
+  const { getRootPageContent } = await import("@/content/root");
+  const content = await getRootPageContent(locale);
+
+  return createPageMetadata({
+    locale,
+    path: "/",
+    title: content.metadata.title,
+    description: content.metadata.description,
+  });
+}
+
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return publicRouteDefinitions.map((route) => {
-    const localized = buildLanguageAlternates(route.href);
-    const languageUrls = Object.fromEntries(
-      enabledLocales.map((locale) => [
-        locale,
-        new URL(localized[locale], siteConfig.url).toString(),
-      ]),
-    );
+  return enabledLocales.flatMap((locale) =>
+    publicRouteDefinitions.map((route) => {
+      const localizedRoutePath = buildLocalizedPath(route.href, locale);
+      const localized = buildLanguageAlternates(route.href);
+      const languageUrls = Object.fromEntries(
+        enabledLocales.map((alternateLocale) => [
+          alternateLocale,
+          new URL(localized[alternateLocale], siteConfig.url).toString(),
+        ]),
+      );
 
-    return {
-      url: new URL(buildLocalizedPath(route.href), siteConfig.url).toString(),
-      lastModified,
-      changeFrequency: route.changeFrequency,
-      priority: route.priority,
-      alternates: {
-        languages: languageUrls,
-      },
-    };
-  });
+      return {
+        url: new URL(localizedRoutePath, siteConfig.url).toString(),
+        lastModified,
+        changeFrequency: route.changeFrequency,
+        priority: route.priority,
+        alternates: {
+          languages: languageUrls,
+        },
+      };
+    }),
+  );
 }

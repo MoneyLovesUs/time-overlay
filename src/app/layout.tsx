@@ -5,7 +5,7 @@ import Script from "next/script";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { defaultLocale, getDictionary } from "@/lib/i18n";
-import { getLocalizedNavItems, siteConfig } from "@/lib/site";
+import { createRootPageMetadata, getLocalizedNavItems, siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -37,26 +37,18 @@ const clarityBootstrapScript = `
   })(window, document, "clarity", "script", "${clarityProjectId}");
 `;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  openGraph: {
-    title: siteConfig.name,
-    description: siteConfig.description,
-    url: "/",
-    siteName: siteConfig.name,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const localizedMetadata = await createRootPageMetadata(defaultLocale);
+
+  return {
+    metadataBase: new URL(siteConfig.url),
+    ...localizedMetadata,
+    title: {
+      default: siteConfig.name,
+      template: `%s | ${siteConfig.name}`,
+    },
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -68,7 +60,7 @@ export default async function RootLayout({
 
   return (
     <html
-      lang={defaultLocale}
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">

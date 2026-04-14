@@ -84,9 +84,6 @@ const koRootPageContent = {
       standardQualityLabel: "표준",
       highQualityLabel: "고품질",
     },
-    preview: {
-      playButton: "미리보기 재생",
-    },
   },
   seoSection: {
     notesEyebrow: "도구 메모",

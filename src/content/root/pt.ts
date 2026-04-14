@@ -84,9 +84,6 @@ const ptRootPageContent = {
       standardQualityLabel: "Padrão",
       highQualityLabel: "Alta",
     },
-    preview: {
-      playButton: "Reproduzir prévia",
-    },
   },
   seoSection: {
     notesEyebrow: "Notas da ferramenta",

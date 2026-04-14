@@ -82,9 +82,6 @@ const enRootPageContent = {
       standardQualityLabel: "Standard",
       highQualityLabel: "High",
     },
-    preview: {
-      playButton: "Play Preview",
-    },
   },
   seoSection: {
     notesEyebrow: "Tool Notes",

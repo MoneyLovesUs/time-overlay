@@ -84,9 +84,6 @@ const deRootPageContent = {
       standardQualityLabel: "Standard",
       highQualityLabel: "Hoch",
     },
-    preview: {
-      playButton: "Vorschau starten",
-    },
   },
   seoSection: {
     notesEyebrow: "Tool-Hinweise",

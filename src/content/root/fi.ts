@@ -84,9 +84,6 @@ const fiRootPageContent = {
       standardQualityLabel: "Perus",
       highQualityLabel: "Korkea",
     },
-    preview: {
-      playButton: "Toista esikatselu",
-    },
   },
   seoSection: {
     notesEyebrow: "Työkalumuistiinpanot",

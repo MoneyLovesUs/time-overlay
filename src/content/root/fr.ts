@@ -84,9 +84,6 @@ const frRootPageContent = {
       standardQualityLabel: "Standard",
       highQualityLabel: "Élevée",
     },
-    preview: {
-      playButton: "Lancer l'aperçu",
-    },
   },
   seoSection: {
     notesEyebrow: "Notes outil",

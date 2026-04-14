@@ -78,9 +78,6 @@ export type RootPageContent = {
       standardQualityLabel: string;
       highQualityLabel: string;
     };
-    preview: {
-      playButton: string;
-    };
   };
   seoSection: {
     notesEyebrow: string;

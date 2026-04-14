@@ -84,9 +84,6 @@ const ruRootPageContent = {
       standardQualityLabel: "Стандарт",
       highQualityLabel: "Высокое",
     },
-    preview: {
-      playButton: "Запустить предпросмотр",
-    },
   },
   seoSection: {
     notesEyebrow: "Заметки по инструменту",

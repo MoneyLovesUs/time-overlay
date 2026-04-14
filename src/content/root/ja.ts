@@ -84,9 +84,6 @@ const jaRootPageContent = {
       standardQualityLabel: "標準",
       highQualityLabel: "高品質",
     },
-    preview: {
-      playButton: "プレビュー再生",
-    },
   },
   seoSection: {
     notesEyebrow: "ツールノート",

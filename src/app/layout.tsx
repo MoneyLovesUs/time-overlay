@@ -4,7 +4,7 @@ import Script from "next/script";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { defaultLocale, getDictionary } from "@/lib/i18n";
+import { defaultLocale, getDictionary, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
 import { createRootPageMetadata, getLocalizedNavItems, siteConfig } from "@/lib/site";
 
 import "./globals.css";
@@ -50,17 +50,31 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function resolveActiveLocale(locale: string | undefined): EnabledLocale {
+  if (!locale) {
+    return defaultLocale;
+  }
+
+  return isEnabledLocale(locale) ? locale : defaultLocale;
+}
+
 export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params?: Promise<{
+    locale?: string;
+  }>;
 }>) {
-  const dictionary = await getDictionary(defaultLocale);
-  const navItems = getLocalizedNavItems(defaultLocale, dictionary);
+  const resolvedParams = params ? await params : undefined;
+  const activeLocale = resolveActiveLocale(resolvedParams?.locale);
+  const dictionary = await getDictionary(activeLocale);
+  const navItems = getLocalizedNavItems(activeLocale, dictionary);
 
   return (
     <html
-      lang="en"
+      lang={activeLocale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
@@ -75,7 +89,7 @@ export default async function RootLayout({
 
         <div className="relative flex min-h-full flex-1 flex-col">
           <SiteHeader
-            locale={defaultLocale}
+            locale={activeLocale}
             navItems={navItems}
             shellLabel={dictionary.header.shellLabel}
             siteName={siteConfig.name}

@@ -15,31 +15,30 @@ import {
   siteConfig,
 } from "../src/lib/site.ts";
 
-test("locale config keeps english enabled and chinese as a known future locale", () => {
+test("locale config matches the approved locale matrix", () => {
   assert.equal(defaultLocale, "en");
-  assert.deepEqual(enabledLocales, ["en"]);
-  assert.deepEqual(knownLocales, ["en", "zh"]);
+  assert.deepEqual(enabledLocales, ["en", "es", "pt", "ru", "fr", "de", "ko", "ja", "fi"]);
+  assert.deepEqual(knownLocales, enabledLocales);
 });
 
 test("buildLocalizedPath leaves the default locale unprefixed", () => {
   assert.equal(buildLocalizedPath("/", "en"), "/");
-  assert.equal(buildLocalizedPath("/qa", "en"), "/qa");
-  assert.equal(buildLocalizedPath("how-it-works", "en"), "/how-it-works");
+  assert.equal(buildLocalizedPath("/faq", "en"), "/faq");
 });
 
 test("buildLocalizedPath prefixes non-default locales", () => {
-  assert.equal(buildLocalizedPath("/", "zh"), "/zh");
-  assert.equal(buildLocalizedPath("/qa", "zh"), "/zh/qa");
+  assert.equal(buildLocalizedPath("/", "ja"), "/ja");
+  assert.equal(buildLocalizedPath("/faq", "ja"), "/ja/faq");
 });
 
-test("buildLanguageAlternates can generate future-ready hreflang paths", () => {
-  assert.deepEqual(buildLanguageAlternates("/qa", ["en", "zh"]), {
-    en: "/qa",
-    zh: "/zh/qa",
+test("buildLanguageAlternates can generate localized hreflang paths", () => {
+  assert.deepEqual(buildLanguageAlternates("/faq", ["en", "ja"]), {
+    en: "/faq",
+    ja: "/ja/faq",
   });
 });
 
-test("createPageMetadata keeps english canonicals unchanged while only one locale is enabled", () => {
+test("createPageMetadata exposes all alternates when multiple locales exist", () => {
   const metadata = createPageMetadata({
     title: "Overlay timer overview",
     description: "English overview page",
@@ -47,7 +46,10 @@ test("createPageMetadata keeps english canonicals unchanged while only one local
   });
 
   assert.equal(metadata.alternates?.canonical, "/");
-  assert.equal(metadata.alternates?.languages, undefined);
+  assert.deepEqual(
+    metadata.alternates?.languages,
+    buildLanguageAlternates("/"),
+  );
 });
 
 test("default site config and sitemap entries point at the production domain", () => {

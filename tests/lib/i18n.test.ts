@@ -6,7 +6,9 @@ import {
   knownLocales,
   buildLocalizedPath,
   buildLanguageAlternates,
+  getDictionary,
 } from "@/lib/i18n";
+import { buildSitemapEntries, getLocalizedNavItems, siteConfig } from "@/lib/site";
 
 describe("i18n config", () => {
   it("supports the approved locale matrix with english unprefixed", () => {
@@ -27,5 +29,29 @@ describe("i18n config", () => {
       ja: "/ja",
       fi: "/fi",
     });
+  });
+});
+
+describe("site helpers", () => {
+  it("exposes homepage anchor nav items derived from the dictionary", async () => {
+    const dictionary = await getDictionary(defaultLocale);
+    const navItems = getLocalizedNavItems(defaultLocale, dictionary);
+
+    expect(navItems.map((item) => item.href)).toEqual(["/#tool", "/#faq", "/#export-formats"]);
+  });
+
+  it("emits localized sitemap entries with hreflang alternates", () => {
+    const entries = buildSitemapEntries();
+    expect(entries).toHaveLength(1);
+
+    const languages = entries[0].alternates?.languages;
+    expect(languages).toBeDefined();
+    expect(Object.keys(languages!)).toEqual(enabledLocales);
+    expect(languages![defaultLocale]).toBe(
+      new URL(buildLocalizedPath("/", defaultLocale), siteConfig.url).toString(),
+    );
+    expect(languages!["ja"]).toBe(
+      new URL(buildLocalizedPath("/", "ja"), siteConfig.url).toString(),
+    );
   });
 });

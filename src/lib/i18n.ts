@@ -78,8 +78,8 @@ export function buildLocalizedPath(path: string, locale: AppLocale = defaultLoca
 export function buildLanguageAlternates(
   path: string,
   locales: readonly AppLocale[] = enabledLocales,
-): Record<AppLocale, string> {
-  const alternates = {} as Record<AppLocale, string>;
+): Partial<Record<AppLocale, string>> {
+  const alternates: Partial<Record<AppLocale, string>> = {};
   for (const locale of locales) {
     alternates[locale] = buildLocalizedPath(path, locale);
   }

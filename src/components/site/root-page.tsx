@@ -10,7 +10,7 @@ type RootPageProps = {
 
 export function RootPage({ locale, content }: RootPageProps) {
   return (
-    <div key={`${locale}:${content.metadata.title}`}>
+    <div>
       <GeneratorShell />
       <RootSeoSection />
     </div>

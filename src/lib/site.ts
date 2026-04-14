@@ -39,22 +39,32 @@ export const siteConfig = {
     "A local-first overlay timer generator for building countdown assets and exporting PNG sequence or WebM from one tool page.",
 } as const;
 
-export const publicRouteDefinitions = [
+const homepageAnchorMatrix = [
+  { path: "/#tool", key: "overview" },
+  { path: "/#faq", key: "qa" },
+  { path: "/#export-formats", key: "howItWorks" },
+] as const;
+
+type HomepageRouteDefinition = {
+  readonly href: "/";
+  readonly changeFrequency: "weekly";
+  readonly priority: 1;
+  readonly anchors: typeof homepageAnchorMatrix;
+};
+
+export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
   {
     href: "/",
-    key: "overview",
     changeFrequency: "weekly",
     priority: 1,
+    anchors: homepageAnchorMatrix,
   },
 ] as const;
 
-export function getLocalizedNavItems(
-  locale: AppLocale,
-  dictionary: SiteDictionary,
-) {
-  return publicRouteDefinitions.map((route) => ({
-    href: buildLocalizedPath(route.href, locale),
-    label: dictionary.nav[route.key],
+export function getLocalizedNavItems(locale: AppLocale, dictionary: SiteDictionary) {
+  return homepageAnchorMatrix.map((item) => ({
+    href: buildLocalizedPath(item.path, locale),
+    label: dictionary.nav[item.key],
   }));
 }
 
@@ -96,21 +106,23 @@ export function createPageMetadata({
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return publicRouteDefinitions.map((route) => ({
-    url: new URL(buildLocalizedPath(route.href), siteConfig.url).toString(),
-    lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-    alternates:
-      enabledLocales.length > 1
-        ? {
-            languages: Object.fromEntries(
-              enabledLocales.map((locale) => [
-                locale,
-                new URL(buildLocalizedPath(route.href, locale), siteConfig.url).toString(),
-              ]),
-            ),
-          }
-        : undefined,
-  }));
+  return publicRouteDefinitions.map((route) => {
+    const localized = buildLanguageAlternates(route.href);
+    const languageUrls = Object.fromEntries(
+      enabledLocales.map((locale) => [
+        locale,
+        new URL(localized[locale], siteConfig.url).toString(),
+      ]),
+    );
+
+    return {
+      url: new URL(buildLocalizedPath(route.href), siteConfig.url).toString(),
+      lastModified,
+      changeFrequency: route.changeFrequency,
+      priority: route.priority,
+      alternates: {
+        languages: languageUrls,
+      },
+    };
+  });
 }

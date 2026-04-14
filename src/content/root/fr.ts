@@ -103,6 +103,54 @@ const frRootPageContent = {
       "La séquence PNG est l'export local le plus fiable quand vous avez besoin d'overlays transparents ou d'assets adaptés au montage.",
     exportFormatsWebmText:
       "WebM est disponible comme option native navigateur lorsque l'environnement actuel le prend correctement en charge.",
+    workflowEyebrow: "Fonctionnement",
+    workflowHeading: "Comment fonctionne l'export d'un overlay timer",
+    workflowSteps: [
+      {
+        title: "Définir la durée et la mise en page du compte à rebours",
+        body:
+          "Commencez dans le générateur ci-dessus. Choisissez la durée totale, un affichage d'horloge propre, puis placez l'overlay là où il restera lisible sur du gameplay, une démo produit ou une vidéo face caméra.",
+      },
+      {
+        title: "Choisir un style de timer adapté à votre image",
+        body:
+          "Ajustez typographie, contraste, échelle et position pour que le compte à rebours semble vraiment intégré à l'image. Les meilleurs overlays utilisent en général des chiffres marqués, un espacement stable et assez de marge par rapport au bord du cadre.",
+      },
+      {
+        title: "Exporter le format adapté à votre monteur",
+        body:
+          "Choisissez PNG Sequence lorsque vous avez besoin du flux le plus sûr pour des assets transparents, ou WebM lorsqu'un fichier vidéo local plus léger suffit pour votre montage.",
+      },
+    ],
+    usageEyebrow: "Utilisation",
+    usageHeading: "Comment utiliser Time Overlay",
+    usageNotes: [
+      "Ouvrez le générateur, réglez la durée du timer et vérifiez le compte à rebours avant tout export.",
+      "Utilisez PNG Sequence pour des overlays transparents dans CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve ou tout flux qui préfère des assets image.",
+      "Utilisez WebM lorsque vous voulez un export navigateur rapide pour des maquettes, des rough cuts ou des montages sociaux légers.",
+      "Gardez le timer court, contrasté et à l'écart des sous-titres ou du cadrage du visage afin qu'il reste lisible sur mobile.",
+    ],
+    usageCta: {
+      beforeFirstLink: "Commencez dans le ",
+      firstLinkLabel: "générateur en direct",
+      betweenLinks: "et utilisez le ",
+      secondLinkLabel: "guide d'export",
+      afterSecondLink:
+        "ci-dessous lorsque vous hésitez entre des images transparentes et une sortie vidéo navigateur.",
+    },
+    aboutEyebrow: "À propos",
+    aboutHeading: "À propos de Time Overlay",
+    aboutPoints: [
+      "Time Overlay est un générateur d'overlay timer local-first conçu pour les créateurs qui ont besoin de comptes à rebours graphiques sans envoyer leurs vidéos vers un service de rendu distant.",
+      "La page reste volontairement compacte : une vraie surface d'outil, un bloc clair sur les formats d'export et une zone SEO qui répond aux questions de workflow que les gens cherchent avant de faire confiance à un outil de timer.",
+      "La homepage sert ainsi à la fois d'utilitaire de production réel et de landing page indexable pour des requêtes comme overlay timer, countdown timer overlay, transparent countdown overlay ou timer overlay for video editing.",
+    ],
+    aboutCta: {
+      beforeLink:
+        "Si vous voulez d'abord traiter les objections pratiques, allez au ",
+      linkLabel: "FAQ overlay timer",
+      afterLink: ".",
+    },
     faqTitle: "FAQ",
     faqSubtitle: "Essentiels du timer overlay",
     faqItems: [

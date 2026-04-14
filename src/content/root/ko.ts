@@ -102,6 +102,53 @@ const koRootPageContent = {
       "투명 오버레이나 편집기 친화적 에셋이 필요할 때는 PNG 시퀀스가 가장 신뢰할 수 있는 로컬 내보내기입니다.",
     exportFormatsWebmText:
       "현재 환경에서 안정적으로 지원된다면 WebM을 브라우저 기본 편의 경로로 사용할 수 있습니다.",
+    workflowEyebrow: "작동 방식",
+    workflowHeading: "오버레이 타이머 내보내기 방식",
+    workflowSteps: [
+      {
+        title: "카운트다운 길이와 레이아웃 설정",
+        body:
+          "위의 생성기에서 시작하세요. 전체 길이를 정하고, 깔끔한 시계 레이아웃을 고른 다음, gameplay나 제품 영상, talking-head 화면 위에서도 잘 읽히는 위치에 오버레이를 배치합니다.",
+      },
+      {
+        title: "영상에 맞는 타이머 스타일 선택",
+        body:
+          "타이포그래피, 대비, 크기, 위치를 조정해 타이머가 억지로 붙은 요소가 아니라 의도된 구성처럼 보이게 하세요. 좋은 오버레이 타이머는 보통 굵은 숫자, 안정적인 간격, 프레임 가장자리와의 충분한 여백을 사용합니다.",
+      },
+      {
+        title: "편집기에 맞는 포맷으로 내보내기",
+        body:
+          "가장 안전한 투명 에셋 워크플로가 필요하면 PNG 시퀀스를, 더 가벼운 로컬 비디오 파일이면 충분하다면 WebM을 선택하세요.",
+      },
+    ],
+    usageEyebrow: "사용 방법",
+    usageHeading: "Time Overlay 사용 방법",
+    usageNotes: [
+      "생성기를 열고 타이머 길이를 설정한 뒤 어떤 것도 내보내기 전에 카운트다운을 미리 확인하세요.",
+      "CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve 또는 이미지 기반 에셋을 선호하는 워크플로에서는 PNG 시퀀스를 사용하세요.",
+      "목업, 러프 컷, 가벼운 소셜 편집에는 브라우저에서 빠르게 내보낼 수 있는 WebM을 사용하세요.",
+      "모바일에서도 읽히도록 타이머는 짧고 대비가 높게 유지하고, 자막이나 얼굴 프레이밍과 겹치지 않게 배치하세요.",
+    ],
+    usageCta: {
+      beforeFirstLink: "",
+      firstLinkLabel: "라이브 생성기",
+      betweenLinks: "에서 시작하고 아래 ",
+      secondLinkLabel: "내보내기 가이드",
+      afterSecondLink:
+        "를 활용해 투명 프레임과 브라우저 비디오 출력 중 어떤 쪽이 맞는지 결정하세요.",
+    },
+    aboutEyebrow: "소개",
+    aboutHeading: "Time Overlay 소개",
+    aboutPoints: [
+      "Time Overlay는 원격 렌더 서비스에 영상을 업로드하지 않고도 카운트다운 그래픽이 필요한 크리에이터를 위한 로컬 우선 오버레이 타이머 생성기입니다.",
+      "이 페이지는 의도적으로 압축되어 있습니다. 실제로 작동하는 도구 표면 하나, 명확한 내보내기 형식 설명 하나, 그리고 사람들이 타이머 도구를 신뢰하기 전에 검색하는 워크플로 질문에 답하는 SEO 지원 영역 하나로 구성됩니다.",
+      "그 덕분에 homepage는 실제 제작용 유틸리티이면서 overlay timer, countdown timer overlay, transparent countdown overlay, timer overlay for video editing 같은 검색어에 대응하는 랜딩 페이지 역할도 합니다.",
+    ],
+    aboutCta: {
+      beforeLink: "실무적인 질문부터 빠르게 확인하고 싶다면 ",
+      linkLabel: "오버레이 타이머 FAQ",
+      afterLink: "로 이동하세요.",
+    },
     faqTitle: "FAQ",
     faqSubtitle: "오버레이 타이머 핵심 가이드",
     faqItems: [

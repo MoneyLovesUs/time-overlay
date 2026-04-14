@@ -3,6 +3,25 @@ export type RootFaqItem = {
   answer: string;
 };
 
+export type RootContentStep = {
+  title: string;
+  body: string;
+};
+
+export type RootInlineCta = {
+  beforeLink: string;
+  linkLabel: string;
+  afterLink: string;
+};
+
+export type RootDualLinkCta = {
+  beforeFirstLink: string;
+  firstLinkLabel: string;
+  betweenLinks: string;
+  secondLinkLabel: string;
+  afterSecondLink: string;
+};
+
 export type RootPageContent = {
   metadata: {
     title: string;
@@ -91,6 +110,17 @@ export type RootPageContent = {
     exportFormatsTitle: string;
     exportFormatsPngText: string;
     exportFormatsWebmText: string;
+    workflowEyebrow: string;
+    workflowHeading: string;
+    workflowSteps: readonly RootContentStep[];
+    usageEyebrow: string;
+    usageHeading: string;
+    usageNotes: readonly string[];
+    usageCta: RootDualLinkCta;
+    aboutEyebrow: string;
+    aboutHeading: string;
+    aboutPoints: readonly string[];
+    aboutCta: RootInlineCta;
     faqTitle: string;
     faqSubtitle: string;
     faqItems: readonly RootFaqItem[];

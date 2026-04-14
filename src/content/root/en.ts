@@ -99,6 +99,54 @@ const enRootPageContent = {
       "PNG sequence is the most dependable local export when you need transparent overlays or editor-friendly assets.",
     exportFormatsWebmText:
       "WebM is available as a browser-native convenience path when the current environment supports it cleanly.",
+    workflowEyebrow: "How it works",
+    workflowHeading: "How overlay timer export works",
+    workflowSteps: [
+      {
+        title: "Set the countdown duration and layout",
+        body:
+          "Start in the generator above. Pick the total duration, choose a clean clock layout, and place the overlay where it will stay readable over gameplay, product footage, or talking-head edits.",
+      },
+      {
+        title: "Choose a timer style for your footage",
+        body:
+          "Adjust typography, contrast, scale, and placement so the countdown feels intentional instead of pasted on. The strongest overlay timers usually use bold numerals, stable spacing, and enough breathing room from the frame edge.",
+      },
+      {
+        title: "Export the format that fits your editor",
+        body:
+          "Export PNG sequence when you need the safest transparent asset workflow, or choose WebM when a lightweight local video file is enough for the project you are cutting.",
+      },
+    ],
+    usageEyebrow: "How to use",
+    usageHeading: "How to use Time Overlay",
+    usageNotes: [
+      "Open the generator, set the timer length, and preview the countdown before exporting anything.",
+      "Use PNG sequence for transparent overlays in CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve, or any workflow that prefers image assets.",
+      "Use WebM when you want a quick browser export for mockups, rough cuts, or lightweight social edits.",
+      "Keep the timer short, high-contrast, and away from captions or face framing so it survives mobile viewing.",
+    ],
+    usageCta: {
+      beforeFirstLink: "Start in the ",
+      firstLinkLabel: "live generator",
+      betweenLinks: "and use the ",
+      secondLinkLabel: "export guide",
+      afterSecondLink:
+        "below it when you are deciding between transparent frames and browser video output.",
+    },
+    aboutEyebrow: "About",
+    aboutHeading: "About Time Overlay",
+    aboutPoints: [
+      "Time Overlay is a local-first overlay timer generator built for creators who need countdown graphics without uploading footage to a remote render service.",
+      "The page is intentionally compact: one working tool surface, one export explanation block, and one SEO support area that answers the workflow questions people search for before trusting a timer tool.",
+      "That makes the homepage useful both as a real production utility and as a crawlable landing page for queries such as overlay timer, countdown timer overlay, transparent countdown overlay, and timer overlay for video editing.",
+    ],
+    aboutCta: {
+      beforeLink:
+        "If you only need the practical objections handled first, jump to the ",
+      linkLabel: "overlay timer FAQ",
+      afterLink: ".",
+    },
     faqTitle: "FAQ",
     faqSubtitle: "Overlay timer essentials",
     faqItems: [

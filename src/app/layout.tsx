@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 
-import { SiteFooter } from "@/components/site/site-footer";
-import { SiteHeader } from "@/components/site/site-header";
-import { defaultLocale, getDictionary, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
-import { createRootPageMetadata, getLocalizedNavItems, siteConfig } from "@/lib/site";
+import { defaultLocale, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
+import { createRootPageMetadata, siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -69,8 +67,6 @@ export default async function RootLayout({
 }>) {
   const resolvedParams = params ? await params : undefined;
   const activeLocale = resolveActiveLocale(resolvedParams?.locale);
-  const dictionary = await getDictionary(activeLocale);
-  const navItems = getLocalizedNavItems(activeLocale, dictionary);
 
   return (
     <html
@@ -87,26 +83,7 @@ export default async function RootLayout({
           ))}
         </div>
 
-        <div className="relative flex min-h-full flex-1 flex-col">
-          <SiteHeader
-            locale={activeLocale}
-            navItems={navItems}
-            shellLabel={dictionary.header.shellLabel}
-            siteName={siteConfig.name}
-          />
-          <div className="relative z-10 flex-1">{children}</div>
-          <SiteFooter
-            navItems={navItems}
-            siteDescription={dictionary.site.description}
-            siteName={siteConfig.name}
-            systemRailLabel={dictionary.footer.systemRail}
-            publicStatusLabel={dictionary.footer.publicStatus}
-            identityTitle={dictionary.footer.identityTitle}
-            exploreTitle={dictionary.footer.exploreTitle}
-            legalTitle={dictionary.footer.legalTitle}
-            legalNotice={dictionary.footer.legalNotice}
-          />
-        </div>
+        <div className="relative flex min-h-full flex-1 flex-col">{children}</div>
         <Script
           id="microsoft-clarity"
           strategy="afterInteractive"

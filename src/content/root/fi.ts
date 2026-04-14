@@ -103,6 +103,54 @@ const fiRootPageContent = {
       "PNG Sequence on luotettavin paikallinen vienti, kun tarvitset läpinäkyviä overlay-elementtejä tai editoriystävällisiä assetteja.",
     exportFormatsWebmText:
       "WebM on saatavilla selainnatiivina vaihtoehtona, kun nykyinen ympäristö tukee sitä vakaasti.",
+    workflowEyebrow: "Miten se toimii",
+    workflowHeading: "Näin overlay-ajastimen vienti toimii",
+    workflowSteps: [
+      {
+        title: "Aseta laskurin kesto ja asettelu",
+        body:
+          "Aloita yllä olevasta generaattorista. Valitse kokonaiskesto, siisti kellon asettelu ja sijoita overlay kohtaan, jossa se pysyy luettavana gameplayn, tuotevideon tai talking-head-kuvan päällä.",
+      },
+      {
+        title: "Valitse videollesi sopiva ajastintyyli",
+        body:
+          "Säädä typografiaa, kontrastia, kokoa ja sijaintia niin, että laskuri näyttää harkitulta eikä päälle liimatulta. Parhaat overlay-ajastimet käyttävät yleensä selkeitä numeroita, tasaista välistystä ja riittävää etäisyyttä ruudun reunasta.",
+      },
+      {
+        title: "Vie formaatti, joka sopii editoriisi",
+        body:
+          "Valitse PNG Sequence, kun tarvitset turvallisimman läpinäkyvän asset-työnkulun, tai WebM, kun kevyempi paikallinen videotiedosto riittää projektiisi.",
+      },
+    ],
+    usageEyebrow: "Käyttö",
+    usageHeading: "Näin käytät Time Overlayta",
+    usageNotes: [
+      "Avaa generaattori, aseta ajastimen pituus ja tarkista laskenta ennen kuin viet mitään ulos.",
+      "Käytä PNG Sequencea läpinäkyviin overlayihin CapCutissa, Premiere Prossa, Final Cut Prossa, DaVinci Resolvessa tai missä tahansa työnkulussa, joka suosii kuva-assetteja.",
+      "Käytä WebM:ää, kun haluat nopean selainviennin mockupeihin, rough cutteihin tai kevyisiin some-editteihin.",
+      "Pidä ajastin lyhyenä, kontrastisena ja erossa tekstityksistä tai kasvokuvauksesta, jotta se säilyy luettavana mobiilissa.",
+    ],
+    usageCta: {
+      beforeFirstLink: "Aloita ",
+      firstLinkLabel: "live-generaattorista",
+      betweenLinks: "ja käytä alla olevaa ",
+      secondLinkLabel: "vientiohjetta",
+      afterSecondLink:
+        "kun päätät läpinäkyvien framejen ja selaimen videolähdön välillä.",
+    },
+    aboutEyebrow: "Tietoa",
+    aboutHeading: "Tietoa Time Overlaysta",
+    aboutPoints: [
+      "Time Overlay on local-first overlay-ajastimen generaattori sisällöntuottajille, jotka tarvitsevat countdown-grafiikkaa ilman videon lataamista etärenderipalveluun.",
+      "Sivu on tarkoituksella tiivis: yksi toimiva työkalupinta, yksi selkeä vientiformaattiosio ja yksi SEO-tukialue, joka vastaa työnkulkuun liittyviin kysymyksiin ennen kuin käyttäjä luottaa ajastintyökaluun.",
+      "Siksi homepage toimii sekä oikeana tuotantotyökaluna että indeksoitavana laskeutumissivuna hauille kuten overlay timer, countdown timer overlay, transparent countdown overlay ja timer overlay for video editing.",
+    ],
+    aboutCta: {
+      beforeLink:
+        "Jos haluat ratkaista käytännön kysymykset ensin, siirry kohtaan ",
+      linkLabel: "overlay-ajastimen FAQ",
+      afterLink: ".",
+    },
     faqTitle: "FAQ",
     faqSubtitle: "Overlay-ajastimen perusteet",
     faqItems: [

@@ -14,14 +14,11 @@ type SiteHeaderProps = {
 
 export function SiteHeader({
   locale,
+  navItems,
   shellLabel,
   siteName,
 }: SiteHeaderProps) {
   const localizedHomeHref = locale === "en" ? "/" : `/${locale}`;
-  const toolLinks = [
-    { href: `${localizedHomeHref}#tool`, label: "Tool" },
-    { href: `${localizedHomeHref}#faq`, label: "FAQ" },
-  ] as const;
 
   return (
     <header className="relative z-20 px-3 pt-3 sm:px-4 sm:pt-4">
@@ -54,7 +51,7 @@ export function SiteHeader({
             aria-label="Primary"
             className="flex flex-wrap items-center gap-x-1 gap-y-2 sm:justify-end"
           >
-            {toolLinks.map((item, index) => (
+            {navItems.map((item, index) => (
               <div key={item.href} className="flex items-center">
                 {index > 0 ? (
                   <span

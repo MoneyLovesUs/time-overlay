@@ -102,6 +102,53 @@ const jaRootPageContent = {
       "透過オーバーレイや編集しやすい素材が必要な場合、PNGシーケンスが最も安定したローカル書き出しです。",
     exportFormatsWebmText:
       "現在の環境で安定して対応している場合は、WebMをブラウザ標準の簡易ルートとして利用できます。",
+    workflowEyebrow: "仕組み",
+    workflowHeading: "オーバーレイタイマーの書き出し手順",
+    workflowSteps: [
+      {
+        title: "カウントダウン時間とレイアウトを決める",
+        body:
+          "上のジェネレーターから始めます。全体の長さを決め、見やすい時計レイアウトを選び、ゲームプレイや商品映像、talking-head 動画の上でも読みやすい位置にオーバーレイを配置します。",
+      },
+      {
+        title: "映像に合うタイマースタイルを選ぶ",
+        body:
+          "タイポグラフィ、コントラスト、サイズ、配置を調整して、タイマーが後付けではなく意図された要素に見えるようにします。強い overlay timer は、はっきりした数字、安定した余白、フレーム端からの十分な距離を使うことが多いです。",
+      },
+      {
+        title: "編集環境に合う形式で書き出す",
+        body:
+          "最も安全な透過アセットの流れが必要なら PNG シーケンスを、より軽いローカル動画ファイルで十分なら WebM を選んでください。",
+      },
+    ],
+    usageEyebrow: "使い方",
+    usageHeading: "Time Overlay の使い方",
+    usageNotes: [
+      "ジェネレーターを開き、タイマーの長さを設定し、何かを書き出す前にカウントダウンを確認します。",
+      "CapCut、Premiere Pro、Final Cut Pro、DaVinci Resolve など、画像アセットを好むワークフローでは PNG シーケンスを使います。",
+      "モックアップ、ラフカット、軽い SNS 編集では、ブラウザから素早く書き出せる WebM を使います。",
+      "モバイルでも読みやすいように、タイマーは短く、コントラストを高く保ち、字幕や顔のフレーミングから離して配置します。",
+    ],
+    usageCta: {
+      beforeFirstLink: "",
+      firstLinkLabel: "ライブジェネレーター",
+      betweenLinks: "から始めて、下の ",
+      secondLinkLabel: "書き出しガイド",
+      afterSecondLink:
+        "を使いながら、透過フレームとブラウザ動画出力のどちらが適切か判断してください。",
+    },
+    aboutEyebrow: "概要",
+    aboutHeading: "Time Overlay について",
+    aboutPoints: [
+      "Time Overlay は、映像を遠隔レンダーサービスにアップロードせずにカウントダウン素材を作りたいクリエイター向けのローカルファーストなオーバーレイタイマージェネレーターです。",
+      "このページは意図的にコンパクトです。実際に使えるツール面、明確な書き出し形式ブロック、そしてタイマーツールを信用する前に検索されるワークフローの疑問に答える SEO サポート領域だけを置いています。",
+      "そのため homepage は実用的な制作ツールであると同時に、overlay timer、countdown timer overlay、transparent countdown overlay、timer overlay for video editing といった検索向けのランディングページにもなります。",
+    ],
+    aboutCta: {
+      beforeLink: "実務上の疑問を先に確認したい場合は、",
+      linkLabel: "オーバーレイタイマー FAQ",
+      afterLink: "へ進んでください。",
+    },
     faqTitle: "FAQ",
     faqSubtitle: "オーバーレイタイマーの要点",
     faqItems: [

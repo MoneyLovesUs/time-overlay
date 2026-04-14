@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
@@ -27,6 +28,14 @@ const shellGlowClasses = [
   "absolute right-[10%] top-[4.5rem] h-[18rem] w-[18rem] rounded-full bg-tertiary/10 blur-3xl",
   "absolute bottom-[-8rem] left-1/2 h-[20rem] w-[28rem] -translate-x-1/2 rounded-full bg-secondary/8 blur-3xl",
 ] as const;
+const clarityProjectId = "wbgnxnkr0m";
+const clarityBootstrapScript = `
+  (function(c,l,a,r,i,t,y){
+      c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "${clarityProjectId}");
+`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -92,6 +101,11 @@ export default async function RootLayout({
             legalNotice={dictionary.footer.legalNotice}
           />
         </div>
+        <Script
+          id="microsoft-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: clarityBootstrapScript }}
+        />
       </body>
     </html>
   );

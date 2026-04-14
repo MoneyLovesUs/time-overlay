@@ -62,6 +62,22 @@ export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
   },
 ] as const;
 
+function buildCompleteLanguageAlternates(path: string): Record<EnabledLocale, string> {
+  const alternates = buildLanguageAlternates(path, enabledLocales);
+  const completeAlternates = {} as Record<EnabledLocale, string>;
+
+  for (const locale of enabledLocales) {
+    const localizedPath = alternates[locale];
+    if (!localizedPath) {
+      throw new Error(`Missing localized alternate for locale: ${locale}`);
+    }
+
+    completeAlternates[locale] = localizedPath;
+  }
+
+  return completeAlternates;
+}
+
 export function getLocalizedNavItems(locale: AppLocale, dictionary: SiteDictionary) {
   return homepageAnchorModel.map((item) => ({
     href: buildLocalizedPath(item.path, locale),
@@ -124,7 +140,7 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
   return enabledLocales.flatMap((locale) =>
     publicRouteDefinitions.map((route) => {
       const localizedRoutePath = buildLocalizedPath(route.href, locale);
-      const localized = buildLanguageAlternates(route.href);
+      const localized = buildCompleteLanguageAlternates(route.href);
       const languageUrls = Object.fromEntries(
         enabledLocales.map((alternateLocale) => [
           alternateLocale,

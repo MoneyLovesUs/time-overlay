@@ -42,7 +42,7 @@ describe("site helpers", () => {
 
   it("emits localized sitemap entries with hreflang alternates", () => {
     const entries = buildSitemapEntries();
-    expect(entries).toHaveLength(1);
+    expect(entries).toHaveLength(9);
 
     const languages = entries[0].alternates?.languages;
     expect(languages).toBeDefined();

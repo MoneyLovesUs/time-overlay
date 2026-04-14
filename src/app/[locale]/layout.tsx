@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { SiteFooter } from "@/components/site/site-footer";
-import { SiteHeader } from "@/components/site/site-header";
-import { defaultLocale, getDictionary, isEnabledLocale } from "@/lib/i18n";
-import { createRootPageMetadata, getLocalizedNavItems, siteConfig } from "@/lib/site";
+import { defaultLocale, isEnabledLocale } from "@/lib/i18n";
+import { createRootPageMetadata } from "@/lib/site";
 
 type LocalizedLayoutProps = Readonly<{
   children: React.ReactNode;
@@ -38,29 +36,5 @@ export default async function LocalizedLayout({ children, params }: LocalizedLay
     notFound();
   }
 
-  const dictionary = await getDictionary(locale);
-  const navItems = getLocalizedNavItems(locale, dictionary);
-
-  return (
-    <div className="relative flex min-h-full flex-1 flex-col" lang={locale}>
-      <SiteHeader
-        locale={locale}
-        navItems={navItems}
-        shellLabel={dictionary.header.shellLabel}
-        siteName={siteConfig.name}
-      />
-      <div className="relative z-10 flex-1">{children}</div>
-      <SiteFooter
-        navItems={navItems}
-        siteDescription={dictionary.site.description}
-        siteName={siteConfig.name}
-        systemRailLabel={dictionary.footer.systemRail}
-        publicStatusLabel={dictionary.footer.publicStatus}
-        identityTitle={dictionary.footer.identityTitle}
-        exploreTitle={dictionary.footer.exploreTitle}
-        legalTitle={dictionary.footer.legalTitle}
-        legalNotice={dictionary.footer.legalNotice}
-      />
-    </div>
-  );
+  return children;
 }

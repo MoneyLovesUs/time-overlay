@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const csRootPageContent = {
   metadata: {
-    title: "Generátor overlay timeru pro export PNG Sequence a WebM",
+    title: "Overlay timer pro videa, streamy a tutoriály",
     description:
-      "Vytvořte overlay timer přímo v prohlížeči, sledujte živý náhled a exportujte PNG Sequence nebo WebM z jediné stránky postavené local-first.",
+      "Vytvořte overlay timer přímo v prohlížeči pro videa, živé streamy i tutoriály, s rychlým náhledem a čistým workflow pro tvůrce.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

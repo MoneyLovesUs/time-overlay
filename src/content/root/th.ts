@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const thRootPageContent = {
   metadata: {
-    title: "เครื่องมือสร้าง Overlay Timer สำหรับส่งออก PNG Sequence และ WebM",
+    title: "Overlay Timer สำหรับวิดีโอ ไลฟ์สตรีม และบทสอน",
     description:
-      "สร้าง overlay timer ได้ทันทีในเบราว์เซอร์ ดูตัวอย่างแบบสด แล้วส่งออกเป็น PNG Sequence หรือ WebM จากหน้าเครื่องมือเดียวแบบ local-first",
+      "สร้าง overlay timer ได้ทันทีในเบราว์เซอร์สำหรับวิดีโอ ไลฟ์สตรีม และบทสอน พร้อมพรีวิวที่รวดเร็วและเวิร์กโฟลว์ที่ใช้งานง่ายสำหรับครีเอเตอร์",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

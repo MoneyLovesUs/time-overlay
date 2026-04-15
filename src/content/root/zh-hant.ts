@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const zhHantRootPageContent = {
   metadata: {
-    title: "可匯出 PNG Sequence 與 WebM 的 Overlay Timer 產生器",
+    title: "適用於影片、直播與教學的 Overlay Timer",
     description:
-      "直接在瀏覽器中建立 overlay timer，即時預覽，並在同一個 local-first 工具頁匯出 PNG Sequence 或 WebM。",
+      "直接在瀏覽器中建立 overlay timer，適用於影片、直播與教學，提供快速預覽與清晰好上手的創作者工作流程。",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

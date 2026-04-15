@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const ruRootPageContent = {
   metadata: {
-    title: "Генератор таймера-оверлея с экспортом PNG Sequence и WebM",
+    title: "Таймер-оверлей для видео, стримов и туториалов",
     description:
-      "Создавайте таймер-оверлей прямо в браузере, смотрите предпросмотр вживую и экспортируйте PNG Sequence или WebM на одной local-first странице.",
+      "Создавайте таймер-оверлей прямо в браузере для видео, прямых эфиров и туториалов - с быстрым предпросмотром и понятным workflow для авторов контента.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

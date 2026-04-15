@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const fiRootPageContent = {
   metadata: {
-    title: "Overlay-ajastimen generaattori PNG Sequence- ja WebM-vientiin",
+    title: "Overlay-ajastin videoihin, striimeihin ja tutoriaaleihin",
     description:
-      "Rakenna overlay-ajastin suoraan selaimessa, esikatsele sitä livenä ja vie tiedostot PNG Sequence- tai WebM-muodossa yhdeltä local-first-työkalusivulta.",
+      "Luo overlay-ajastin suoraan selaimessa videoita, live-striimejä ja tutoriaaleja varten, nopealla esikatselulla ja selkeällä tekijäystävällisellä työnkululla.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const jaRootPageContent = {
   metadata: {
-    title: "PNGシーケンスとWebMを書き出せるオーバーレイタイマージェネレーター",
+    title: "動画・配信・チュートリアル向けオーバーレイタイマー",
     description:
-      "ブラウザ上でオーバーレイタイマーを作成し、ライブプレビューで確認して、PNGシーケンスまたはWebMを書き出せるローカルファーストの単一ツールページです。",
+      "ブラウザでオーバーレイタイマーを作成し、動画・ライブ配信・チュートリアルに使えるように、すばやいプレビューと分かりやすい制作フローを提供します。",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

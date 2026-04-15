@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const enRootPageContent = {
   metadata: {
-    title: "Overlay Timer Generator for PNG Sequence and WebM Export",
+    title: "Overlay Timer for Videos, Streams, and Tutorials",
     description:
-      "Build an overlay timer directly in the browser, preview it live, and export PNG sequence or WebM assets from one local-first tool page.",
+      "Create an overlay timer in your browser for videos, live streams, and tutorials with fast preview and a clean, creator-friendly workflow.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

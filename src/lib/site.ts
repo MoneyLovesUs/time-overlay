@@ -37,7 +37,7 @@ export const siteConfig = {
   name: "Time Overlay",
   url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL),
   description:
-    "A local-first overlay timer generator for building countdown assets and exporting PNG sequence or WebM from one tool page.",
+    "A local-first overlay timer tool for videos, live streams, and tutorials with clean countdown visuals and fast browser-based setup.",
 } as const;
 
 export const homepageAnchorModel = [

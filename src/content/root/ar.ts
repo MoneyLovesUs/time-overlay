@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const arRootPageContent = {
   metadata: {
-    title: "مولد مؤقت Overlay لتصدير PNG Sequence وWebM",
+    title: "مؤقت Overlay للفيديو والبث والدروس",
     description:
-      "أنشئ مؤقت overlay مباشرة من المتصفح، عاينه لحظيًا، ثم صدّر ملفات PNG Sequence أو WebM من صفحة واحدة بنهج local-first.",
+      "أنشئ مؤقت overlay مباشرة في المتصفح لمقاطع الفيديو والبث المباشر والدروس، مع معاينة سريعة وسير عمل واضح مناسب لصنّاع المحتوى.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

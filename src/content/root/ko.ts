@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const koRootPageContent = {
   metadata: {
-    title: "PNG 시퀀스 및 WebM 내보내기를 위한 오버레이 타이머 생성기",
+    title: "영상, 라이브 스트림, 튜토리얼용 오버레이 타이머",
     description:
-      "브라우저에서 바로 오버레이 타이머를 만들고 실시간 미리보기를 확인한 뒤, 한 페이지의 로컬 우선 도구에서 PNG 시퀀스 또는 WebM으로 내보내세요.",
+      "브라우저에서 바로 오버레이 타이머를 만들어 영상, 라이브 스트림, 튜토리얼에 활용하세요. 빠른 미리보기와 크리에이터 친화적인 작업 흐름을 제공합니다.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

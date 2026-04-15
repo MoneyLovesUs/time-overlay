@@ -12,6 +12,13 @@ export const rootContentLoaders = {
   ko: () => import("./ko").then((module) => module.default),
   ja: () => import("./ja").then((module) => module.default),
   fi: () => import("./fi").then((module) => module.default),
+  "zh-hant": () => import("./zh-hant").then((module) => module.default),
+  ar: () => import("./ar").then((module) => module.default),
+  th: () => import("./th").then((module) => module.default),
+  cs: () => import("./cs").then((module) => module.default),
+  hi: () => import("./hi").then((module) => module.default),
+  nl: () => import("./nl").then((module) => module.default),
+  sv: () => import("./sv").then((module) => module.default),
 } satisfies Record<EnabledLocale, () => Promise<RootPageContent>>;
 
 function assertEnabledLocale(locale: string): asserts locale is EnabledLocale {

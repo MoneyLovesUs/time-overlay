@@ -17,7 +17,24 @@ import {
 
 test("locale config matches the approved locale matrix", () => {
   assert.equal(defaultLocale, "en");
-  assert.deepEqual(enabledLocales, ["en", "es", "pt", "ru", "fr", "de", "ko", "ja", "fi"]);
+  assert.deepEqual(enabledLocales, [
+    "en",
+    "es",
+    "pt",
+    "ru",
+    "fr",
+    "de",
+    "ko",
+    "ja",
+    "fi",
+    "zh-hant",
+    "ar",
+    "th",
+    "cs",
+    "hi",
+    "nl",
+    "sv",
+  ]);
   assert.deepEqual(knownLocales, enabledLocales);
 });
 

@@ -13,7 +13,24 @@ import { buildSitemapEntries, getLocalizedNavItems, siteConfig } from "@/lib/sit
 describe("i18n config", () => {
   it("supports the approved locale matrix with english unprefixed", () => {
     expect(defaultLocale).toBe("en");
-    expect(enabledLocales).toEqual(["en", "es", "pt", "ru", "fr", "de", "ko", "ja", "fi"]);
+    expect(enabledLocales).toEqual([
+      "en",
+      "es",
+      "pt",
+      "ru",
+      "fr",
+      "de",
+      "ko",
+      "ja",
+      "fi",
+      "zh-hant",
+      "ar",
+      "th",
+      "cs",
+      "hi",
+      "nl",
+      "sv",
+    ]);
     expect(knownLocales).toEqual(enabledLocales);
     expect(buildLocalizedPath("/", "en")).toBe("/");
     expect(buildLocalizedPath("/", "ja")).toBe("/ja");
@@ -28,6 +45,13 @@ describe("i18n config", () => {
       ko: "/ko",
       ja: "/ja",
       fi: "/fi",
+      "zh-hant": "/zh-hant",
+      ar: "/ar",
+      th: "/th",
+      cs: "/cs",
+      hi: "/hi",
+      nl: "/nl",
+      sv: "/sv",
     });
   });
 });
@@ -42,7 +66,7 @@ describe("site helpers", () => {
 
   it("emits localized sitemap entries with hreflang alternates", () => {
     const entries = buildSitemapEntries();
-    expect(entries).toHaveLength(9);
+    expect(entries).toHaveLength(16);
 
     const languages = entries[0].alternates?.languages;
     expect(languages).toBeDefined();

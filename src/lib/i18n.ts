@@ -1,10 +1,46 @@
-export const enabledLocales = ["en", "es", "pt", "ru", "fr", "de", "ko", "ja", "fi"] as const;
+export const enabledLocales = [
+  "en",
+  "es",
+  "pt",
+  "ru",
+  "fr",
+  "de",
+  "ko",
+  "ja",
+  "fi",
+  "zh-hant",
+  "ar",
+  "th",
+  "cs",
+  "hi",
+  "nl",
+  "sv",
+] as const;
 export type EnabledLocale = (typeof enabledLocales)[number];
 
 export const knownLocales = enabledLocales;
 export type AppLocale = (typeof knownLocales)[number];
 
 export const defaultLocale: EnabledLocale = "en";
+
+export const localeLabels: Record<EnabledLocale, string> = {
+  en: "English",
+  es: "Español",
+  pt: "Português",
+  ru: "Русский",
+  fr: "Français",
+  de: "Deutsch",
+  ko: "한국어",
+  ja: "日本語",
+  fi: "Suomi",
+  "zh-hant": "繁體中文",
+  ar: "العربية",
+  th: "ไทย",
+  cs: "Čeština",
+  hi: "हिन्दी",
+  nl: "Nederlands",
+  sv: "Svenska",
+};
 
 export type SiteDictionary = {
   site: {

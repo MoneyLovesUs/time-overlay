@@ -21,6 +21,6 @@ describe("localized SEO helpers", () => {
 
   it("emits all localized homepage entries in the sitemap", () => {
     const entries = buildSitemapEntries();
-    expect(entries).toHaveLength(9);
+    expect(entries).toHaveLength(16);
   });
 });

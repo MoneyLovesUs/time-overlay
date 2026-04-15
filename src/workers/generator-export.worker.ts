@@ -4,7 +4,6 @@ import { zipSync } from "fflate";
 
 import {
   createExportJobPlan,
-  getExportProgressMessage,
   type ExportWorkerMessage,
   type ExportWorkerRequest,
 } from "@/lib/generator/export/job";
@@ -87,7 +86,7 @@ self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
             stage: "rendering-frames",
             completedFrames: frameIndex + 1,
             totalFrames: plan.totalFrames,
-            message: getExportProgressMessage(frameIndex + 1, plan.totalFrames),
+            message: "",
           },
         });
       }
@@ -99,7 +98,7 @@ self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
         stage: "packaging",
         completedFrames: plan.totalFrames,
         totalFrames: plan.totalFrames,
-        message: "Packaging PNG sequence archive",
+        message: "",
       },
     });
 
@@ -122,10 +121,8 @@ self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
     postMessageToHost({
       kind: "error",
       payload: {
-        message:
-          error instanceof Error
-            ? error.message
-            : "PNG sequence export failed unexpectedly.",
+        code: error instanceof Error ? undefined : "pngSequenceFailedUnexpectedly",
+        message: error instanceof Error ? error.message : undefined,
       },
     });
   }

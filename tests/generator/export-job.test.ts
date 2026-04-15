@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createExportJobPlan, getExportProgressMessage } from "@/lib/generator/export/job";
+import { createExportJobPlan } from "@/lib/generator/export/job";
 
 describe("createExportJobPlan", () => {
   it("computes the total frame count from duration and fps", () => {
@@ -32,11 +32,5 @@ describe("createExportJobPlan", () => {
     });
 
     expect(plan.outputFileName).toBe("time-overlay.webm");
-  });
-});
-
-describe("getExportProgressMessage", () => {
-  it("returns a readable frame progress string", () => {
-    expect(getExportProgressMessage(12, 240)).toBe("Rendering frame 12 of 240");
   });
 });

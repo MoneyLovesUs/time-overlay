@@ -76,5 +76,5 @@ src/
 - `components.json` is the source of truth for `shadcn/ui` configuration.
 - `src/app/globals.css` is the shared place for global Tailwind and theme tokens.
 - `/` is the tool-first homepage and the primary SEO surface.
-- `/generator`, `/qa`, and `/how-it-works` now redirect into the root tool page instead of acting as standalone destinations.
+- `/` is the only public route surface. Generator UX and SEO context both live on the root page.
 - The MVP export strategy is client-side and local-first: prioritize `PNG sequence` and `WebM`, and avoid paid server rendering on Vercel.

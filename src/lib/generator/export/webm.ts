@@ -1,5 +1,5 @@
 import type { ExportProgressState, GeneratorSettings } from "@/lib/generator/types";
-import { createExportJobPlan, getExportProgressMessage } from "@/lib/generator/export/job";
+import { createExportJobPlan } from "@/lib/generator/export/job";
 import { getPreferredWebmMimeType } from "@/lib/generator/feature-detection";
 import {
   createRenderFrameState,
@@ -117,7 +117,7 @@ export async function exportWebmLocally(
         stage: "encoding",
         completedFrames: frameIndex + 1,
         totalFrames: plan.totalFrames,
-        message: getExportProgressMessage(frameIndex + 1, plan.totalFrames),
+        message: "",
       });
     }
 

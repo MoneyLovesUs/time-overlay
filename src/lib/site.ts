@@ -5,6 +5,7 @@ import {
   buildLocalizedPath,
   defaultLocale,
   enabledLocales,
+  type EnabledLocale,
   type AppLocale,
   type SiteDictionary,
 } from "./i18n.ts";
@@ -39,22 +40,48 @@ export const siteConfig = {
     "A local-first overlay timer generator for building countdown assets and exporting PNG sequence or WebM from one tool page.",
 } as const;
 
-export const publicRouteDefinitions = [
+export const homepageAnchorModel = [
+  { path: "/#tool", key: "overview" },
+  { path: "/#faq", key: "qa" },
+  { path: "/#export-formats", key: "howItWorks" },
+] as const;
+
+type HomepageRouteDefinition = {
+  readonly href: "/";
+  readonly changeFrequency: "weekly";
+  readonly priority: 1;
+  readonly anchors: typeof homepageAnchorModel;
+};
+
+export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
   {
     href: "/",
-    key: "overview",
     changeFrequency: "weekly",
     priority: 1,
+    anchors: homepageAnchorModel,
   },
 ] as const;
 
-export function getLocalizedNavItems(
-  locale: AppLocale,
-  dictionary: SiteDictionary,
-) {
-  return publicRouteDefinitions.map((route) => ({
-    href: buildLocalizedPath(route.href, locale),
-    label: dictionary.nav[route.key],
+function buildCompleteLanguageAlternates(path: string): Record<EnabledLocale, string> {
+  const alternates = buildLanguageAlternates(path, enabledLocales);
+  const completeAlternates = {} as Record<EnabledLocale, string>;
+
+  for (const locale of enabledLocales) {
+    const localizedPath = alternates[locale];
+    if (!localizedPath) {
+      throw new Error(`Missing localized alternate for locale: ${locale}`);
+    }
+
+    completeAlternates[locale] = localizedPath;
+  }
+
+  return completeAlternates;
+}
+
+export function getLocalizedNavItems(locale: AppLocale, dictionary: SiteDictionary) {
+  return homepageAnchorModel.map((item) => ({
+    href: buildLocalizedPath(item.path, locale),
+    label: dictionary.nav[item.key],
   }));
 }
 
@@ -93,24 +120,43 @@ export function createPageMetadata({
   };
 }
 
+export async function createRootPageMetadata(
+  locale: EnabledLocale = defaultLocale,
+): Promise<Metadata> {
+  const { getRootPageContent } = await import("@/content/root");
+  const content = await getRootPageContent(locale);
+
+  return createPageMetadata({
+    locale,
+    path: "/",
+    title: content.metadata.title,
+    description: content.metadata.description,
+  });
+}
+
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return publicRouteDefinitions.map((route) => ({
-    url: new URL(buildLocalizedPath(route.href), siteConfig.url).toString(),
-    lastModified,
-    changeFrequency: route.changeFrequency,
-    priority: route.priority,
-    alternates:
-      enabledLocales.length > 1
-        ? {
-            languages: Object.fromEntries(
-              enabledLocales.map((locale) => [
-                locale,
-                new URL(buildLocalizedPath(route.href, locale), siteConfig.url).toString(),
-              ]),
-            ),
-          }
-        : undefined,
-  }));
+  return enabledLocales.flatMap((locale) =>
+    publicRouteDefinitions.map((route) => {
+      const localizedRoutePath = buildLocalizedPath(route.href, locale);
+      const localized = buildCompleteLanguageAlternates(route.href);
+      const languageUrls = Object.fromEntries(
+        enabledLocales.map((alternateLocale) => [
+          alternateLocale,
+          new URL(localized[alternateLocale], siteConfig.url).toString(),
+        ]),
+      );
+
+      return {
+        url: new URL(localizedRoutePath, siteConfig.url).toString(),
+        lastModified,
+        changeFrequency: route.changeFrequency,
+        priority: route.priority,
+        alternates: {
+          languages: languageUrls,
+        },
+      };
+    }),
+  );
 }

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { Pause, Play, ScanLine, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { RootPageContent } from "@/content/root/types";
 import {
   createRenderFrameState,
   measureRenderTextBox,
@@ -16,6 +17,7 @@ import type { GeneratorSettings } from "@/lib/generator/types";
 
 type PreviewPanelProps = {
   settings: GeneratorSettings;
+  ui: RootPageContent["generatorUi"]["previewPanel"];
   elapsedSeconds: number;
   isPlaying: boolean;
   onPause: () => void;
@@ -26,6 +28,7 @@ type PreviewPanelProps = {
 
 export function PreviewPanel({
   settings,
+  ui,
   elapsedSeconds,
   isPlaying,
   onPause,
@@ -88,8 +91,8 @@ export function PreviewPanel({
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-        <span>Preview</span>
-        <span className="text-primary">Live canvas scaffold</span>
+        <span>{ui.title}</span>
+        <span className="text-primary">{ui.subtitle}</span>
       </div>
 
       <div className="space-y-4 px-5 py-5">
@@ -113,7 +116,7 @@ export function PreviewPanel({
             onClick={onPlay}
           >
             <Play className="size-4" />
-            Play Preview
+            {ui.playButton}
           </Button>
           <Button
             variant="outline"
@@ -122,11 +125,11 @@ export function PreviewPanel({
             onClick={onPause}
           >
             <Pause className="size-4" />
-            Pause
+            {ui.pauseButton}
           </Button>
           <Button variant="outline" className="justify-start gap-2" onClick={onReset}>
             <RotateCcw className="size-4" />
-            Reset
+            {ui.resetButton}
           </Button>
           <Button
             variant={settings.canvas.showSafeArea ? "default" : "outline"}
@@ -134,12 +137,14 @@ export function PreviewPanel({
             onClick={onToggleSafeArea}
           >
             <ScanLine className="size-4" />
-            {settings.canvas.showSafeArea ? "Safe Area On" : "Safe Area Off"}
+            {settings.canvas.showSafeArea
+              ? ui.safeAreaOnButton
+              : ui.safeAreaOffButton}
           </Button>
         </div>
 
         <div className="flex items-center justify-between rounded-none border border-border/80 bg-background/65 px-4 py-3 text-sm text-muted-foreground">
-          <span>Current readout</span>
+          <span>{ui.currentReadoutLabel}</span>
           <span className="font-mono text-foreground">{displayText}</span>
         </div>
       </div>

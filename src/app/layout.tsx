@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 
-import { SiteFooter } from "@/components/site/site-footer";
-import { SiteHeader } from "@/components/site/site-header";
-import { defaultLocale, getDictionary } from "@/lib/i18n";
-import { getLocalizedNavItems, siteConfig } from "@/lib/site";
+import { defaultLocale, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
+import { createRootPageMetadata, siteConfig } from "@/lib/site";
 
 import "./globals.css";
 
@@ -37,38 +35,42 @@ const clarityBootstrapScript = `
   })(window, document, "clarity", "script", "${clarityProjectId}");
 `;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  openGraph: {
-    title: siteConfig.name,
-    description: siteConfig.description,
-    url: "/",
-    siteName: siteConfig.name,
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const localizedMetadata = await createRootPageMetadata(defaultLocale);
+
+  return {
+    metadataBase: new URL(siteConfig.url),
+    ...localizedMetadata,
+    title: {
+      default: siteConfig.name,
+      template: `%s | ${siteConfig.name}`,
+    },
+  };
+}
+
+function resolveActiveLocale(locale: string | undefined): EnabledLocale {
+  if (!locale) {
+    return defaultLocale;
+  }
+
+  return isEnabledLocale(locale) ? locale : defaultLocale;
+}
 
 export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params?: Promise<{
+    locale?: string;
+  }>;
 }>) {
-  const dictionary = await getDictionary(defaultLocale);
-  const navItems = getLocalizedNavItems(defaultLocale, dictionary);
+  const resolvedParams = params ? await params : undefined;
+  const activeLocale = resolveActiveLocale(resolvedParams?.locale);
 
   return (
     <html
-      lang={defaultLocale}
+      lang={activeLocale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
@@ -81,26 +83,7 @@ export default async function RootLayout({
           ))}
         </div>
 
-        <div className="relative flex min-h-full flex-1 flex-col">
-          <SiteHeader
-            locale={defaultLocale}
-            navItems={navItems}
-            shellLabel={dictionary.header.shellLabel}
-            siteName={siteConfig.name}
-          />
-          <div className="relative z-10 flex-1">{children}</div>
-          <SiteFooter
-            navItems={navItems}
-            siteDescription={dictionary.site.description}
-            siteName={siteConfig.name}
-            systemRailLabel={dictionary.footer.systemRail}
-            publicStatusLabel={dictionary.footer.publicStatus}
-            identityTitle={dictionary.footer.identityTitle}
-            exploreTitle={dictionary.footer.exploreTitle}
-            legalTitle={dictionary.footer.legalTitle}
-            legalNotice={dictionary.footer.legalNotice}
-          />
-        </div>
+        <div className="relative flex min-h-full flex-1 flex-col">{children}</div>
         <Script
           id="microsoft-clarity"
           strategy="afterInteractive"

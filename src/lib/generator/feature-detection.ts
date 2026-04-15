@@ -8,7 +8,12 @@ export type LocalExportSupport = {
 
 export type ExportAdvisory = {
   disabledFormats: GeneratorSettings["export"]["format"][];
-  message: string | null;
+  code:
+    | "workerSupportError"
+    | "webmUnavailableError"
+    | "heavyExportWarning"
+    | "pngSequenceInfo"
+    | null;
   severity: "info" | "warning" | "error" | null;
 };
 
@@ -64,8 +69,7 @@ export function getExportAdvisory(
   if (support.hasWorkerSupport === false) {
     return {
       disabledFormats: ["webm", "gif"],
-      message:
-        "This browser cannot spin up a background worker, so local video export is disabled. Use PNG sequence on a modern desktop browser instead.",
+      code: "workerSupportError",
       severity: "error",
     };
   }
@@ -73,8 +77,7 @@ export function getExportAdvisory(
   if (settings.export.format === "webm" && support.supportsWebm === false) {
     return {
       disabledFormats,
-      message:
-        "WebM export is not available in this browser. PNG sequence remains the safest fallback.",
+      code: "webmUnavailableError",
       severity: "error",
     };
   }
@@ -85,8 +88,7 @@ export function getExportAdvisory(
   if (megapixels >= 2 && projectedFrames >= 1500) {
     return {
       disabledFormats,
-      message:
-        "This export is likely to be heavy on memory and CPU. Consider 720p, 30 seconds, or PNG sequence if your browser starts to struggle.",
+      code: "heavyExportWarning",
       severity: "warning",
     };
   }
@@ -94,15 +96,14 @@ export function getExportAdvisory(
   if (settings.export.format === "png-sequence") {
     return {
       disabledFormats,
-      message:
-        "PNG sequence is the most reliable local-first handoff for editors, especially when transparency matters.",
+      code: "pngSequenceInfo",
       severity: "info",
     };
   }
 
   return {
     disabledFormats,
-    message: null,
+    code: null,
     severity: null,
   };
 }

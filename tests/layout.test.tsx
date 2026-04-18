@@ -10,38 +10,6 @@ vi.mock("next/font/google", () => ({
   Geist_Mono: () => ({ variable: "font-geist-mono" }),
 }));
 
-vi.mock("next/script", () => ({
-  default: ({
-    id,
-    src,
-    strategy,
-    dangerouslySetInnerHTML,
-    children,
-  }: {
-    id?: string;
-    src?: string;
-    strategy?: string;
-    dangerouslySetInnerHTML?: { __html: string };
-    children?: React.ReactNode;
-  }) =>
-    dangerouslySetInnerHTML
-      ? React.createElement("script", {
-          id,
-          src,
-          "data-strategy": strategy,
-          dangerouslySetInnerHTML,
-        })
-      : React.createElement(
-          "script",
-          {
-            id,
-            src,
-            "data-strategy": strategy,
-          },
-          children,
-        ),
-}));
-
 vi.mock("@/components/site/site-header", () => ({
   SiteHeader: () => React.createElement("header", null, "header"),
 }));
@@ -52,7 +20,7 @@ vi.mock("@/components/site/site-footer", () => ({
 
 import RootLayout from "@/app/layout";
 
-test("root layout injects the Microsoft Clarity bootstrap script", async () => {
+test("root layout injects an idle-loaded Microsoft Clarity bootstrap script", async () => {
   const markup = renderToStaticMarkup(
     await RootLayout({
       children: React.createElement("main", null, "content"),
@@ -62,5 +30,6 @@ test("root layout injects the Microsoft Clarity bootstrap script", async () => {
   assert.match(markup, /microsoft-clarity/i);
   assert.match(markup, /wbgnxnkr0m/);
   assert.match(markup, /c\[a\]=c\[a\]\|\|function/);
+  assert.match(markup, /requestIdleCallback/);
   assert.match(markup, /https:\/\/www\.clarity\.ms\/tag/);
 });

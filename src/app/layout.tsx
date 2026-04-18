@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 
 import { defaultLocale, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
 import { createRootPageMetadata, siteConfig } from "@/lib/site";
@@ -28,10 +27,20 @@ const shellGlowClasses = [
 ] as const;
 const clarityProjectId = "wbgnxnkr0m";
 const clarityBootstrapScript = `
-  (function(c,l,a,r,i,t,y){
+  (function(c,l,a,r,i){
+      function loadClarity(){
+        if (loadClarity.loaded) return;
+        loadClarity.loaded = true;
+        var t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        var y=l.getElementsByTagName(r)[0];
+        y.parentNode.insertBefore(t,y);
+      }
       c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-      t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-      y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      if ("requestIdleCallback" in c) {
+        c.requestIdleCallback(loadClarity, { timeout: 4000 });
+      } else {
+        c.setTimeout(loadClarity, 2000);
+      }
   })(window, document, "clarity", "script", "${clarityProjectId}");
 `;
 
@@ -84,9 +93,8 @@ export default async function RootLayout({
         </div>
 
         <div className="relative flex min-h-full flex-1 flex-col">{children}</div>
-        <Script
+        <script
           id="microsoft-clarity"
-          strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: clarityBootstrapScript }}
         />
       </body>

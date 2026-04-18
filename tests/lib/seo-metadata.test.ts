@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { buildRobotsDefinition, buildSitemapEntries, createPageMetadata } from "@/lib/site";
+import {
+  buildManifestDefinition,
+  buildRobotsDefinition,
+  buildSitemapEntries,
+  createPageMetadata,
+  siteConfig,
+} from "@/lib/site";
 
 describe("localized SEO helpers", () => {
   it("creates locale-aware canonical and hreflang metadata", () => {
@@ -16,6 +22,20 @@ describe("localized SEO helpers", () => {
       en: "/",
       fr: "/fr",
       ja: "/ja",
+    });
+    expect(metadata.icons).toMatchObject({
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icon.svg", type: "image/svg+xml" },
+      ],
+      shortcut: ["/favicon.ico"],
+    });
+    expect(metadata.applicationName).toBe(siteConfig.name);
+    expect(metadata.category).toBe("video");
+    expect(metadata.keywords).toContain("overlay timer");
+    expect(metadata.openGraph).toMatchObject({
+      locale: "fr",
+      images: ["/icon.svg"],
     });
   });
 
@@ -35,5 +55,34 @@ describe("localized SEO helpers", () => {
         allow: "/",
       },
     });
+  });
+
+  it("emits a web manifest definition anchored to the site icon", () => {
+    const manifest = buildManifestDefinition();
+
+    expect(manifest).toMatchObject({
+      name: siteConfig.name,
+      short_name: siteConfig.name,
+      description: siteConfig.description,
+      start_url: "/",
+      display: "standalone",
+      background_color: "#05060a",
+      theme_color: "#05060a",
+    });
+    expect(manifest.icons).toEqual(
+      expect.arrayContaining([
+        {
+          src: "/icon.svg",
+          sizes: "any",
+          type: "image/svg+xml",
+          purpose: "any",
+        },
+        {
+          src: "/favicon.ico",
+          sizes: "any",
+          type: "image/x-icon",
+        },
+      ]),
+    );
   });
 });

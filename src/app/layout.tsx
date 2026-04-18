@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { defaultLocale, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
-import { createRootPageMetadata, siteConfig } from "@/lib/site";
+import {
+  createRootPageMetadata,
+  siteConfig,
+  siteThemeColor,
+} from "@/lib/site";
 
 import "./globals.css";
 
@@ -56,6 +60,11 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
+export const viewport: Viewport = {
+  themeColor: siteThemeColor,
+  colorScheme: "dark",
+};
 
 function resolveActiveLocale(locale: string | undefined): EnabledLocale {
   if (!locale) {

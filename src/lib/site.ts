@@ -35,10 +35,32 @@ function normalizeSiteUrl(value: string | undefined): string {
 
 export const siteConfig = {
   name: "Time Overlay",
+  shortName: "Time Overlay",
   url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL),
   description:
     "A local-first overlay timer tool for videos, live streams, and tutorials with clean countdown visuals and fast browser-based setup.",
 } as const;
+
+export const siteKeywords = [
+  "overlay timer",
+  "countdown timer overlay",
+  "time overlay",
+  "timer overlay for video",
+  "transparent countdown overlay",
+  "video timer generator",
+] as const;
+
+export const siteThemeColor = "#05060a";
+
+export function buildSiteIconMetadata(): NonNullable<Metadata["icons"]> {
+  return {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: ["/favicon.ico"],
+  };
+}
 
 export const homepageAnchorModel = [
   { path: "/#tool", key: "overview" },
@@ -101,6 +123,10 @@ export function createPageMetadata({
   return {
     title,
     description,
+    applicationName: siteConfig.name,
+    category: "video",
+    keywords: [...siteKeywords],
+    icons: buildSiteIconMetadata(),
     alternates: {
       canonical: canonicalPath,
       languages: buildLanguageAlternates(path),
@@ -111,11 +137,14 @@ export function createPageMetadata({
       url: canonicalPath,
       siteName: siteConfig.name,
       type: "website",
+      locale,
+      images: ["/icon.svg"],
     },
     twitter: {
-      card: "summary_large_image",
+      card: "summary",
       title,
       description,
+      images: ["/icon.svg"],
     },
   };
 }
@@ -169,5 +198,30 @@ export function buildRobotsDefinition(): MetadataRoute.Robots {
     },
     sitemap: new URL("/sitemap.xml", siteConfig.url).toString(),
     host: siteConfig.url,
+  };
+}
+
+export function buildManifestDefinition(): MetadataRoute.Manifest {
+  return {
+    name: siteConfig.name,
+    short_name: siteConfig.shortName,
+    description: siteConfig.description,
+    start_url: "/",
+    display: "standalone",
+    background_color: siteThemeColor,
+    theme_color: siteThemeColor,
+    icons: [
+      {
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+        purpose: "any",
+      },
+      {
+        src: "/favicon.ico",
+        sizes: "any",
+        type: "image/x-icon",
+      },
+    ],
   };
 }

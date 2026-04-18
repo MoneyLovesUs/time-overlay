@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const esRootPageContent = {
   metadata: {
-    title: "Temporizador overlay para videos, directos y tutoriales",
+    title: "Generador de temporizador overlay con cuenta regresiva para videos y directos",
     description:
-      "Crea un temporizador overlay en el navegador para videos, transmisiones en directo y tutoriales, con vista previa rápida y un flujo claro para creadores.",
+      "Crea temporizadores overlay limpios en tu navegador. Previsualiza al instante y exporta secuencias PNG transparentes o WebM para edición de video, directos y tutoriales.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

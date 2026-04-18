@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const csRootPageContent = {
   metadata: {
-    title: "Overlay timer pro videa, streamy a tutoriály",
+    title: "Generátor overlay odpočtu pro videa a streamy",
     description:
-      "Vytvořte overlay timer přímo v prohlížeči pro videa, živé streamy i tutoriály, s rychlým náhledem a čistým workflow pro tvůrce.",
+      "V prohlížeči vytvoříte čistý overlay s odpočtem. Okamžitě uvidíte náhled a vyexportujete průhlednou PNG sekvenci nebo WebM pro střih videa, streamy a návody.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

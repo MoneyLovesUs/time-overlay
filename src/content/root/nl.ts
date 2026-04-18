@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const nlRootPageContent = {
   metadata: {
-    title: "Overlay-timer voor video's, streams en tutorials",
+    title: "Countdown-overlaytimer voor video's en livestreams",
     description:
-      "Maak direct in de browser een overlay-timer voor video's, livestreams en tutorials, met snelle preview en een duidelijke workflow voor creators.",
+      "Maak strakke countdown-overlaytimers direct in je browser. Bekijk meteen een preview en exporteer transparante PNG-sequenties of WebM voor videobewerking, livestreams en tutorials.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const jaRootPageContent = {
   metadata: {
-    title: "動画・配信・チュートリアル向けオーバーレイタイマー",
+    title: "動画・配信向けカウントダウンタイマーオーバーレイ作成ツール",
     description:
-      "ブラウザでオーバーレイタイマーを作成し、動画・ライブ配信・チュートリアルに使えるように、すばやいプレビューと分かりやすい制作フローを提供します。",
+      "ブラウザで見やすいカウントダウンオーバーレイをすぐ作成。すぐにプレビューでき、動画編集・配信・チュートリアル向けに透過PNG連番やWebMを書き出せます。",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

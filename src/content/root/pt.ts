@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const ptRootPageContent = {
   metadata: {
-    title: "Timer overlay para videos, lives e tutoriais",
+    title: "Gerador de timer overlay com contagem regressiva para vídeos e lives",
     description:
-      "Crie um timer overlay direto no navegador para videos, transmissões ao vivo e tutoriais, com prévia rápida e um fluxo de trabalho claro para criadores.",
+      "Crie timers overlay limpos no navegador. Veja a prévia na hora e exporte sequência PNG com transparência ou WebM para edição de vídeo, lives e tutoriais.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

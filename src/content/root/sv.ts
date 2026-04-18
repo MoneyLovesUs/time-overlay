@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const svRootPageContent = {
   metadata: {
-    title: "Overlay-timer för videor, livesändningar och guider",
+    title: "Generator för nedräknings-overlay till videor och livesändningar",
     description:
-      "Skapa en overlay-timer direkt i webbläsaren för videor, livesändningar och guider, med snabb förhandsvisning och ett tydligt creator-vänligt arbetsflöde.",
+      "Skapa tydliga nedräknings-overlays direkt i webbläsaren. Förhandsgranska direkt och exportera transparenta PNG-sekvenser eller WebM för videoredigering, livesändningar och guider.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

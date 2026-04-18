@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const zhHantRootPageContent = {
   metadata: {
-    title: "適用於影片、直播與教學的 Overlay Timer",
+    title: "影片與直播用倒數計時疊加工具",
     description:
-      "直接在瀏覽器中建立 overlay timer，適用於影片、直播與教學，提供快速預覽與清晰好上手的創作者工作流程。",
+      "在瀏覽器中建立乾淨清楚的倒數計時疊加效果，可即時預覽，並匯出透明 PNG 序列或 WebM，適合影片剪輯、直播與教學內容。",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

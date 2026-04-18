@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import enRootPageContent from "@/content/root/en";
+import esRootPageContent from "@/content/root/es";
+import jaRootPageContent from "@/content/root/ja";
+vi.mock("next/font/google", () => ({
+  Geist: () => ({ variable: "font-geist-sans" }),
+  Geist_Mono: () => ({ variable: "font-geist-mono" }),
+}));
+
+import { generateMetadata as generateRootLayoutMetadata } from "@/app/layout";
 import {
   buildManifestDefinition,
   buildRobotsDefinition,
@@ -35,7 +44,41 @@ describe("localized SEO helpers", () => {
     expect(metadata.keywords).toContain("overlay timer");
     expect(metadata.openGraph).toMatchObject({
       locale: "fr",
+      title: "Minuteur overlay",
+      description: "Description FR",
       images: ["/icon.svg"],
+    });
+    expect(metadata.twitter).toMatchObject({
+      title: "Minuteur overlay",
+      description: "Description FR",
+    });
+  });
+
+  it("uses the descriptive english homepage title as the root default", async () => {
+    const metadata = await generateRootLayoutMetadata();
+
+    expect(metadata.title).toEqual({
+      default: enRootPageContent.metadata.title,
+      template: `%s | ${siteConfig.name}`,
+    });
+    expect(metadata.description).toBe(enRootPageContent.metadata.description);
+  });
+
+  it("stores search-intent-driven localized homepage metadata", () => {
+    expect(enRootPageContent.metadata).toEqual({
+      title: "Countdown Timer Overlay Generator for Videos and Live Streams",
+      description:
+        "Create clean countdown timer overlays in your browser. Preview instantly and export transparent PNG sequences or WebM for video editing, streams, and tutorials.",
+    });
+    expect(esRootPageContent.metadata).toEqual({
+      title: "Generador de temporizador overlay con cuenta regresiva para videos y directos",
+      description:
+        "Crea temporizadores overlay limpios en tu navegador. Previsualiza al instante y exporta secuencias PNG transparentes o WebM para edición de video, directos y tutoriales.",
+    });
+    expect(jaRootPageContent.metadata).toEqual({
+      title: "動画・配信向けカウントダウンタイマーオーバーレイ作成ツール",
+      description:
+        "ブラウザで見やすいカウントダウンオーバーレイをすぐ作成。すぐにプレビューでき、動画編集・配信・チュートリアル向けに透過PNG連番やWebMを書き出せます。",
     });
   });
 

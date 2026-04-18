@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const koRootPageContent = {
   metadata: {
-    title: "영상, 라이브 스트림, 튜토리얼용 오버레이 타이머",
+    title: "영상·라이브 스트림용 카운트다운 타이머 오버레이 생성기",
     description:
-      "브라우저에서 바로 오버레이 타이머를 만들어 영상, 라이브 스트림, 튜토리얼에 활용하세요. 빠른 미리보기와 크리에이터 친화적인 작업 흐름을 제공합니다.",
+      "브라우저에서 깔끔한 카운트다운 타이머 오버레이를 바로 만들 수 있습니다. 즉시 미리 보고 투명 PNG 시퀀스 또는 WebM으로 내보내 영상 편집, 라이브 스트림, 튜토리얼에 활용하세요.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

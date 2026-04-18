@@ -38,7 +38,7 @@ export const siteConfig = {
   shortName: "Time Overlay",
   url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL),
   description:
-    "A local-first overlay timer tool for videos, live streams, and tutorials with clean countdown visuals and fast browser-based setup.",
+    "Create clean countdown timer overlays in your browser. Preview instantly and export transparent PNG sequences or WebM for video editing, streams, and tutorials.",
 } as const;
 
 export const siteKeywords = [

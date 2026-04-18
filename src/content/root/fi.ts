@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const fiRootPageContent = {
   metadata: {
-    title: "Overlay-ajastin videoihin, striimeihin ja tutoriaaleihin",
+    title: "Countdown-overlay-ajastin videoihin ja livestriimeihin",
     description:
-      "Luo overlay-ajastin suoraan selaimessa videoita, live-striimejä ja tutoriaaleja varten, nopealla esikatselulla ja selkeällä tekijäystävällisellä työnkululla.",
+      "Luo selkeitä countdown-overlay-ajastimia suoraan selaimessa. Esikatsele heti ja vie läpinäkyvä PNG-kuvasarja tai WebM videoeditointiin, striimeihin ja ohjevideoihin.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

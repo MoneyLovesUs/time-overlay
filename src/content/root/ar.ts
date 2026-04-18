@@ -2,9 +2,9 @@ import type { RootPageContent } from "@/content/root/types";
 
 const arRootPageContent = {
   metadata: {
-    title: "مؤقت Overlay للفيديو والبث والدروس",
+    title: "مولد مؤقت عدّ تنازلي كطبقة فوقية للفيديو والبث المباشر",
     description:
-      "أنشئ مؤقت overlay مباشرة في المتصفح لمقاطع الفيديو والبث المباشر والدروس، مع معاينة سريعة وسير عمل واضح مناسب لصنّاع المحتوى.",
+      "أنشئ مؤقتات عدّ تنازلي واضحة داخل المتصفح. اعرض المعاينة فورًا وصدّر تسلسلات PNG شفافة أو WebM لتحرير الفيديو والبث المباشر والدروس.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",

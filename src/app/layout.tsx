@@ -48,14 +48,35 @@ const clarityBootstrapScript = `
   })(window, document, "clarity", "script", "${clarityProjectId}");
 `;
 
+function resolveRootDefaultTitle(title: Metadata["title"]): string {
+  if (!title) {
+    return siteConfig.name;
+  }
+
+  if (typeof title === "string") {
+    return title;
+  }
+
+  if ("absolute" in title && typeof title.absolute === "string") {
+    return title.absolute;
+  }
+
+  if ("default" in title && typeof title.default === "string") {
+    return title.default;
+  }
+
+  return siteConfig.name;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const localizedMetadata = await createRootPageMetadata(defaultLocale);
+  const rootDefaultTitle = resolveRootDefaultTitle(localizedMetadata.title);
 
   return {
     metadataBase: new URL(siteConfig.url),
     ...localizedMetadata,
     title: {
-      default: siteConfig.name,
+      default: rootDefaultTitle,
       template: `%s | ${siteConfig.name}`,
     },
   };

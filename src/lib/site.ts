@@ -160,3 +160,14 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
     }),
   );
 }
+
+export function buildRobotsDefinition(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+    },
+    sitemap: new URL("/sitemap.xml", siteConfig.url).toString(),
+    host: siteConfig.url,
+  };
+}

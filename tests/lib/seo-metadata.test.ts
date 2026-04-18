@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildSitemapEntries, createPageMetadata } from "@/lib/site";
+import { buildRobotsDefinition, buildSitemapEntries, createPageMetadata } from "@/lib/site";
 
 describe("localized SEO helpers", () => {
   it("creates locale-aware canonical and hreflang metadata", () => {
@@ -22,5 +22,18 @@ describe("localized SEO helpers", () => {
   it("emits all localized homepage entries in the sitemap", () => {
     const entries = buildSitemapEntries();
     expect(entries).toHaveLength(16);
+  });
+
+  it("emits a crawlable robots definition with sitemap and host", () => {
+    const robots = buildRobotsDefinition();
+
+    expect(robots).toMatchObject({
+      host: "https://timeoverlay.co",
+      sitemap: "https://timeoverlay.co/sitemap.xml",
+      rules: {
+        userAgent: "*",
+        allow: "/",
+      },
+    });
   });
 });

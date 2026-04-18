@@ -1,7 +1,7 @@
 import type { EnabledLocale } from "@/lib/i18n";
 import { buildLocalizedPath } from "@/lib/i18n";
 import type { RootPageContent } from "@/content/root";
-import { GeneratorShell } from "@/components/generator/generator-shell";
+import { LazyGeneratorShell } from "@/components/site/lazy-generator-shell";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { RootSeoSection } from "@/components/site/root-seo-section";
@@ -47,7 +47,7 @@ export function RootPage({ locale, content }: RootPageProps) {
         shellLabel={content.siteChrome.header.shellLabel}
         siteName={content.siteChrome.siteName}
       />
-      <GeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
+      <LazyGeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
       <RootSeoSection locale={locale} seoSection={content.seoSection} />
       <SiteFooter
         navItems={footerNavItems}

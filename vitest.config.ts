@@ -9,8 +9,10 @@ export default defineConfig({
     },
   },
   test: {
+    exclude: [".pnpm-store/**", ".worktrees/**", "node_modules/**"],
     environment: "node",
     globals: true,
+    include: ["tests/**/*.{test,spec}.{ts,tsx}"],
     passWithNoTests: true,
     setupFiles: ["./tests/setup.ts"],
   },

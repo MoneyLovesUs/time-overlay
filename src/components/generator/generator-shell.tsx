@@ -22,8 +22,11 @@ import {
   GENERATOR_THEME_PRESETS,
   normalizeGeneratorSettings,
 } from "@/lib/generator/defaults";
+import {
+  createLazyExportRuntime,
+  type LazyExportRuntime,
+} from "@/lib/generator/export/runtime";
 import { downloadBlob } from "@/lib/generator/export/png-sequence";
-import { exportWebmLocally } from "@/lib/generator/export/webm";
 import {
   getExportAdvisory,
   getInitialLocalExportSupport,
@@ -57,12 +60,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   );
   const [isExporting, setIsExporting] = useState(false);
   const [support, setSupport] = useState(getInitialLocalExportSupport);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const deferredSettings = useDeferredValue(settings);
-  const rafRef = useRef<number | null>(null);
-  const startedAtRef = useRef<number | null>(null);
-  const exportWorkerRef = useRef<Worker | null>(null);
+  const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
   const formatTemplate = (
     template: string,
@@ -106,52 +105,10 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     setSupport(getLocalExportSupport());
   }, []);
 
-  useEffect(() => {
-    setElapsedSeconds((current) =>
-      Math.min(current, settings.timer.durationSeconds),
-    );
-  }, [settings.timer.durationSeconds]);
-
-  const stepPreview = useEffectEvent(function tick(timestamp: number) {
-    const baseTimestamp =
-      startedAtRef.current ?? timestamp - elapsedSeconds * 1000;
-    const nextElapsedSeconds = (timestamp - baseTimestamp) / 1000;
-
-    startedAtRef.current = baseTimestamp;
-
-    if (nextElapsedSeconds >= settings.timer.durationSeconds) {
-      setElapsedSeconds(settings.timer.durationSeconds);
-      setIsPlaying(false);
-      startedAtRef.current = null;
-      rafRef.current = null;
-      return;
-    }
-
-    setElapsedSeconds(nextElapsedSeconds);
-    rafRef.current = window.requestAnimationFrame(tick);
-  });
-
-  useEffect(() => {
-    if (!isPlaying) {
-      if (rafRef.current !== null) {
-        window.cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-
-      return;
-    }
-
-    rafRef.current = window.requestAnimationFrame((timestamp) => {
-      stepPreview(timestamp);
-    });
-
-    return () => {
-      if (rafRef.current !== null) {
-        window.cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, [isPlaying]);
+  const getExportRuntime = () => {
+    exportRuntimeRef.current ??= createLazyExportRuntime();
+    return exportRuntimeRef.current;
+  };
 
   const handleDurationChange = (durationSeconds: number) => {
     updateSettings((current) => ({
@@ -268,25 +225,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }));
   };
 
-  const handlePlay = () => {
-    if (elapsedSeconds >= settings.timer.durationSeconds) {
-      setElapsedSeconds(0);
-      startedAtRef.current = null;
-    }
-
-    setIsPlaying(true);
-  };
-
-  const handlePause = () => {
-    setIsPlaying(false);
-  };
-
-  const handleReset = () => {
-    setIsPlaying(false);
-    setElapsedSeconds(0);
-    startedAtRef.current = null;
-  };
-
   const handleToggleSafeArea = () => {
     updateSettings((current) => ({
       ...current,
@@ -297,17 +235,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }));
   };
 
-  useEffect(() => {
-    const worker = new Worker(
-      new URL("../../workers/generator-export.worker.ts", import.meta.url),
-      {
-        type: "module",
-      },
-    );
-
-    exportWorkerRef.current = worker;
-
-    worker.onmessage = (event: MessageEvent<ExportWorkerMessage>) => {
+  const handlePngSequenceWorkerMessage = useEffectEvent(
+    (event: MessageEvent<ExportWorkerMessage>) => {
       if (event.data.kind === "progress") {
         setExportProgress(localizeProgressMessage(event.data.payload));
         return;
@@ -329,42 +258,29 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       }
 
       setIsExporting(false);
-        setExportProgress({
-          stage: "error",
-          completedFrames: 0,
-          totalFrames: 0,
-          message:
-            event.data.payload.message ??
-            (event.data.payload.code === "pngSequenceFailedUnexpectedly"
-              ? ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly
-              : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly),
-        });
-    };
-
-    return () => {
-      worker.terminate();
-      exportWorkerRef.current = null;
-    };
-  }, [
-    ui.exportPanel.runtimeMessages.exportReadyTemplate,
-    ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly,
-  ]);
-
-  const handleExport = async () => {
-    const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
-    exportTotalsRef.current = totalFrames;
-
-    if (settings.export.format === "png-sequence" && !exportWorkerRef.current) {
       setExportProgress({
         stage: "error",
         completedFrames: 0,
         totalFrames: 0,
-        message: ui.exportPanel.runtimeMessages.exportWorkerUnavailable,
+        message:
+          event.data.payload.message ??
+          (event.data.payload.code === "pngSequenceFailedUnexpectedly"
+            ? ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly
+            : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly),
       });
-      return;
-    }
+    },
+  );
 
-    const exportWorker = exportWorkerRef.current;
+  useEffect(() => {
+    return () => {
+      exportRuntimeRef.current?.terminatePngSequenceWorker();
+      exportRuntimeRef.current = null;
+    };
+  }, []);
+
+  const handleExport = async () => {
+    const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
+    exportTotalsRef.current = totalFrames;
 
     setIsExporting(true);
     setExportProgress({
@@ -379,6 +295,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
     if (settings.export.format === "webm") {
       try {
+        const { exportWebmLocally } = await getExportRuntime().loadWebmExporter();
         const result = await exportWebmLocally(settings, {
           onProgress: (progress) => {
             setExportProgress(localizeProgressMessage(progress));
@@ -412,12 +329,24 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return;
     }
 
-    exportWorker?.postMessage({
-      kind: "export-png-sequence",
-      payload: {
-        settings,
-      },
-    });
+    try {
+      const exportWorker = getExportRuntime().getPngSequenceWorker();
+      exportWorker.onmessage = handlePngSequenceWorkerMessage;
+      exportWorker.postMessage({
+        kind: "export-png-sequence",
+        payload: {
+          settings,
+        },
+      });
+    } catch {
+      setIsExporting(false);
+      setExportProgress({
+        stage: "error",
+        completedFrames: 0,
+        totalFrames: 0,
+        message: ui.exportPanel.runtimeMessages.exportWorkerUnavailable,
+      });
+    }
   };
 
   return (
@@ -469,11 +398,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             <PreviewPanel
               settings={deferredSettings}
               ui={ui.previewPanel}
-              elapsedSeconds={elapsedSeconds}
-              isPlaying={isPlaying}
-              onPause={handlePause}
-              onPlay={handlePlay}
-              onReset={handleReset}
               onToggleSafeArea={handleToggleSafeArea}
             />
             <ExportPanel

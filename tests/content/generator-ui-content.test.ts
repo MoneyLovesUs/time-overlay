@@ -20,12 +20,11 @@ describe("localized generator ui", () => {
     expect(markup).toContain(
       "Define la duración, previsualiza el fotograma y después exporta tu recurso de temporizador.",
     );
-    expect(markup).toContain("Preajuste de tema");
-    expect(markup).toContain("Controles");
-    expect(markup).toContain("Vista previa");
-    expect(markup).toContain("Zona de entrega");
-    expect(markup).toContain("Arriba izquierda");
-    expect(markup).toContain("Estándar");
+    expect(markup).toContain("generator-loading-shell");
+    expect(markup).not.toContain("Preajuste de tema");
+    expect(markup).not.toContain("Controles");
+    expect(markup).not.toContain("Vista previa");
+    expect(markup).not.toContain("Zona de entrega");
   });
 
   it("renders localized advisory and fps option labels in the export panel", () => {

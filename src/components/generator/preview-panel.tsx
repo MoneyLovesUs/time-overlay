@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { Pause, Play, ScanLine, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
+import {
+  advancePreviewPlayback,
+  clampPreviewElapsedSeconds,
+  syncCanvasElementSize,
+} from "@/lib/generator/preview-runtime";
 import {
   createRenderFrameState,
   measureRenderTextBox,
@@ -18,25 +23,19 @@ import type { GeneratorSettings } from "@/lib/generator/types";
 type PreviewPanelProps = {
   settings: GeneratorSettings;
   ui: RootPageContent["generatorUi"]["previewPanel"];
-  elapsedSeconds: number;
-  isPlaying: boolean;
-  onPause: () => void;
-  onPlay: () => void;
-  onReset: () => void;
   onToggleSafeArea: () => void;
 };
 
 export function PreviewPanel({
   settings,
   ui,
-  elapsedSeconds,
-  isPlaying,
-  onPause,
-  onPlay,
-  onReset,
   onToggleSafeArea,
 }: PreviewPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const startedAtRef = useRef<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const displayText = useMemo(
     () =>
       formatCountdownTime(
@@ -45,6 +44,64 @@ export function PreviewPanel({
       ),
     [elapsedSeconds, settings.timer.displayFormat, settings.timer.durationSeconds],
   );
+
+  useEffect(() => {
+    setElapsedSeconds((current) =>
+      clampPreviewElapsedSeconds(current, settings.timer.durationSeconds),
+    );
+  }, [settings.timer.durationSeconds]);
+
+  const stepPreview = useEffectEvent(function tick(timestamp: number) {
+    const nextState = advancePreviewPlayback({
+      timestamp,
+      previousElapsedSeconds: elapsedSeconds,
+      durationSeconds: settings.timer.durationSeconds,
+      startedAtTimestamp: startedAtRef.current,
+    });
+
+    startedAtRef.current = nextState.startedAtTimestamp;
+    setElapsedSeconds(nextState.elapsedSeconds);
+
+    if (nextState.completed) {
+      setIsPlaying(false);
+      rafRef.current = null;
+      return;
+    }
+
+    rafRef.current = window.requestAnimationFrame(tick);
+  });
+
+  useEffect(() => {
+    if (!isPlaying) {
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+
+      return;
+    }
+
+    rafRef.current = window.requestAnimationFrame((timestamp) => {
+      stepPreview(timestamp);
+    });
+
+    return () => {
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [isPlaying, stepPreview]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+
+    if (!canvas) {
+      return;
+    }
+
+    syncCanvasElementSize(canvas, settings.canvas.width, settings.canvas.height);
+  }, [settings.canvas.height, settings.canvas.width]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -59,8 +116,6 @@ export function PreviewPanel({
       return;
     }
 
-    canvas.width = settings.canvas.width;
-    canvas.height = settings.canvas.height;
     context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolveCanvasFontFamily(settings.textStyle.fontFamily)}`;
     const textBox = measureRenderTextBox(context, displayText, {
       fontFamily: settings.textStyle.fontFamily,
@@ -88,6 +143,25 @@ export function PreviewPanel({
     renderFrameToCanvas(context, frameState);
   }, [displayText, elapsedSeconds, settings]);
 
+  const handlePlay = () => {
+    if (elapsedSeconds >= settings.timer.durationSeconds) {
+      setElapsedSeconds(0);
+      startedAtRef.current = null;
+    }
+
+    setIsPlaying(true);
+  };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+  };
+
+  const handleReset = () => {
+    setIsPlaying(false);
+    setElapsedSeconds(0);
+    startedAtRef.current = null;
+  };
+
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -113,7 +187,7 @@ export function PreviewPanel({
             variant="outline"
             className="justify-start gap-2"
             disabled={isPlaying}
-            onClick={onPlay}
+            onClick={handlePlay}
           >
             <Play className="size-4" />
             {ui.playButton}
@@ -122,12 +196,12 @@ export function PreviewPanel({
             variant="outline"
             className="justify-start gap-2"
             disabled={!isPlaying}
-            onClick={onPause}
+            onClick={handlePause}
           >
             <Pause className="size-4" />
             {ui.pauseButton}
           </Button>
-          <Button variant="outline" className="justify-start gap-2" onClick={onReset}>
+          <Button variant="outline" className="justify-start gap-2" onClick={handleReset}>
             <RotateCcw className="size-4" />
             {ui.resetButton}
           </Button>

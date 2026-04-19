@@ -9,7 +9,7 @@ const zhHantRootPageContent = {
   generatorHero: {
     eyebrow: "Time Overlay",
     heading: "設定時長、預覽畫面，然後匯出你的計時器素材。",
-    intro: "建議第一次先試：`30s`、`PNG sequence`、`bottom-right`。",
+    intro: "建議第一次先試：`30s`、`PNG sequence`、`center`。",
   },
   siteChrome: {
     siteName: "Time Overlay",

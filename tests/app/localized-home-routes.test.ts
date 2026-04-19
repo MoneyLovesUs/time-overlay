@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import Home from "@/app/page";
-import LocalizedHomePage, { generateStaticParams } from "@/app/[locale]/page";
+import Home from "@/app/(default)/page";
+import LocalizedHomePage, { generateStaticParams } from "@/app/(localized)/[locale]/page";
 import { notFound } from "next/navigation";
 import { getRootPageContent } from "@/content/root";
 import { RootPage } from "@/components/site/root-page";

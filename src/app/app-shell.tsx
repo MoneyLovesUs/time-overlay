@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { defaultLocale, isEnabledLocale, type EnabledLocale } from "@/lib/i18n";
+import { defaultLocale } from "@/lib/i18n";
 import {
   createRootPageMetadata,
   siteConfig,
   siteThemeColor,
 } from "@/lib/site";
-
-import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,7 +67,7 @@ function resolveRootDefaultTitle(title: Metadata["title"]): string {
   return siteConfig.name;
 }
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateDefaultLayoutMetadata(): Promise<Metadata> {
   const localizedMetadata = await createRootPageMetadata(defaultLocale);
   const rootDefaultTitle = resolveRootDefaultTitle(localizedMetadata.title);
 
@@ -88,34 +86,20 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = {
+export const siteViewport: Viewport = {
   themeColor: siteThemeColor,
   colorScheme: "dark",
 };
 
-function resolveActiveLocale(locale: string | undefined): EnabledLocale {
-  if (!locale) {
-    return defaultLocale;
-  }
-
-  return isEnabledLocale(locale) ? locale : defaultLocale;
-}
-
-export default async function RootLayout({
-  children,
-  params,
-}: Readonly<{
+type AppDocumentProps = Readonly<{
   children: React.ReactNode;
-  params?: Promise<{
-    locale?: string;
-  }>;
-}>) {
-  const resolvedParams = params ? await params : undefined;
-  const activeLocale = resolveActiveLocale(resolvedParams?.locale);
+  lang: string;
+}>;
 
+export function AppDocument({ children, lang }: AppDocumentProps) {
   return (
     <html
-      lang={activeLocale}
+      lang={lang}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>

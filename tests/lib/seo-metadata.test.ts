@@ -8,7 +8,7 @@ vi.mock("next/font/google", () => ({
   Geist_Mono: () => ({ variable: "font-geist-mono" }),
 }));
 
-import { generateMetadata as generateRootLayoutMetadata } from "@/app/layout";
+import { generateMetadata as generateRootLayoutMetadata } from "@/app/(default)/layout";
 import {
   buildManifestDefinition,
   buildRobotsDefinition,
@@ -42,6 +42,7 @@ describe("localized SEO helpers", () => {
     expect(metadata.applicationName).toBe(siteConfig.name);
     expect(metadata.category).toBe("video");
     expect(metadata.keywords).toContain("overlay timer");
+    expect(metadata.metadataBase?.toString()).toBe(`${siteConfig.url}/`);
     expect(metadata.openGraph).toMatchObject({
       locale: "fr",
       title: "Minuteur overlay",

@@ -121,6 +121,7 @@ export function createPageMetadata({
   const canonicalPath = buildLocalizedPath(path, locale);
 
   return {
+    metadataBase: new URL(siteConfig.url),
     title,
     description,
     applicationName: siteConfig.name,

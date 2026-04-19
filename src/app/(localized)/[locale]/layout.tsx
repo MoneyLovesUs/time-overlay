@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 
 import { defaultLocale, isEnabledLocale } from "@/lib/i18n";
 import { createRootPageMetadata } from "@/lib/site";
+import { AppDocument, siteViewport } from "@/app/app-shell";
+
+import "../../globals.css";
 
 type LocalizedLayoutProps = Readonly<{
   children: React.ReactNode;
@@ -29,6 +32,8 @@ export async function generateMetadata({
   return createRootPageMetadata(locale);
 }
 
+export const viewport: Viewport = siteViewport;
+
 export default async function LocalizedLayout({ children, params }: LocalizedLayoutProps) {
   const { locale } = await params;
 
@@ -36,5 +41,5 @@ export default async function LocalizedLayout({ children, params }: LocalizedLay
     notFound();
   }
 
-  return children;
+  return <AppDocument lang={locale}>{children}</AppDocument>;
 }

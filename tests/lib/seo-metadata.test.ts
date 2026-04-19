@@ -62,6 +62,11 @@ describe("localized SEO helpers", () => {
       template: `%s | ${siteConfig.name}`,
     });
     expect(metadata.description).toBe(enRootPageContent.metadata.description);
+    expect(metadata.verification).toEqual({
+      other: {
+        _foundr: "a2e7581355636cb842aa09283f303628",
+      },
+    });
   });
 
   it("stores search-intent-driven localized homepage metadata", () => {

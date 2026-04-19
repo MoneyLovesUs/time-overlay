@@ -75,6 +75,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(siteConfig.url),
     ...localizedMetadata,
+    verification: {
+      other: {
+        _foundr: "a2e7581355636cb842aa09283f303628",
+      },
+    },
     title: {
       default: rootDefaultTitle,
       template: `%s | ${siteConfig.name}`,

@@ -33,3 +33,14 @@ test("root layout injects an idle-loaded Microsoft Clarity bootstrap script", as
   assert.match(markup, /requestIdleCallback/);
   assert.match(markup, /https:\/\/www\.clarity\.ms\/tag/);
 });
+
+test("root layout injects the Ahrefs analytics script with the site data key", async () => {
+  const markup = renderToStaticMarkup(
+    await RootLayout({
+      children: React.createElement("main", null, "content"),
+    }),
+  );
+
+  assert.match(markup, /https:\/\/analytics\.ahrefs\.com\/analytics\.js/);
+  assert.match(markup, /data-key="NQce666pfXHzSj3WBXaUIQ"/);
+});

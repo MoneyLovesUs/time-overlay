@@ -62,9 +62,9 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
       shadowOffsetY: 0,
     },
     placement: {
-      anchor: "bottom-right",
-      offsetX: -28,
-      offsetY: -28,
+      anchor: "center",
+      offsetX: 0,
+      offsetY: 0,
     },
   },
   {
@@ -148,9 +148,9 @@ export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettings = {
     shadowOffsetY: 0,
   },
   placement: {
-    anchor: "bottom-right",
-    offsetX: -28,
-    offsetY: -28,
+    anchor: "center",
+    offsetX: 0,
+    offsetY: 0,
   },
   export: {
     format: "png-sequence",

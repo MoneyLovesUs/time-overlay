@@ -57,7 +57,7 @@ describe("createRenderFrameState", () => {
     expect(frameState.backgroundFill).toBe("#101828");
   });
 
-  it("keeps preset style values in the resolved frame state", () => {
+  it("keeps preset visual tokens in the resolved frame state", () => {
     const settings = createGeneratorSettings({
       themePresetId: "broadcast-alert",
     });
@@ -70,7 +70,7 @@ describe("createRenderFrameState", () => {
     });
 
     expect(frameState.style.fontFamily).toBe("geist-sans");
-    expect(frameState.style.strokeWidth).toBe(6);
+    expect(frameState.style.strokeColor).toBe("#091018");
   });
 
   it("uses anchor layout calculations to resolve the text box position", () => {
@@ -89,6 +89,21 @@ describe("createRenderFrameState", () => {
       safeAreaInset: 32,
     });
 
-    expect(frameState.position).toEqual({ x: 988, y: 580 });
+    expect(frameState.position).toEqual({ x: 717, y: 471 });
+  });
+
+  it("scales default countdown text to better fill the anchored canvas region", () => {
+    const settings = createGeneratorSettings();
+
+    const frameState = createRenderFrameState({
+      settings,
+      elapsedSeconds: 0,
+      textBox: { width: 240, height: 96 },
+      safeAreaInset: 32,
+    });
+
+    expect(frameState.style.fontSize).toBeGreaterThan(settings.textStyle.fontSize);
+    expect(frameState.position.x).toBeLessThan(900);
+    expect(frameState.position.y).toBeLessThan(560);
   });
 });

@@ -29,6 +29,7 @@ const shellGlowClasses = [
   "absolute right-[10%] top-[4.5rem] h-[18rem] w-[18rem] rounded-full bg-tertiary/10 blur-3xl",
   "absolute bottom-[-8rem] left-1/2 h-[20rem] w-[28rem] -translate-x-1/2 rounded-full bg-secondary/8 blur-3xl",
 ] as const;
+const ahrefsAnalyticsDataKey = "NQce666pfXHzSj3WBXaUIQ";
 const clarityProjectId = "wbgnxnkr0m";
 const clarityBootstrapScript = `
   (function(c,l,a,r,i){
@@ -117,6 +118,13 @@ export default async function RootLayout({
       lang={activeLocale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          src="https://analytics.ahrefs.com/analytics.js"
+          data-key={ahrefsAnalyticsDataKey}
+          async
+        />
+      </head>
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
           <div className={shellBackdropPlaneClass} />

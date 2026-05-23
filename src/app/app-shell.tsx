@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 
 import { defaultLocale } from "@/lib/i18n";
 import {
@@ -28,6 +29,14 @@ const shellGlowClasses = [
   "absolute bottom-[-8rem] left-1/2 h-[20rem] w-[28rem] -translate-x-1/2 rounded-full bg-secondary/8 blur-3xl",
 ] as const;
 const ahrefsAnalyticsDataKey = "NQce666pfXHzSj3WBXaUIQ";
+const googleAnalyticsId = "G-1FB0KM19XV";
+const googleAnalyticsBootstrapScript = `
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', '${googleAnalyticsId}');
+`;
 const clarityProjectId = "wbgnxnkr0m";
 const clarityBootstrapScript = `
   (function(c,l,a,r,i){
@@ -107,6 +116,15 @@ export function AppDocument({ children, lang }: AppDocumentProps) {
           src="https://analytics.ahrefs.com/analytics.js"
           data-key={ahrefsAnalyticsDataKey}
           async
+        />
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          strategy="afterInteractive"
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }}
         />
       </head>
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">

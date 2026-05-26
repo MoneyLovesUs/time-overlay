@@ -1,7 +1,32 @@
 import { describe, expect, it } from "vitest";
 
 import { getRootPageContent } from "@/content/root";
+import enRootPageContent from "@/content/root/en";
 import { enabledLocales } from "@/lib/i18n";
+import { siteKeywords } from "@/lib/site";
+
+function collectContentText(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(collectContentText);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value).flatMap(collectContentText);
+  }
+
+  return [];
+}
+
+function countExactPhrase(source: string, phrase: string): number {
+  const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const matches = source.match(new RegExp(`\\b${escapedPhrase}\\b`, "gi"));
+
+  return matches?.length ?? 0;
+}
 
 describe("root locale content", () => {
   it("loads all enabled locale modules with non-empty metadata, hero copy, and FAQ content", async () => {
@@ -39,5 +64,22 @@ describe("root locale content", () => {
     await expect(
       getRootPageContent("xx" as unknown as (typeof enabledLocales)[number]),
     ).rejects.toThrow("Unsupported locale: xx");
+  });
+
+  it("keeps Time Overlay as the densest English SEO keyword without repetition stuffing", () => {
+    const englishCopy = collectContentText(enRootPageContent).join(" ");
+    const timeOverlayCount = countExactPhrase(englishCopy, "time overlay");
+    const competingKeywordCounts = siteKeywords
+      .filter((keyword) => keyword !== "time overlay")
+      .map((keyword) => [keyword, countExactPhrase(englishCopy, keyword)] as const);
+    const repeatedTimeOverlayText = /time overlay(?:[\s,.;:!?-]+time overlay){2,}/i;
+
+    expect(siteKeywords[0]).toBe("time overlay");
+    expect(timeOverlayCount).toBeGreaterThan(0);
+    expect(englishCopy).not.toMatch(repeatedTimeOverlayText);
+
+    for (const [, count] of competingKeywordCounts) {
+      expect(timeOverlayCount).toBeGreaterThan(count);
+    }
   });
 });

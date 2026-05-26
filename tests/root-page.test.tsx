@@ -39,4 +39,19 @@ describe("RootPage", () => {
     assert.match(markup, /generator-loading-shell/i);
     assert.doesNotMatch(markup, /interactive-generator-shell/i);
   });
+
+  it("server-renders crawlable homepage SEO copy and FAQ structured data", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(RootPage, {
+        locale: "en",
+        content: enRootPageContent,
+      }),
+    );
+
+    assert.match(markup, /About Time Overlay/i);
+    assert.match(markup, /Time Overlay is a local-first/i);
+    assert.match(markup, /How to use Time Overlay/i);
+    assert.match(markup, /"@type":"FAQPage"/);
+    assert.match(markup, /Can I export an overlay timer with transparency/i);
+  });
 });

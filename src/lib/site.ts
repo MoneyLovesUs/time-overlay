@@ -42,9 +42,9 @@ export const siteConfig = {
 } as const;
 
 export const siteKeywords = [
+  "time overlay",
   "overlay timer",
   "countdown timer overlay",
-  "time overlay",
   "timer overlay for video",
   "transparent countdown overlay",
   "video timer generator",

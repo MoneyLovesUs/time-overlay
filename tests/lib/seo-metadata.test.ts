@@ -72,9 +72,9 @@ describe("localized SEO helpers", () => {
 
   it("stores search-intent-driven localized homepage metadata", () => {
     expect(enRootPageContent.metadata).toEqual({
-      title: "Countdown Timer Overlay Generator for Videos and Live Streams",
+      title: "Time Overlay Generator for Videos and Live Streams",
       description:
-        "Create clean countdown timer overlays in your browser. Preview instantly and export transparent PNG sequences or WebM for video editing, streams, and tutorials.",
+        "Create clean Time Overlay countdown assets in your browser. Preview instantly and export transparent PNG sequences or WebM for video editing, streams, and tutorials.",
     });
     expect(esRootPageContent.metadata).toEqual({
       title: "Generador de temporizador overlay con cuenta regresiva para videos y directos",

@@ -52,6 +52,6 @@ describe("RootPage", () => {
     assert.match(markup, /Time Overlay is a local-first/i);
     assert.match(markup, /How to use Time Overlay/i);
     assert.match(markup, /"@type":"FAQPage"/);
-    assert.match(markup, /Can I export an overlay timer with transparency/i);
+    assert.match(markup, /Can I export a Time Overlay with transparency/i);
   });
 });

@@ -1,5 +1,6 @@
 import type { Metadata, MetadataRoute } from "next";
 
+import { GENERATOR_THEME_PRESETS } from "./generator/defaults.ts";
 import {
   buildLanguageAlternates,
   buildLocalizedPath,
@@ -38,17 +39,8 @@ export const siteConfig = {
   shortName: "Time Overlay",
   url: normalizeSiteUrl(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.SITE_URL),
   description:
-    "Create clean countdown timer overlays in your browser. Preview instantly and export transparent PNG sequences or WebM for video editing, streams, and tutorials.",
+    "Time Overlay generates transparent countdown timer overlays in your browser. Preview a Time Overlay live, export PNG sequence or WebM with alpha for editors.",
 } as const;
-
-export const siteKeywords = [
-  "time overlay",
-  "overlay timer",
-  "countdown timer overlay",
-  "timer overlay for video",
-  "transparent countdown overlay",
-  "video timer generator",
-] as const;
 
 export const siteThemeColor = "#05060a";
 
@@ -83,13 +75,56 @@ type HomepageRouteDefinition = {
   readonly anchors: typeof homepageAnchorModel;
 };
 
-export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
-  {
-    href: "/",
-    changeFrequency: "weekly",
-    priority: 1,
-    anchors: homepageAnchorModel,
-  },
+type StylePresetRouteDefinition = {
+  readonly href: `/styles/${string}`;
+  readonly changeFrequency: "monthly";
+  readonly priority: 0.7;
+};
+
+type GuideRouteDefinition = {
+  readonly href: `/guides/${string}`;
+  readonly changeFrequency: "monthly";
+  readonly priority: 0.6;
+};
+
+type PublicRouteDefinition =
+  | HomepageRouteDefinition
+  | StylePresetRouteDefinition
+  | GuideRouteDefinition;
+
+const homepageRoute: HomepageRouteDefinition = {
+  href: "/",
+  changeFrequency: "weekly",
+  priority: 1,
+  anchors: homepageAnchorModel,
+} as const;
+
+const stylePresetRoutes: readonly StylePresetRouteDefinition[] =
+  GENERATOR_THEME_PRESETS.map((preset) => ({
+    href: `/styles/${preset.id}` as const,
+    changeFrequency: "monthly" as const,
+    priority: 0.7 as const,
+  }));
+
+export const GUIDE_SLUGS = [
+  "add-countdown-to-obs",
+  "add-countdown-to-premiere",
+  "add-countdown-to-davinci-resolve",
+  "add-countdown-to-final-cut-pro",
+  "png-to-prores",
+  "transparent-overlay-for-twitch",
+] as const;
+
+const guideRoutes: readonly GuideRouteDefinition[] = GUIDE_SLUGS.map((slug) => ({
+  href: `/guides/${slug}` as const,
+  changeFrequency: "monthly" as const,
+  priority: 0.6 as const,
+}));
+
+export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
+  homepageRoute,
+  ...stylePresetRoutes,
+  ...guideRoutes,
 ] as const;
 
 type SitemapAlternateKey = EnabledLocale | "x-default";
@@ -147,7 +182,6 @@ export function createPageMetadata({
     description,
     applicationName: siteConfig.name,
     category: "video",
-    keywords: [...siteKeywords],
     icons: buildSiteIconMetadata(),
     alternates: {
       canonical: canonicalPath,

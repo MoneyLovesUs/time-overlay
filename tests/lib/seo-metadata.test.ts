@@ -42,7 +42,7 @@ describe("localized SEO helpers", () => {
     });
     expect(metadata.applicationName).toBe(siteConfig.name);
     expect(metadata.category).toBe("video");
-    expect(metadata.keywords).toContain("overlay timer");
+    expect(metadata.keywords).toBeUndefined();
     expect(metadata.metadataBase?.toString()).toBe(`${siteConfig.url}/`);
     expect(metadata.openGraph).toMatchObject({
       locale: "fr_FR",
@@ -83,27 +83,32 @@ describe("localized SEO helpers", () => {
     });
   });
 
-  it("stores search-intent-driven localized homepage metadata", () => {
-    expect(enRootPageContent.metadata).toEqual({
-      title: "Time Overlay Generator for Videos and Live Streams",
-      description:
-        "Create clean Time Overlay countdown assets in your browser. Preview instantly and export transparent PNG sequences or WebM for video editing, streams, and tutorials.",
-    });
-    expect(esRootPageContent.metadata).toEqual({
-      title: "Generador de temporizador overlay con cuenta regresiva para videos y directos",
-      description:
-        "Crea temporizadores overlay limpios en tu navegador. Previsualiza al instante y exporta secuencias PNG transparentes o WebM para edición de video, directos y tutoriales.",
-    });
-    expect(jaRootPageContent.metadata).toEqual({
-      title: "動画・配信向けカウントダウンタイマーオーバーレイ作成ツール",
-      description:
-        "ブラウザで見やすいカウントダウンオーバーレイをすぐ作成。すぐにプレビューでき、動画編集・配信・チュートリアル向けに透過PNG連番やWebMを書き出せます。",
-    });
+  it("stores search-intent-driven localized homepage metadata under the 160-char description cap", () => {
+    expect(enRootPageContent.metadata.title).toContain("Time Overlay");
+    expect(enRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
+    expect(enRootPageContent.metadata.description.toLowerCase()).toContain(
+      "time overlay",
+    );
+
+    expect(esRootPageContent.metadata.title.length).toBeGreaterThan(0);
+    expect(esRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
+
+    expect(jaRootPageContent.metadata.title.length).toBeGreaterThan(0);
+    expect(jaRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
   });
 
   it("emits all localized homepage entries in the sitemap", () => {
     const entries = buildSitemapEntries();
-    expect(entries).toHaveLength(16);
+    // homepage + 10 style presets + 6 guides per locale × 16 locales
+    expect(entries.length).toBe(17 * 16);
+    const homepageRoots = entries.filter((entry) => {
+      const path = entry.url.replace(/^https?:\/\/[^/]+/, "");
+      return (
+        path === "/" ||
+        /^\/(?:en|es|pt|ru|fr|de|ko|ja|fi|zh-hant|ar|th|cs|hi|nl|sv)$/.test(path)
+      );
+    });
+    expect(homepageRoots.length).toBe(16);
   });
 
   it("emits a crawlable robots definition with sitemap and host", () => {

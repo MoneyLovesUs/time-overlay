@@ -43,9 +43,16 @@ const koRootPageContent = {
       description:
         "기본 스타일을 먼저 고르고, 필요할 때만 컨트롤을 세부 조정하세요.",
       presetLabels: {
-        "minimal-neon": "미니멀 네온",
-        "broadcast-alert": "브로드캐스트 알림",
-        "calm-studio": "차분한 스튜디오",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -64,8 +71,10 @@ const koRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "배경 모드",
@@ -89,7 +98,16 @@ const koRootPageContent = {
       },
       transparentOptionLabel: "투명",
       solidOptionLabel: "단색",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "미리보기",
       subtitle: "실시간 캔버스",
@@ -107,9 +125,15 @@ const koRootPageContent = {
       pngSequenceLabel: "PNG 시퀀스",
       pngSequenceDescription:
         "편집기 전달과 투명 배경 워크플로에서 가장 안정적인 선택입니다.",
-      webmLabel: "WebM",
+      webmLabel: "WebM (with alpha)",
       webmDescription:
-        "지원 브라우저에서 가벼운 로컬 영상 내보내기에 적합합니다.",
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -132,19 +156,25 @@ const koRootPageContent = {
         workerSupportError:
           "이 브라우저는 백그라운드 워커를 시작할 수 없어 로컬 비디오 내보내기가 비활성화됩니다. 최신 데스크톱 브라우저에서 PNG 시퀀스를 사용하세요.",
         webmUnavailableError:
-          "이 브라우저에서는 WebM 내보내기를 사용할 수 없습니다. PNG 시퀀스가 가장 안전한 대안으로 남습니다.",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "이 내보내기는 메모리와 CPU를 많이 사용할 가능성이 큽니다. 브라우저가 버거워지면 720p, 30초 또는 PNG 시퀀스를 고려하세요.",
         pngSequenceInfo:
           "PNG 시퀀스는 특히 투명도가 중요할 때 편집기에 전달하기 가장 안정적인 로컬 우선 형식입니다.",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "내보내기 준비 완료: {fileName}",
         preparingWebm: "로컬 WebM 내보내기 준비 중",
         preparingPngSequence: "로컬 PNG 시퀀스 내보내기 준비 중",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable:
           "이 브라우저 세션에서는 export worker를 사용할 수 없습니다.",
         webmFailedUnexpectedly: "WebM 내보내기가 예기치 않게 실패했습니다.",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly:
           "PNG 시퀀스 내보내기가 예기치 않게 실패했습니다.",
       },

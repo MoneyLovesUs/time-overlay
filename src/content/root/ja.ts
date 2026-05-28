@@ -42,9 +42,16 @@ const jaRootPageContent = {
       description:
         "まずは見た目のプリセットを選び、必要なときだけコントロールを微調整してください。",
       presetLabels: {
-        "minimal-neon": "ミニマルネオン",
-        "broadcast-alert": "放送アラート",
-        "calm-studio": "カームスタジオ",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -63,8 +70,10 @@ const jaRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "背景モード",
@@ -88,7 +97,16 @@ const jaRootPageContent = {
       },
       transparentOptionLabel: "透明",
       solidOptionLabel: "単色",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "プレビュー",
       subtitle: "ライブキャンバス",
@@ -106,9 +124,15 @@ const jaRootPageContent = {
       pngSequenceLabel: "PNGシーケンス",
       pngSequenceDescription:
         "編集ソフト連携や透過素材の受け渡しで最も信頼性が高い形式です。",
-      webmLabel: "WebM",
+      webmLabel: "WebM (with alpha)",
       webmDescription:
-        "対応ブラウザで軽量なローカル動画を書き出すのに適しています。",
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -131,19 +155,25 @@ const jaRootPageContent = {
         workerSupportError:
           "このブラウザではバックグラウンド worker を起動できないため、ローカル動画書き出しは無効です。最新のデスクトップブラウザで PNG シーケンスを利用してください。",
         webmUnavailableError:
-          "このブラウザでは WebM 書き出しを利用できません。PNG シーケンスが最も安全な代替手段です。",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "この書き出しはメモリと CPU に大きな負荷をかける可能性があります。ブラウザが重くなる場合は 720p、30 秒、または PNG シーケンスを検討してください。",
         pngSequenceInfo:
           "PNG シーケンスは、特に透過が重要なときに編集ソフトへ渡す最も信頼できるローカルファースト形式です。",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "書き出し完了: {fileName}",
         preparingWebm: "ローカル WebM 書き出しを準備中",
         preparingPngSequence: "ローカル PNG シーケンス書き出しを準備中",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable:
           "このブラウザセッションでは export worker を利用できません。",
         webmFailedUnexpectedly: "WebM 書き出しが予期せず失敗しました。",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly:
           "PNG シーケンス書き出しが予期せず失敗しました。",
       },

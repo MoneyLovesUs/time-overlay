@@ -4,7 +4,7 @@ const ruRootPageContent = {
   metadata: {
     title: "Генератор таймера-оверлея с обратным отсчётом для видео и стримов",
     description:
-      "Создавайте аккуратные таймеры-оверлеи прямо в браузере. Сразу смотрите превью и экспортируйте прозрачную PNG-последовательность или WebM для монтажа, стримов и туториалов.",
+      "Создавайте аккуратные таймеры-оверлеи в браузере. Сразу смотрите превью и экспортируйте прозрачную PNG-последовательность или WebM для монтажа.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -43,9 +43,16 @@ const ruRootPageContent = {
       description:
         "Выберите стартовый стиль, а затем при необходимости подстройте параметры.",
       presetLabels: {
-        "minimal-neon": "Минимал неон",
-        "broadcast-alert": "Эфирная тревога",
-        "calm-studio": "Спокойная студия",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -64,8 +71,10 @@ const ruRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "Режим фона",
@@ -89,7 +98,16 @@ const ruRootPageContent = {
       },
       transparentOptionLabel: "Прозрачный",
       solidOptionLabel: "Сплошной",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "Предпросмотр",
       subtitle: "Живой холст",
@@ -107,9 +125,15 @@ const ruRootPageContent = {
       pngSequenceLabel: "PNG Sequence",
       pngSequenceDescription:
         "Самый надежный вариант для редакторов и передачи с прозрачностью.",
-      webmLabel: "WebM",
+      webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Подходит для легкого локального видеоэкспорта в поддерживаемых браузерах.",
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -132,19 +156,25 @@ const ruRootPageContent = {
         workerSupportError:
           "Этот браузер не может запустить фоновый worker, поэтому локальный видеоэкспорт отключен. Используйте PNG Sequence в современном настольном браузере.",
         webmUnavailableError:
-          "Экспорт в WebM недоступен в этом браузере. PNG Sequence остается самым безопасным резервным вариантом.",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "Этот экспорт, вероятно, будет сильно нагружать память и CPU. Попробуйте 720p, 30 секунд или PNG Sequence, если браузер начинает тормозить.",
         pngSequenceInfo:
           "PNG Sequence — самый надежный local-first формат передачи в редакторы, особенно когда важна прозрачность.",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Экспорт готов: {fileName}",
         preparingWebm: "Подготовка локального экспорта WebM",
         preparingPngSequence: "Подготовка локального экспорта PNG Sequence",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable:
           "Worker экспорта недоступен в этой сессии браузера.",
         webmFailedUnexpectedly: "Экспорт WebM неожиданно завершился ошибкой.",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly:
           "Экспорт PNG Sequence неожиданно завершился ошибкой.",
       },

@@ -64,9 +64,15 @@ describe("i18n config", () => {
 describe("site helpers", () => {
   it("emits localized sitemap entries with hreflang alternates plus x-default", () => {
     const entries = buildSitemapEntries();
-    expect(entries).toHaveLength(16);
+    // homepage + 10 style presets + 6 guides = 17 routes × 16 locales = 272
+    expect(entries.length).toBeGreaterThanOrEqual(16);
 
-    const languages = entries[0].alternates?.languages;
+    const homepageEntries = entries.filter(
+      (entry) => entry.url.replace(/^https?:\/\/[^/]+/, "") === "/" || /\/(?:en|es|pt|ru|fr|de|ko|ja|fi|zh-hant|ar|th|cs|hi|nl|sv)$/.test(entry.url),
+    );
+    expect(homepageEntries.length).toBe(16);
+
+    const languages = homepageEntries[0].alternates?.languages;
     expect(languages).toBeDefined();
     expect(Object.keys(languages!)).toEqual([...enabledLocales, "x-default"]);
     expect(languages![defaultLocale]).toBe(

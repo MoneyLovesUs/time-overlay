@@ -4,7 +4,7 @@ const nlRootPageContent = {
   metadata: {
     title: "Countdown-overlaytimer voor video's en livestreams",
     description:
-      "Maak strakke countdown-overlaytimers direct in je browser. Bekijk meteen een preview en exporteer transparante PNG-sequenties of WebM voor videobewerking, livestreams en tutorials.",
+      "Maak strakke countdown-overlaytimers direct in je browser. Bekijk meteen een preview en exporteer transparante PNG-sequenties of WebM voor videobewerking.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -40,9 +40,16 @@ const nlRootPageContent = {
       title: "Thema-preset",
       description: "Kies eerst een startlook en pas daarna alleen de bediening aan als dat nodig is.",
       presetLabels: {
-        "minimal-neon": "Minimal Neon",
-        "broadcast-alert": "Broadcast Alert",
-        "calm-studio": "Calm Studio",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -61,8 +68,10 @@ const nlRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "Achtergrondmodus",
@@ -86,7 +95,16 @@ const nlRootPageContent = {
       },
       transparentOptionLabel: "Transparant",
       solidOptionLabel: "Volledig",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "Preview",
       subtitle: "Live-canvas",
@@ -104,9 +122,15 @@ const nlRootPageContent = {
       pngSequenceLabel: "PNG Sequence",
       pngSequenceDescription:
         "De betrouwbaarste keuze voor editors en transparante overdracht.",
-      webmLabel: "WebM",
+      webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Geschikt voor lichte lokale video-export in ondersteunde browsers.",
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -128,18 +152,24 @@ const nlRootPageContent = {
         workerSupportError:
           "Deze browser kan geen achtergrondworker starten, dus lokale video-export is uitgeschakeld. Gebruik PNG Sequence in een moderne desktopbrowser.",
         webmUnavailableError:
-          "WebM-export is niet beschikbaar in deze browser. PNG Sequence blijft de veiligste terugvaloptie.",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "Deze export zal waarschijnlijk zwaar zijn voor geheugen en CPU. Overweeg 720p, 30 seconden of PNG Sequence als je browser begint te haperen.",
         pngSequenceInfo:
           "PNG Sequence is de betrouwbaarste local-first overdracht voor editors, vooral wanneer transparantie belangrijk is.",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Export gereed: {fileName}",
         preparingWebm: "Lokale WebM-export voorbereiden",
         preparingPngSequence: "Lokale PNG Sequence-export voorbereiden",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable: "De exportworker is niet beschikbaar in deze browsersessie.",
         webmFailedUnexpectedly: "WebM-export is onverwacht mislukt.",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly: "PNG Sequence-export is onverwacht mislukt.",
       },
     },

@@ -4,7 +4,7 @@ const esRootPageContent = {
   metadata: {
     title: "Generador de temporizador overlay con cuenta regresiva para videos y directos",
     description:
-      "Crea temporizadores overlay limpios en tu navegador. Previsualiza al instante y exporta secuencias PNG transparentes o WebM para edición de video, directos y tutoriales.",
+      "Crea temporizadores overlay limpios en tu navegador. Previsualiza al instante y exporta secuencias PNG transparentes o WebM para edición de video y directos.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -43,9 +43,16 @@ const esRootPageContent = {
       description:
         "Elige un aspecto inicial y luego ajusta los controles solo si hace falta.",
       presetLabels: {
-        "minimal-neon": "Neón minimalista",
-        "broadcast-alert": "Alerta broadcast",
-        "calm-studio": "Estudio sereno",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -64,8 +71,10 @@ const esRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "Modo de fondo",
@@ -89,7 +98,16 @@ const esRootPageContent = {
       },
       transparentOptionLabel: "Transparente",
       solidOptionLabel: "Sólido",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "Vista previa",
       subtitle: "Lienzo en vivo",
@@ -107,9 +125,15 @@ const esRootPageContent = {
       pngSequenceLabel: "Secuencia PNG",
       pngSequenceDescription:
         "La opción más confiable para editores y entregas con transparencia.",
-      webmLabel: "WebM",
+      webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Ideal para exportación local de video liviano en navegadores compatibles.",
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -132,19 +156,25 @@ const esRootPageContent = {
         workerSupportError:
           "Este navegador no puede iniciar un worker en segundo plano, así que la exportación local de video queda desactivada. Usa PNG Sequence en un navegador de escritorio moderno.",
         webmUnavailableError:
-          "La exportación WebM no está disponible en este navegador. PNG Sequence sigue siendo la alternativa más segura.",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "Esta exportación probablemente exigirá bastante memoria y CPU. Considera 720p, 30 segundos o PNG Sequence si tu navegador empieza a resentirse.",
         pngSequenceInfo:
           "PNG Sequence es la entrega local-first más fiable para editores, especialmente cuando la transparencia importa.",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Exportación lista: {fileName}",
         preparingWebm: "Preparando exportación local en WebM",
         preparingPngSequence: "Preparando exportación local en PNG Sequence",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable:
           "El worker de exportación no está disponible en esta sesión del navegador.",
         webmFailedUnexpectedly: "La exportación WebM falló de forma inesperada.",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly:
           "La exportación de PNG Sequence falló de forma inesperada.",
       },

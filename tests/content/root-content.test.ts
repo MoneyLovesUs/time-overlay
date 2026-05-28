@@ -3,7 +3,20 @@ import { describe, expect, it } from "vitest";
 import { getRootPageContent } from "@/content/root";
 import enRootPageContent from "@/content/root/en";
 import { enabledLocales } from "@/lib/i18n";
-import { siteKeywords } from "@/lib/site";
+
+/**
+ * The phrases below are the SEO keyword cluster we want "Time Overlay" to
+ * dominate against in the English homepage copy. We keep the list inline here
+ * (rather than importing from site.ts) because the meta keywords tag was
+ * removed — Google ignores it — but we still care about content density.
+ */
+const COMPETING_KEYWORDS = [
+  "overlay timer",
+  "countdown timer overlay",
+  "timer overlay for video",
+  "transparent countdown overlay",
+  "video timer generator",
+] as const;
 
 function collectContentText(value: unknown): string[] {
   if (typeof value === "string") {
@@ -69,12 +82,11 @@ describe("root locale content", () => {
   it("keeps Time Overlay as the densest English SEO keyword without repetition stuffing", () => {
     const englishCopy = collectContentText(enRootPageContent).join(" ");
     const timeOverlayCount = countExactPhrase(englishCopy, "time overlay");
-    const competingKeywordCounts = siteKeywords
-      .filter((keyword) => keyword !== "time overlay")
-      .map((keyword) => [keyword, countExactPhrase(englishCopy, keyword)] as const);
+    const competingKeywordCounts = COMPETING_KEYWORDS.map(
+      (keyword) => [keyword, countExactPhrase(englishCopy, keyword)] as const,
+    );
     const repeatedTimeOverlayText = /time overlay(?:[\s,.;:!?-]+time overlay){2,}/i;
 
-    expect(siteKeywords[0]).toBe("time overlay");
     expect(timeOverlayCount).toBeGreaterThan(0);
     expect(englishCopy).not.toMatch(repeatedTimeOverlayText);
 

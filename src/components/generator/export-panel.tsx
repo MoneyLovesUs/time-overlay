@@ -1,4 +1,4 @@
-import { Download, FileStack, Film } from "lucide-react";
+import { Download, FileStack, Film, Lock, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
@@ -16,6 +16,7 @@ type ExportPanelProps = {
   ui: RootPageContent["generatorUi"]["exportPanel"];
   exportProgress: ExportProgressState;
   isExporting: boolean;
+  isPro: boolean;
   onExport: () => void;
   onFormatChange: (format: GeneratorFormat) => void;
   onFpsChange: (fps: number) => void;
@@ -26,12 +27,79 @@ type ExportPanelProps = {
 const fieldClassName =
   "mt-2 h-10 w-full rounded-none border border-border/80 bg-background/65 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-tertiary";
 
+type FormatOptionProps = {
+  active: boolean;
+  disabled: boolean;
+  locked: boolean;
+  icon: React.ReactNode;
+  label: string;
+  description: string;
+  proBadge: string;
+  lockedHint: string;
+  unavailableReason?: string;
+  onSelect: () => void;
+};
+
+function FormatOption({
+  active,
+  disabled,
+  locked,
+  icon,
+  label,
+  description,
+  proBadge,
+  lockedHint,
+  unavailableReason,
+  onSelect,
+}: FormatOptionProps) {
+  return (
+    <label
+      className={`flex items-start gap-3 border px-3 py-3 text-sm transition-colors ${
+        active
+          ? "border-primary/70 bg-primary/5"
+          : "border-border/80 bg-background/65"
+      } ${disabled ? "opacity-60" : ""}`}
+    >
+      <input
+        checked={active}
+        disabled={disabled}
+        name="format"
+        onChange={onSelect}
+        type="radio"
+      />
+      <span className="flex-1">
+        <span className="flex items-center gap-2 font-medium text-foreground">
+          {icon}
+          {label}
+          {locked ? (
+            <span className="ml-auto flex items-center gap-1 rounded-none border border-secondary/45 bg-secondary/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.24em] text-secondary">
+              <Lock className="size-3" />
+              {proBadge}
+            </span>
+          ) : null}
+        </span>
+        <span className="mt-1 block text-muted-foreground">{description}</span>
+        {locked ? (
+          <span className="mt-1 block text-[11px] text-secondary">
+            {lockedHint}
+          </span>
+        ) : disabled && unavailableReason ? (
+          <span className="mt-1 block text-[11px] text-destructive">
+            {unavailableReason}
+          </span>
+        ) : null}
+      </span>
+    </label>
+  );
+}
+
 export function ExportPanel({
   settings,
   advisory,
   ui,
   exportProgress,
   isExporting,
+  isPro,
   onExport,
   onFormatChange,
   onFpsChange,
@@ -44,16 +112,30 @@ export function ExportPanel({
       : advisory.severity === "warning"
         ? "border-secondary/35 bg-secondary/10 text-foreground"
         : "border-tertiary/30 bg-tertiary/8 text-foreground";
+
   const advisoryMessage =
     advisory.code === "workerSupportError"
       ? ui.advisoryMessages.workerSupportError
       : advisory.code === "webmUnavailableError"
         ? ui.advisoryMessages.webmUnavailableError
-        : advisory.code === "heavyExportWarning"
-          ? ui.advisoryMessages.heavyExportWarning
-          : advisory.code === "pngSequenceInfo"
-            ? ui.advisoryMessages.pngSequenceInfo
-            : null;
+        : advisory.code === "vp9AlphaUnavailableError"
+          ? ui.advisoryMessages.vp9AlphaUnavailableError
+          : advisory.code === "hevcAlphaUnavailableError"
+            ? ui.advisoryMessages.hevcAlphaUnavailableError
+            : advisory.code === "heavyExportWarning"
+              ? ui.advisoryMessages.heavyExportWarning
+              : advisory.code === "pngSequenceInfo"
+                ? ui.advisoryMessages.pngSequenceInfo
+                : advisory.code === "vp9AlphaInfo"
+                  ? ui.advisoryMessages.vp9AlphaInfo
+                  : advisory.code === "hevcAlphaInfo"
+                    ? ui.advisoryMessages.hevcAlphaInfo
+                    : null;
+
+  const vp9AlphaLocked = !isPro;
+  const hevcAlphaLocked = !isPro;
+  const vp9AlphaDisabled = advisory.disabledFormats.includes("webm-vp9-alpha");
+  const hevcAlphaDisabled = advisory.disabledFormats.includes("mov-hevc-alpha");
 
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
@@ -68,45 +150,57 @@ export function ExportPanel({
             {ui.outputFormatTitle}
           </p>
           <div className="mt-4 grid gap-3">
-            <label className="flex items-start gap-3 border border-border/80 bg-background/65 px-3 py-3 text-sm">
-              <input
-                checked={settings.export.format === "png-sequence"}
-                disabled={!support.supportsPngSequence}
-                name="format"
-                onChange={() => onFormatChange("png-sequence")}
-                type="radio"
-                value="png-sequence"
-              />
-              <span>
-                <span className="flex items-center gap-2 font-medium text-foreground">
-                  <FileStack className="size-4 text-primary" />
-                  {ui.pngSequenceLabel}
-                </span>
-                <span className="mt-1 block text-muted-foreground">
-                  {ui.pngSequenceDescription}
-                </span>
-              </span>
-            </label>
+            <FormatOption
+              active={settings.export.format === "png-sequence"}
+              disabled={!support.supportsPngSequence}
+              locked={false}
+              icon={<FileStack className="size-4 text-primary" />}
+              label={ui.pngSequenceLabel}
+              description={ui.pngSequenceDescription}
+              proBadge={ui.proBadge}
+              lockedHint={ui.proLockedHint}
+              onSelect={() => onFormatChange("png-sequence")}
+            />
 
-            <label className="flex items-start gap-3 border border-border/80 bg-background/65 px-3 py-3 text-sm">
-              <input
-                checked={settings.export.format === "webm"}
-                disabled={advisory.disabledFormats.includes("webm")}
-                name="format"
-                onChange={() => onFormatChange("webm")}
-                type="radio"
-                value="webm"
+            <FormatOption
+              active={settings.export.format === "webm"}
+              disabled={advisory.disabledFormats.includes("webm")}
+              locked={false}
+              icon={<Film className="size-4 text-tertiary" />}
+              label={ui.webmLabel}
+              description={ui.webmDescription}
+              proBadge={ui.proBadge}
+              lockedHint={ui.proLockedHint}
+              onSelect={() => onFormatChange("webm")}
+            />
+
+            {support.supportsVp9Alpha === true ? (
+              <FormatOption
+                active={settings.export.format === "webm-vp9-alpha"}
+                disabled={vp9AlphaDisabled}
+                locked={vp9AlphaLocked}
+                icon={<Sparkles className="size-4 text-secondary" />}
+                label={ui.vp9AlphaLabel}
+                description={ui.vp9AlphaDescription}
+                proBadge={ui.proBadge}
+                lockedHint={ui.proLockedHint}
+                onSelect={() => onFormatChange("webm-vp9-alpha")}
               />
-              <span>
-                <span className="flex items-center gap-2 font-medium text-foreground">
-                  <Film className="size-4 text-tertiary" />
-                  {ui.webmLabel}
-                </span>
-                <span className="mt-1 block text-muted-foreground">
-                  {ui.webmDescription}
-                </span>
-              </span>
-            </label>
+            ) : null}
+
+            {support.supportsHevcAlpha === true ? (
+              <FormatOption
+                active={settings.export.format === "mov-hevc-alpha"}
+                disabled={hevcAlphaDisabled}
+                locked={hevcAlphaLocked}
+                icon={<Sparkles className="size-4 text-secondary" />}
+                label={ui.hevcAlphaLabel}
+                description={ui.hevcAlphaDescription}
+                proBadge={ui.proBadge}
+                lockedHint={ui.proLockedHint}
+                onSelect={() => onFormatChange("mov-hevc-alpha")}
+              />
+            ) : null}
           </div>
         </div>
 

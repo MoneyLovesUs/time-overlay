@@ -4,7 +4,7 @@ const svRootPageContent = {
   metadata: {
     title: "Generator för nedräknings-overlay till videor och livesändningar",
     description:
-      "Skapa tydliga nedräknings-overlays direkt i webbläsaren. Förhandsgranska direkt och exportera transparenta PNG-sekvenser eller WebM för videoredigering, livesändningar och guider.",
+      "Skapa tydliga nedräknings-overlays i webbläsaren. Förhandsgranska direkt och exportera transparenta PNG-sekvenser eller WebM för videoredigering.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -40,9 +40,16 @@ const svRootPageContent = {
       title: "Temaförval",
       description: "Välj först ett utgångsläge och justera sedan kontrollerna bara om det behövs.",
       presetLabels: {
-        "minimal-neon": "Minimal Neon",
-        "broadcast-alert": "Broadcast Alert",
-        "calm-studio": "Calm Studio",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -61,8 +68,10 @@ const svRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "Bakgrundsläge",
@@ -86,7 +95,16 @@ const svRootPageContent = {
       },
       transparentOptionLabel: "Transparent",
       solidOptionLabel: "Solid",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "Förhandsvisning",
       subtitle: "Live-canvas",
@@ -103,8 +121,15 @@ const svRootPageContent = {
       outputFormatTitle: "Utdataformat",
       pngSequenceLabel: "PNG Sequence",
       pngSequenceDescription: "Det mest pålitliga valet för editorer och transparent överlämning.",
-      webmLabel: "WebM",
-      webmDescription: "Bra för lätt lokal videoexport i stödda webbläsare.",
+      webmLabel: "WebM (with alpha)",
+      webmDescription:
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -126,18 +151,24 @@ const svRootPageContent = {
         workerSupportError:
           "Den här webbläsaren kan inte starta en bakgrundsworker, så lokal videoexport är avstängd. Använd PNG Sequence i en modern desktop-webbläsare.",
         webmUnavailableError:
-          "WebM-export är inte tillgänglig i den här webbläsaren. PNG Sequence är fortfarande den säkraste reservvägen.",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "Den här exporten kommer sannolikt att belasta minne och CPU rejält. Överväg 720p, 30 sekunder eller PNG Sequence om webbläsaren börjar kämpa.",
         pngSequenceInfo:
           "PNG Sequence är den mest pålitliga local-first-överlämningen till editorer, särskilt när transparens är viktig.",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Export klar: {fileName}",
         preparingWebm: "Förbereder lokal WebM-export",
         preparingPngSequence: "Förbereder lokal PNG Sequence-export",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable: "Export-worker är inte tillgänglig i den här webbläsarsessionen.",
         webmFailedUnexpectedly: "WebM-exporten misslyckades oväntat.",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly: "PNG Sequence-exporten misslyckades oväntat.",
       },
     },

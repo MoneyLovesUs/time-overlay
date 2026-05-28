@@ -4,7 +4,7 @@ const hiRootPageContent = {
   metadata: {
     title: "वीडियो और लाइव स्ट्रीम के लिए काउंटडाउन टाइमर ओवरले जनरेटर",
     description:
-      "ब्राउज़र में साफ और पढ़ने में आसान काउंटडाउन टाइमर ओवरले बनाएं। तुरंत प्रीव्यू देखें और वीडियो एडिटिंग, लाइव स्ट्रीम और ट्यूटोरियल के लिए पारदर्शी PNG सीक्वेंस या WebM निर्यात करें।",
+      "ब्राउज़र में साफ काउंटडाउन टाइमर ओवरले बनाएं। तुरंत प्रीव्यू देखें और वीडियो एडिटिंग के लिए पारदर्शी PNG सीक्वेंस या WebM निर्यात करें।",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -40,9 +40,16 @@ const hiRootPageContent = {
       title: "थीम प्रीसेट",
       description: "पहले एक शुरुआती लुक चुनें, फिर ज़रूरत हो तो कंट्रोल समायोजित करें।",
       presetLabels: {
-        "minimal-neon": "मिनिमल नीयॉन",
-        "broadcast-alert": "ब्रॉडकास्ट अलर्ट",
-        "calm-studio": "शांत स्टूडियो",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -61,8 +68,10 @@ const hiRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "बैकग्राउंड मोड",
@@ -86,7 +95,16 @@ const hiRootPageContent = {
       },
       transparentOptionLabel: "पारदर्शी",
       solidOptionLabel: "ठोस",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "प्रीव्यू",
       subtitle: "लाइव कैनवास",
@@ -103,8 +121,15 @@ const hiRootPageContent = {
       outputFormatTitle: "आउटपुट फॉर्मैट",
       pngSequenceLabel: "PNG Sequence",
       pngSequenceDescription: "एडिटर्स और पारदर्शी हैंडऑफ़ के लिए सबसे विश्वसनीय विकल्प।",
-      webmLabel: "WebM",
-      webmDescription: "समर्थित ब्राउज़रों पर हल्के लोकल वीडियो निर्यात के लिए उपयुक्त।",
+      webmLabel: "WebM (with alpha)",
+      webmDescription:
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -126,18 +151,24 @@ const hiRootPageContent = {
         workerSupportError:
           "यह ब्राउज़र बैकग्राउंड worker शुरू नहीं कर सकता, इसलिए लोकल वीडियो निर्यात बंद है। आधुनिक डेस्कटॉप ब्राउज़र में PNG Sequence का उपयोग करें।",
         webmUnavailableError:
-          "इस ब्राउज़र में WebM निर्यात उपलब्ध नहीं है। PNG Sequence सबसे सुरक्षित विकल्प बना रहता है।",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "यह निर्यात मेमोरी और CPU पर भारी पड़ सकता है। यदि ब्राउज़र संघर्ष करे तो 720p, 30 सेकंड या PNG Sequence पर विचार करें।",
         pngSequenceInfo:
           "PNG Sequence, खासकर जब पारदर्शिता महत्वपूर्ण हो, एडिटर्स को local-first हैंडऑफ़ देने का सबसे भरोसेमंद तरीका है।",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "निर्यात तैयार: {fileName}",
         preparingWebm: "लोकल WebM निर्यात तैयार किया जा रहा है",
         preparingPngSequence: "लोकल PNG Sequence निर्यात तैयार किया जा रहा है",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable: "इस ब्राउज़र सत्र में export worker उपलब्ध नहीं है।",
         webmFailedUnexpectedly: "WebM निर्यात अप्रत्याशित रूप से विफल हो गया।",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly: "PNG Sequence निर्यात अप्रत्याशित रूप से विफल हो गया।",
       },
     },

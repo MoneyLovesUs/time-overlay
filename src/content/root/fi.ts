@@ -4,7 +4,7 @@ const fiRootPageContent = {
   metadata: {
     title: "Countdown-overlay-ajastin videoihin ja livestriimeihin",
     description:
-      "Luo selkeitä countdown-overlay-ajastimia suoraan selaimessa. Esikatsele heti ja vie läpinäkyvä PNG-kuvasarja tai WebM videoeditointiin, striimeihin ja ohjevideoihin.",
+      "Luo selkeitä countdown-overlay-ajastimia selaimessa. Esikatsele heti ja vie läpinäkyvä PNG-kuvasarja tai WebM videoeditointiin ja striimeihin.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -43,9 +43,16 @@ const fiRootPageContent = {
       description:
         "Valitse ensin lähtötyyli ja säädä asetuksia vain tarvittaessa.",
       presetLabels: {
-        "minimal-neon": "Minimal Neon",
-        "broadcast-alert": "Broadcast Alert",
-        "calm-studio": "Calm Studio",
+        cyber: "Cyber",
+        minimal: "Minimal",
+        mono: "Mono",
+        neon: "Neon",
+        glow: "Glow",
+        scanline: "Scanline",
+        classic: "Classic",
+        retro: "Retro 80s",
+        glass: "Glass",
+        neumorphic: "Neumorphic",
       },
     },
     controlPanel: {
@@ -64,8 +71,10 @@ const fiRootPageContent = {
       resolutionPresetOptions: {
         "landscape-720": "1280x720 / 16:9",
         "landscape-1080": "1920x1080 / 16:9",
+        "landscape-2160": "3840x2160 / 16:9 (4K)",
         "portrait-720": "720x1280 / 9:16",
         "portrait-1080": "1080x1920 / 9:16",
+        "portrait-2160": "2160x3840 / 9:16 (4K)",
         "square-1080": "1080x1080 / 1:1",
       },
       backgroundModeLabel: "Taustatila",
@@ -89,7 +98,16 @@ const fiRootPageContent = {
       },
       transparentOptionLabel: "Läpinäkyvä",
       solidOptionLabel: "Yksivärinen",
+    audioTitle: "Audio",
+    audioVariantLabel: "Audio cues",
+    audioVariantOptions: {
+      none: "None",
+      tick: "Tick every second",
+      beep: "Final beep only",
+      "tick-and-beep": "Tick + final beep",
     },
+    audioNote: "Audio is embedded in WebM (with alpha) exports. PNG sequence is silent.",
+  },
     previewPanel: {
       title: "Esikatselu",
       subtitle: "Live-canvas",
@@ -107,9 +125,15 @@ const fiRootPageContent = {
       pngSequenceLabel: "PNG-sekvenssi",
       pngSequenceDescription:
         "Luotettavin vaihtoehto editoreille ja läpinäkyvään toimitukseen.",
-      webmLabel: "WebM",
+      webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Hyvä kevyeen paikalliseen videovientiin tuetuissa selaimissa.",
+        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+      vp9AlphaLabel: "WebM (VP9 + alpha)",
+      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      hevcAlphaLabel: "MOV (HEVC + alpha)",
+      hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
+      proBadge: "Pro",
+      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -132,19 +156,25 @@ const fiRootPageContent = {
         workerSupportError:
           "Tämä selain ei pysty käynnistämään taustaworkeria, joten paikallinen videovienti on pois käytöstä. Käytä PNG Sequencea modernissa työpöytäselaimessa.",
         webmUnavailableError:
-          "WebM-vienti ei ole käytettävissä tässä selaimessa. PNG Sequence pysyy turvallisimpana varavaihtoehtona.",
+          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+        vp9AlphaUnavailableError: "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
+        hevcAlphaUnavailableError: "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         heavyExportWarning:
           "Tämä vienti kuormittaa todennäköisesti muistia ja CPU:ta paljon. Harkitse 720p:tä, 30 sekuntia tai PNG Sequencea, jos selain alkaa hidastua.",
         pngSequenceInfo:
           "PNG Sequence on luotettavin local-first-siirtotapa editoreille, erityisesti kun läpinäkyvyys on tärkeää.",
+      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Vienti valmis: {fileName}",
         preparingWebm: "Valmistellaan paikallista WebM-vientiä",
         preparingPngSequence: "Valmistellaan paikallista PNG Sequence -vientiä",
+        preparingAlphaVideo: "Preparing transparent video export",
         exportWorkerUnavailable:
           "Export worker ei ole käytettävissä tässä selainistunnossa.",
         webmFailedUnexpectedly: "WebM-vienti epäonnistui odottamatta.",
+        alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly:
           "PNG Sequence -vienti epäonnistui odottamatta.",
       },

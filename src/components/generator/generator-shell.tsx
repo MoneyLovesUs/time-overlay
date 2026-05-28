@@ -2,9 +2,9 @@
 
 import {
   startTransition,
+  useCallback,
   useDeferredValue,
   useEffect,
-  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -12,6 +12,7 @@ import {
 
 import { ControlPanel } from "@/components/generator/control-panel";
 import { ExportPanel } from "@/components/generator/export-panel";
+import { PaywallModal } from "@/components/generator/paywall-modal";
 import { PreviewPanel } from "@/components/generator/preview-panel";
 import { ThemePresetPicker } from "@/components/generator/theme-preset-picker";
 import type { RootPageContent } from "@/content/root/types";
@@ -19,6 +20,9 @@ import {
   DEFAULT_EXPORT_PROGRESS_STATE,
   DEFAULT_GENERATOR_SETTINGS,
   GENERATOR_CANVAS_PRESETS,
+  GENERATOR_FREE_DURATION_LIMIT_SECONDS,
+  GENERATOR_PRO_FORMATS,
+  GENERATOR_PRO_RESOLUTION_PRESETS,
   GENERATOR_THEME_PRESETS,
   normalizeGeneratorSettings,
 } from "@/lib/generator/defaults";
@@ -31,8 +35,18 @@ import {
   getExportAdvisory,
   getInitialLocalExportSupport,
   getLocalExportSupport,
+  probeAlphaExportSupport,
 } from "@/lib/generator/feature-detection";
+import {
+  loadFontIntoDocument,
+  readFontFile,
+  type UploadedFont,
+} from "@/lib/generator/font-loader";
+import { isProActive, useProState } from "@/lib/license/state";
+import { validateLicenseKey } from "@/lib/license/validate";
+import { trackEvent } from "@/lib/analytics/events";
 import type {
+  AudioCueVariant,
   BackgroundMode,
   ExportProgressState,
   ExportQualityPreset,
@@ -51,6 +65,14 @@ type GeneratorShellProps = {
   ui: RootPageContent["generatorUi"];
 };
 
+type PaywallTrigger =
+  | "format-vp9-alpha"
+  | "format-hevc-alpha"
+  | "resolution-4k"
+  | "duration-over-60s"
+  | "preset-locked"
+  | null;
+
 export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [settings, setSettings] = useState<GeneratorSettings>(() => ({
     ...DEFAULT_GENERATOR_SETTINGS,
@@ -60,9 +82,15 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   );
   const [isExporting, setIsExporting] = useState(false);
   const [support, setSupport] = useState(getInitialLocalExportSupport);
+  const [paywallTrigger, setPaywallTrigger] = useState<PaywallTrigger>(null);
+  const [uploadedFont, setUploadedFont] = useState<UploadedFont | null>(null);
+  const { state: proState, activate: activateLicense } = useProState();
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
+  const isPro = isProActive(proState);
+  const applyWatermark = !isPro;
+
   const formatTemplate = (
     template: string,
     replacements: Record<string, string | number>,
@@ -85,10 +113,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     ) {
       return {
         ...progress,
-        message:
-          progress.stage === "packaging"
-            ? `${progress.completedFrames}/${progress.totalFrames}`
-            : `${progress.completedFrames}/${progress.totalFrames}`,
+        message: `${progress.completedFrames}/${progress.totalFrames}`,
       };
     }
 
@@ -103,6 +128,33 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   useEffect(() => {
     setSupport(getLocalExportSupport());
+    probeAlphaExportSupport().then(({ supportsVp9Alpha, supportsHevcAlpha }) => {
+      setSupport((prev) => ({
+        ...prev,
+        supportsVp9Alpha,
+        supportsHevcAlpha,
+      }));
+    });
+
+    if (typeof window === "undefined") {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const presetParam = params.get("preset");
+    if (!presetParam) {
+      return;
+    }
+    const preset = GENERATOR_THEME_PRESETS.find((item) => item.id === presetParam);
+    if (preset && !(preset.isPro && !isProActive(proState))) {
+      updateSettings((current) => ({
+        ...current,
+        themePresetId: preset.id,
+        textStyle: { ...current.textStyle, ...preset.textStyle },
+        placement: { ...current.placement, ...preset.placement },
+        canvas: { ...current.canvas, ...preset.canvas },
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getExportRuntime = () => {
@@ -110,12 +162,25 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     return exportRuntimeRef.current;
   };
 
+  const enforceDurationLimit = (durationSeconds: number) => {
+    if (isPro) {
+      return durationSeconds;
+    }
+    if (durationSeconds > GENERATOR_FREE_DURATION_LIMIT_SECONDS) {
+      trackEvent("paywall_shown", { trigger: "duration-over-60s" });
+      setPaywallTrigger("duration-over-60s");
+      return GENERATOR_FREE_DURATION_LIMIT_SECONDS;
+    }
+    return durationSeconds;
+  };
+
   const handleDurationChange = (durationSeconds: number) => {
+    const enforced = enforceDurationLimit(durationSeconds);
     updateSettings((current) => ({
       ...current,
       timer: {
         ...current.timer,
-        durationSeconds,
+        durationSeconds: enforced,
       },
     }));
   };
@@ -131,6 +196,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleResolutionPresetChange = (resolutionPresetId: ResolutionPresetId) => {
+    if (GENERATOR_PRO_RESOLUTION_PRESETS.has(resolutionPresetId) && !isPro) {
+      trackEvent("paywall_shown", { trigger: "resolution-4k" });
+      setPaywallTrigger("resolution-4k");
+      return;
+    }
     updateSettings((current) => ({
       ...current,
       canvas: {
@@ -171,6 +241,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFormatChange = (format: GeneratorFormat) => {
+    if (GENERATOR_PRO_FORMATS.has(format) && !isPro) {
+      if (format === "webm-vp9-alpha") {
+        trackEvent("paywall_shown", { trigger: "format-vp9-alpha" });
+        setPaywallTrigger("format-vp9-alpha");
+      } else if (format === "mov-hevc-alpha") {
+        trackEvent("paywall_shown", { trigger: "format-hevc-alpha" });
+        setPaywallTrigger("format-hevc-alpha");
+      }
+      return;
+    }
     updateSettings((current) => ({
       ...current,
       export: {
@@ -186,6 +266,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       export: {
         ...current.export,
         fps,
+      },
+    }));
+  };
+
+  const handleAudioVariantChange = (variant: AudioCueVariant) => {
+    updateSettings((current) => ({
+      ...current,
+      audio: {
+        ...current.audio,
+        variant,
       },
     }));
   };
@@ -207,6 +297,18 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return;
     }
 
+    trackEvent("preset_selected", {
+      presetId,
+      isLocked: preset.isPro && !isPro,
+      isPro,
+    });
+
+    if (preset.isPro && !isPro) {
+      trackEvent("paywall_shown", { trigger: "preset-locked" });
+      setPaywallTrigger("preset-locked");
+      return;
+    }
+
     updateSettings((current) => ({
       ...current,
       themePresetId: preset.id,
@@ -225,6 +327,58 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }));
   };
 
+  const handleTextColorChange = (textColor: string) => {
+    if (!isPro) {
+      trackEvent("paywall_shown", { trigger: "preset-locked" });
+      setPaywallTrigger("preset-locked");
+      return;
+    }
+    updateSettings((current) => ({
+      ...current,
+      textStyle: {
+        ...current.textStyle,
+        textColor,
+      },
+    }));
+  };
+
+  const handleFontUpload = async (file: File) => {
+    if (!isPro) {
+      trackEvent("paywall_shown", { trigger: "preset-locked" });
+      setPaywallTrigger("preset-locked");
+      return;
+    }
+    try {
+      const font = await readFontFile(file);
+      await loadFontIntoDocument(font);
+      setUploadedFont(font);
+      updateSettings((current) => ({
+        ...current,
+        textStyle: {
+          ...current.textStyle,
+          customFontFamily: font.family,
+        },
+      }));
+    } catch (error) {
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Could not load this font file.",
+      );
+    }
+  };
+
+  const handleClearUploadedFont = () => {
+    setUploadedFont(null);
+    updateSettings((current) => ({
+      ...current,
+      textStyle: {
+        ...current.textStyle,
+        customFontFamily: undefined,
+      },
+    }));
+  };
+
   const handleToggleSafeArea = () => {
     updateSettings((current) => ({
       ...current,
@@ -235,7 +389,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }));
   };
 
-  const handlePngSequenceWorkerMessage = useEffectEvent(
+  const handleExportWorkerMessage = useCallback(
     (event: MessageEvent<ExportWorkerMessage>) => {
       if (event.data.kind === "progress") {
         setExportProgress(localizeProgressMessage(event.data.payload));
@@ -253,27 +407,37 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             { fileName: event.data.payload.fileName },
           ),
         });
+        trackEvent("export_completed", {
+          format: settings.export.format,
+          fileName: event.data.payload.fileName,
+        });
         downloadBlob(event.data.payload.blob, event.data.payload.fileName);
         return;
       }
 
       setIsExporting(false);
+      const code = event.data.payload.code;
+      const fallback =
+        code === "alphaVideoFailedUnexpectedly"
+          ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
+          : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
       setExportProgress({
         stage: "error",
         completedFrames: 0,
         totalFrames: 0,
-        message:
-          event.data.payload.message ??
-          (event.data.payload.code === "pngSequenceFailedUnexpectedly"
-            ? ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly
-            : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly),
+        message: event.data.payload.message ?? fallback,
+      });
+      trackEvent("export_failed", {
+        format: settings.export.format,
+        errorCode: code ?? "unknown",
       });
     },
+    [settings.export.format, ui.exportPanel.runtimeMessages],
   );
 
   useEffect(() => {
     return () => {
-      exportRuntimeRef.current?.terminatePngSequenceWorker();
+      exportRuntimeRef.current?.terminateExportWorker();
       exportRuntimeRef.current = null;
     };
   }, []);
@@ -282,21 +446,28 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
     exportTotalsRef.current = totalFrames;
 
-    setIsExporting(true);
-    setExportProgress({
-      stage: "validating",
-      completedFrames: 0,
-      totalFrames,
-      message:
-        settings.export.format === "webm"
-          ? ui.exportPanel.runtimeMessages.preparingWebm
-          : ui.exportPanel.runtimeMessages.preparingPngSequence,
+    trackEvent("export_started", {
+      format: settings.export.format,
+      fps: settings.export.fps,
+      durationSeconds: settings.timer.durationSeconds,
+      resolution: settings.canvas.resolutionPresetId,
+      isPro,
     });
 
+    setIsExporting(true);
+
     if (settings.export.format === "webm") {
+      setExportProgress({
+        stage: "validating",
+        completedFrames: 0,
+        totalFrames,
+        message: ui.exportPanel.runtimeMessages.preparingWebm,
+      });
+
       try {
         const { exportWebmLocally } = await getExportRuntime().loadWebmExporter();
         const result = await exportWebmLocally(settings, {
+          applyWatermark,
           onProgress: (progress) => {
             setExportProgress(localizeProgressMessage(progress));
           },
@@ -325,17 +496,45 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
               : ui.exportPanel.runtimeMessages.webmFailedUnexpectedly,
         });
       }
-
       return;
     }
 
+    const preparingMessage =
+      settings.export.format === "png-sequence"
+        ? ui.exportPanel.runtimeMessages.preparingPngSequence
+        : ui.exportPanel.runtimeMessages.preparingAlphaVideo;
+
+    setExportProgress({
+      stage: "validating",
+      completedFrames: 0,
+      totalFrames,
+      message: preparingMessage,
+    });
+
     try {
-      const exportWorker = getExportRuntime().getPngSequenceWorker();
-      exportWorker.onmessage = handlePngSequenceWorkerMessage;
+      const exportWorker = getExportRuntime().getExportWorker();
+      exportWorker.onmessage = handleExportWorkerMessage;
+      if (settings.export.format === "png-sequence") {
+        exportWorker.postMessage({
+          kind: "export-png-sequence",
+          payload: {
+            settings,
+            applyWatermark,
+            includeProResBundle: isPro,
+            uploadedFont: uploadedFont ?? undefined,
+          },
+        });
+        return;
+      }
+      const alphaTarget =
+        settings.export.format === "webm-vp9-alpha" ? "webm-vp9" : "mov-hevc";
       exportWorker.postMessage({
-        kind: "export-png-sequence",
+        kind: "export-alpha-video",
         payload: {
           settings,
+          target: alphaTarget,
+          applyWatermark,
+          uploadedFont: uploadedFont ?? undefined,
         },
       });
     } catch {
@@ -379,6 +578,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           <ThemePresetPicker
             presets={GENERATOR_THEME_PRESETS}
             activePresetId={settings.themePresetId}
+            isPro={isPro}
             onSelectPreset={handleThemePresetChange}
             ui={ui.themePresetPicker}
           />
@@ -388,16 +588,27 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
               settings={settings}
               canvasPresets={GENERATOR_CANVAS_PRESETS}
               ui={ui.controlPanel}
+              isPro={isPro}
+              uploadedFontName={uploadedFont?.family ?? null}
               onDurationChange={handleDurationChange}
               onDisplayFormatChange={handleDisplayFormatChange}
               onResolutionPresetChange={handleResolutionPresetChange}
               onBackgroundModeChange={handleBackgroundModeChange}
               onFontFamilyChange={handleFontFamilyChange}
               onAnchorChange={handleAnchorChange}
+              onTextColorChange={handleTextColorChange}
+              onUploadFont={handleFontUpload}
+              onClearUploadedFont={handleClearUploadedFont}
+              onAudioVariantChange={handleAudioVariantChange}
+              onProLockedClick={() => {
+                trackEvent("paywall_shown", { trigger: "preset-locked" });
+                setPaywallTrigger("preset-locked");
+              }}
             />
             <PreviewPanel
               settings={deferredSettings}
               ui={ui.previewPanel}
+              showWatermark={applyWatermark}
               onToggleSafeArea={handleToggleSafeArea}
             />
             <ExportPanel
@@ -411,10 +622,28 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
               onFpsChange={handleFpsChange}
               onQualityChange={handleQualityChange}
               support={support}
+              isPro={isPro}
             />
           </div>
         </div>
       </section>
+
+      <PaywallModal
+        trigger={paywallTrigger}
+        onActivateLicense={async (licenseKey: string) => {
+          const result = await validateLicenseKey(licenseKey);
+          if (result.kind === "valid") {
+            activateLicense(result.licenseKey);
+            trackEvent("license_activated", { source: "modal" });
+            return true;
+          }
+          return false;
+        }}
+        onCheckoutStart={() => {
+          trackEvent("checkout_started", { trigger: paywallTrigger ?? "unknown" });
+        }}
+        onClose={() => setPaywallTrigger(null)}
+      />
     </main>
   );
 }

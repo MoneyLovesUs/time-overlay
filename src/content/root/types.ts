@@ -1,4 +1,5 @@
 import type {
+  AudioCueVariant,
   ExportQualityPreset,
   FontFamilyPreset,
   PlacementAnchor,
@@ -86,6 +87,10 @@ export type RootPageContent = {
       anchorOptions: Record<PlacementAnchor, string>;
       transparentOptionLabel: string;
       solidOptionLabel: string;
+      audioTitle: string;
+      audioVariantLabel: string;
+      audioVariantOptions: Record<AudioCueVariant, string>;
+      audioNote: string;
     };
     previewPanel: {
       title: string;
@@ -105,6 +110,12 @@ export type RootPageContent = {
       pngSequenceDescription: string;
       webmLabel: string;
       webmDescription: string;
+      vp9AlphaLabel: string;
+      vp9AlphaDescription: string;
+      hevcAlphaLabel: string;
+      hevcAlphaDescription: string;
+      proBadge: string;
+      proLockedHint: string;
       fpsLabel: string;
       fpsOptions: Record<24 | 30, string>;
       qualityLabel: string;
@@ -118,15 +129,21 @@ export type RootPageContent = {
       advisoryMessages: {
         workerSupportError: string;
         webmUnavailableError: string;
+        vp9AlphaUnavailableError: string;
+        hevcAlphaUnavailableError: string;
         heavyExportWarning: string;
         pngSequenceInfo: string;
+        vp9AlphaInfo: string;
+        hevcAlphaInfo: string;
       };
       runtimeMessages: {
         exportReadyTemplate: string;
         preparingWebm: string;
         preparingPngSequence: string;
+        preparingAlphaVideo: string;
         exportWorkerUnavailable: string;
         webmFailedUnexpectedly: string;
+        alphaVideoFailedUnexpectedly: string;
         pngSequenceFailedUnexpectedly: string;
       };
     };

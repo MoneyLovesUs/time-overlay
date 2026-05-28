@@ -7,17 +7,35 @@ import type {
   ThemePreset,
 } from "@/lib/generator/types";
 
-export const GENERATOR_DURATION_LIMIT_SECONDS = 60;
+export const GENERATOR_FREE_DURATION_LIMIT_SECONDS = 60;
+
+export const GENERATOR_PRO_DURATION_LIMIT_SECONDS = 300;
+
+export const GENERATOR_DURATION_LIMIT_SECONDS = GENERATOR_PRO_DURATION_LIMIT_SECONDS;
 
 export const GENERATOR_MIN_DURATION_SECONDS = 3;
 
 export const GENERATOR_SUPPORTED_FORMATS: readonly GeneratorFormat[] = [
   "png-sequence",
   "webm",
+  "webm-vp9-alpha",
+  "mov-hevc-alpha",
   "gif",
 ];
 
+export const GENERATOR_PRO_FORMATS: ReadonlySet<GeneratorFormat> = new Set([
+  "webm-vp9-alpha",
+  "mov-hevc-alpha",
+]);
+
 export const GENERATOR_ALLOWED_FPS = [24, 30] as const;
+
+export const GENERATOR_ALLOWED_AUDIO_VARIANTS = [
+  "none",
+  "tick",
+  "beep",
+  "tick-and-beep",
+] as const;
 
 export const GENERATOR_ALLOWED_FONT_WEIGHTS = [500, 600, 700] as const;
 
@@ -34,18 +52,27 @@ export const GENERATOR_ALLOWED_ANCHORS: readonly PlacementAnchor[] = [
 ];
 
 export const GENERATOR_CANVAS_PRESETS: readonly CanvasPreset[] = [
-  { id: "landscape-720", label: "Landscape 1280x720", width: 1280, height: 720 },
-  { id: "landscape-1080", label: "Landscape 1920x1080", width: 1920, height: 1080 },
-  { id: "portrait-720", label: "Portrait 720x1280", width: 720, height: 1280 },
-  { id: "portrait-1080", label: "Portrait 1080x1920", width: 1080, height: 1920 },
-  { id: "square-1080", label: "Square 1080x1080", width: 1080, height: 1080 },
+  { id: "landscape-720", label: "Landscape 1280x720", width: 1280, height: 720, tier: "standard" },
+  { id: "landscape-1080", label: "Landscape 1920x1080", width: 1920, height: 1080, tier: "standard" },
+  { id: "landscape-2160", label: "Landscape 3840x2160 (4K)", width: 3840, height: 2160, tier: "pro" },
+  { id: "portrait-720", label: "Portrait 720x1280", width: 720, height: 1280, tier: "standard" },
+  { id: "portrait-1080", label: "Portrait 1080x1920", width: 1080, height: 1920, tier: "standard" },
+  { id: "portrait-2160", label: "Portrait 2160x3840 (4K)", width: 2160, height: 3840, tier: "pro" },
+  { id: "square-1080", label: "Square 1080x1080", width: 1080, height: 1080, tier: "standard" },
 ] as const;
+
+export const GENERATOR_PRO_RESOLUTION_PRESETS: ReadonlySet<CanvasPreset["id"]> = new Set(
+  GENERATOR_CANVAS_PRESETS.filter((preset) => preset.tier === "pro").map(
+    (preset) => preset.id,
+  ),
+);
 
 export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
   {
-    id: "minimal-neon",
-    label: "Minimal Neon",
+    id: "cyber",
+    label: "Cyber",
     description: "Sharp mono numerals with a restrained cyan glow.",
+    isPro: false,
     textStyle: {
       fontFamily: "geist-mono",
       fontSize: 88,
@@ -61,41 +88,13 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
       shadowOffsetX: 0,
       shadowOffsetY: 0,
     },
-    placement: {
-      anchor: "center",
-      offsetX: 0,
-      offsetY: 0,
-    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
   },
   {
-    id: "broadcast-alert",
-    label: "Broadcast Alert",
-    description: "Bold timer with a heavy stroke for noisy footage.",
-    textStyle: {
-      fontFamily: "geist-sans",
-      fontSize: 96,
-      fontWeight: 700,
-      letterSpacing: 0.04,
-      textColor: "#F8FAFC",
-      strokeWidth: 6,
-      strokeColor: "#091018",
-      glowBlur: 0,
-      glowColor: "rgba(0, 0, 0, 0)",
-      shadowBlur: 18,
-      shadowColor: "rgba(0, 0, 0, 0.4)",
-      shadowOffsetX: 0,
-      shadowOffsetY: 6,
-    },
-    placement: {
-      anchor: "bottom-center",
-      offsetX: 0,
-      offsetY: -32,
-    },
-  },
-  {
-    id: "calm-studio",
-    label: "Calm Studio",
-    description: "Clean timer tuned for tutorials and understated overlays.",
+    id: "minimal",
+    label: "Minimal",
+    description: "Quiet sans numerals tuned for tutorials and screen recordings.",
+    isPro: false,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 80,
@@ -111,13 +110,190 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
       shadowOffsetX: 0,
       shadowOffsetY: 2,
     },
-    placement: {
-      anchor: "top-right",
-      offsetX: -28,
-      offsetY: 28,
+    placement: { anchor: "top-right", offsetX: -28, offsetY: 28 },
+  },
+  {
+    id: "mono",
+    label: "Mono",
+    description: "Plain monospace numerals. No glow, no fuss.",
+    isPro: false,
+    textStyle: {
+      fontFamily: "geist-mono",
+      fontSize: 84,
+      fontWeight: 700,
+      letterSpacing: 0.06,
+      textColor: "#F8FAFC",
+      strokeWidth: 0,
+      strokeColor: "#000000",
+      glowBlur: 0,
+      glowColor: "rgba(0,0,0,0)",
+      shadowBlur: 8,
+      shadowColor: "rgba(0, 0, 0, 0.32)",
+      shadowOffsetX: 0,
+      shadowOffsetY: 2,
     },
+    placement: { anchor: "bottom-right", offsetX: -32, offsetY: -32 },
+  },
+  {
+    id: "neon",
+    label: "Neon",
+    description: "Bright magenta glow for nightlife streams and party countdowns.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-mono",
+      fontSize: 92,
+      fontWeight: 700,
+      letterSpacing: 0.1,
+      textColor: "#FFE2F3",
+      strokeWidth: 0,
+      strokeColor: "#FF00C8",
+      glowBlur: 32,
+      glowColor: "rgba(255, 0, 200, 0.85)",
+      shadowBlur: 18,
+      shadowColor: "rgba(255, 0, 200, 0.45)",
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
+  },
+  {
+    id: "glow",
+    label: "Glow",
+    description: "Soft warm glow for cinematic intros and lifestyle content.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-sans",
+      fontSize: 88,
+      fontWeight: 600,
+      letterSpacing: 0.02,
+      textColor: "#FFF5E6",
+      strokeWidth: 0,
+      strokeColor: "rgba(255,255,255,0)",
+      glowBlur: 28,
+      glowColor: "rgba(255, 220, 170, 0.6)",
+      shadowBlur: 14,
+      shadowColor: "rgba(150, 90, 30, 0.35)",
+      shadowOffsetX: 0,
+      shadowOffsetY: 4,
+    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
+  },
+  {
+    id: "scanline",
+    label: "Scanline",
+    description: "CRT phosphor green with horizontal scanline overlay.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-mono",
+      fontSize: 90,
+      fontWeight: 700,
+      letterSpacing: 0.1,
+      textColor: "#7CFFB2",
+      strokeWidth: 0,
+      strokeColor: "#000",
+      glowBlur: 12,
+      glowColor: "rgba(0, 255, 136, 0.6)",
+      shadowBlur: 8,
+      shadowColor: "rgba(0, 80, 40, 0.5)",
+      shadowOffsetX: 0,
+      shadowOffsetY: 1,
+    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
+  },
+  {
+    id: "classic",
+    label: "Classic",
+    description: "Bold broadcast numerals with a heavy stroke for noisy footage.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-sans",
+      fontSize: 96,
+      fontWeight: 700,
+      letterSpacing: 0.04,
+      textColor: "#F8FAFC",
+      strokeWidth: 6,
+      strokeColor: "#091018",
+      glowBlur: 0,
+      glowColor: "rgba(0, 0, 0, 0)",
+      shadowBlur: 18,
+      shadowColor: "rgba(0, 0, 0, 0.4)",
+      shadowOffsetX: 0,
+      shadowOffsetY: 6,
+    },
+    placement: { anchor: "bottom-center", offsetX: 0, offsetY: -32 },
+  },
+  {
+    id: "retro",
+    label: "Retro 80s",
+    description: "Yellow and magenta shadow split for a synthwave countdown.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-sans",
+      fontSize: 92,
+      fontWeight: 700,
+      letterSpacing: 0.06,
+      textColor: "#FFD166",
+      strokeWidth: 2,
+      strokeColor: "#3C096C",
+      glowBlur: 0,
+      glowColor: "rgba(0,0,0,0)",
+      shadowBlur: 0,
+      shadowColor: "#FF1F8F",
+      shadowOffsetX: 6,
+      shadowOffsetY: 6,
+    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
+  },
+  {
+    id: "glass",
+    label: "Glass",
+    description: "Frosted glassmorphism pill behind clean numerals.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-sans",
+      fontSize: 84,
+      fontWeight: 600,
+      letterSpacing: 0.03,
+      textColor: "#F8FAFC",
+      strokeWidth: 0,
+      strokeColor: "rgba(0,0,0,0)",
+      glowBlur: 12,
+      glowColor: "rgba(255,255,255,0.18)",
+      shadowBlur: 16,
+      shadowColor: "rgba(15, 23, 42, 0.5)",
+      shadowOffsetX: 0,
+      shadowOffsetY: 6,
+    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
+  },
+  {
+    id: "neumorphic",
+    label: "Neumorphic",
+    description: "Soft mono-tone numerals with paired light and shadow.",
+    isPro: true,
+    textStyle: {
+      fontFamily: "geist-sans",
+      fontSize: 82,
+      fontWeight: 600,
+      letterSpacing: 0.02,
+      textColor: "#D9DEE6",
+      strokeWidth: 0,
+      strokeColor: "rgba(0,0,0,0)",
+      glowBlur: 18,
+      glowColor: "rgba(255, 255, 255, 0.18)",
+      shadowBlur: 18,
+      shadowColor: "rgba(8, 11, 17, 0.55)",
+      shadowOffsetX: 6,
+      shadowOffsetY: 6,
+    },
+    placement: { anchor: "center", offsetX: 0, offsetY: 0 },
+    canvas: { backgroundMode: "solid", backgroundColor: "#1F2330" },
   },
 ] as const;
+
+export const GENERATOR_PRO_THEME_PRESETS: ReadonlySet<ThemePreset["id"]> = new Set(
+  GENERATOR_THEME_PRESETS.filter((preset) => preset.isPro).map((preset) => preset.id),
+);
 
 export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettings = {
   timer: {
@@ -157,7 +333,10 @@ export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettings = {
     fps: 30,
     quality: "standard",
   },
-  themePresetId: "minimal-neon",
+  audio: {
+    variant: "none",
+  },
+  themePresetId: "cyber",
 };
 
 export const DEFAULT_EXPORT_PROGRESS_STATE: ExportProgressState = {
@@ -248,11 +427,23 @@ export function normalizeGeneratorSettings(
       format: allowedFormat,
       fps: allowedFps,
     },
+    audio: {
+      ...settings.audio,
+      variant: GENERATOR_ALLOWED_AUDIO_VARIANTS.includes(
+        settings.audio.variant as (typeof GENERATOR_ALLOWED_AUDIO_VARIANTS)[number],
+      )
+        ? settings.audio.variant
+        : DEFAULT_GENERATOR_SETTINGS.audio.variant,
+    },
   };
 }
 
+type DeepPartial<T> = T extends object
+  ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : T;
+
 export function createGeneratorSettings(
-  overrides: Partial<GeneratorSettings> = {},
+  overrides: DeepPartial<GeneratorSettings> = {},
 ): GeneratorSettings {
   const themePreset = getThemePresetById(
     overrides.themePresetId ?? DEFAULT_GENERATOR_SETTINGS.themePresetId,
@@ -290,6 +481,10 @@ export function createGeneratorSettings(
     export: {
       ...DEFAULT_GENERATOR_SETTINGS.export,
       ...overrides.export,
+    },
+    audio: {
+      ...DEFAULT_GENERATOR_SETTINGS.audio,
+      ...overrides.audio,
     },
     themePresetId: themePreset.id,
   });

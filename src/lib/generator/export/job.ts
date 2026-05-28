@@ -1,4 +1,9 @@
-import type { ExportProgressState, GeneratorFormat, GeneratorSettings } from "@/lib/generator/types";
+import type { UploadedFont } from "@/lib/generator/font-loader";
+import type {
+  ExportProgressState,
+  GeneratorFormat,
+  GeneratorSettings,
+} from "@/lib/generator/types";
 
 export type ExportJobPlan = {
   format: GeneratorFormat;
@@ -8,12 +13,33 @@ export type ExportJobPlan = {
   getFrameFileName: (frameIndex: number) => string;
 };
 
-export type ExportWorkerRequest = {
-  kind: "export-png-sequence";
-  payload: {
-    settings: GeneratorSettings;
-  };
+const FORMAT_EXTENSIONS: Record<GeneratorFormat, string> = {
+  "png-sequence": "zip",
+  webm: "webm",
+  "webm-vp9-alpha": "webm",
+  "mov-hevc-alpha": "mov",
+  gif: "gif",
 };
+
+export type ExportWorkerRequest =
+  | {
+      kind: "export-png-sequence";
+      payload: {
+        settings: GeneratorSettings;
+        applyWatermark: boolean;
+        includeProResBundle: boolean;
+        uploadedFont?: UploadedFont;
+      };
+    }
+  | {
+      kind: "export-alpha-video";
+      payload: {
+        settings: GeneratorSettings;
+        target: "webm-vp9" | "mov-hevc";
+        applyWatermark: boolean;
+        uploadedFont?: UploadedFont;
+      };
+    };
 
 export type ExportWorkerMessage =
   | {
@@ -31,7 +57,9 @@ export type ExportWorkerMessage =
   | {
       kind: "error";
       payload: {
-        code?: "pngSequenceFailedUnexpectedly";
+        code?:
+          | "pngSequenceFailedUnexpectedly"
+          | "alphaVideoFailedUnexpectedly";
         message?: string;
       };
     };
@@ -43,7 +71,7 @@ export function createExportJobPlan({
 }: Pick<GeneratorSettings["timer"], "durationSeconds"> &
   Pick<GeneratorSettings["export"], "fps" | "format">): ExportJobPlan {
   const totalFrames = Math.max(1, Math.round(durationSeconds * fps));
-  const extension = format === "webm" ? "webm" : "zip";
+  const extension = FORMAT_EXTENSIONS[format];
 
   return {
     format,

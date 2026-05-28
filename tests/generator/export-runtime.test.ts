@@ -2,12 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createLazyExportRuntime } from "@/lib/generator/export/runtime";
 
+function createMockWorker() {
+  return {
+    terminate: vi.fn(),
+    postMessage: vi.fn(),
+    onmessage: null,
+  };
+}
+
 describe("createLazyExportRuntime", () => {
-  it("does not create a PNG export worker until PNG export is requested", () => {
-    const createWorker = vi.fn(() => ({
-      terminate: vi.fn(),
-      postMessage: vi.fn(),
-    }));
+  it("does not create an export worker until it is requested", () => {
+    const createWorker = vi.fn(createMockWorker);
     const loadWebmExporter = vi.fn();
 
     createLazyExportRuntime({
@@ -19,19 +24,16 @@ describe("createLazyExportRuntime", () => {
     expect(loadWebmExporter).not.toHaveBeenCalled();
   });
 
-  it("creates and reuses the PNG export worker lazily", () => {
-    const worker = {
-      terminate: vi.fn(),
-      postMessage: vi.fn(),
-    };
+  it("creates and reuses the export worker lazily", () => {
+    const worker = createMockWorker();
     const createWorker = vi.fn(() => worker);
     const runtime = createLazyExportRuntime({
       createWorker,
       loadWebmExporter: vi.fn(),
     });
 
-    expect(runtime.getPngSequenceWorker()).toBe(worker);
-    expect(runtime.getPngSequenceWorker()).toBe(worker);
+    expect(runtime.getExportWorker()).toBe(worker);
+    expect(runtime.getExportWorker()).toBe(worker);
     expect(createWorker).toHaveBeenCalledTimes(1);
   });
 
@@ -40,7 +42,7 @@ describe("createLazyExportRuntime", () => {
       exportWebmLocally: vi.fn(),
     }));
     const runtime = createLazyExportRuntime({
-      createWorker: vi.fn(),
+      createWorker: vi.fn(createMockWorker),
       loadWebmExporter,
     });
 

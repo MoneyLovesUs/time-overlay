@@ -12,6 +12,8 @@ describe("getInitialLocalExportSupport", () => {
       hasWorkerSupport: null,
       supportsPngSequence: true,
       supportsWebm: null,
+      supportsVp9Alpha: null,
+      supportsHevcAlpha: null,
     });
   });
 });

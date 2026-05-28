@@ -1,6 +1,11 @@
 export type TimerDisplayFormat = "ss" | "mm:ss" | "hh:mm:ss";
 
-export type GeneratorFormat = "png-sequence" | "webm" | "gif";
+export type GeneratorFormat =
+  | "png-sequence"
+  | "webm"
+  | "webm-vp9-alpha"
+  | "mov-hevc-alpha"
+  | "gif";
 
 export type BackgroundMode = "transparent" | "solid";
 
@@ -19,7 +24,19 @@ export type FontFamilyPreset = "geist-mono" | "geist-sans";
 
 export type ExportQualityPreset = "standard" | "high";
 
-export type RenderThemePresetId = "minimal-neon" | "broadcast-alert" | "calm-studio";
+export type StylePresetId =
+  | "cyber"
+  | "minimal"
+  | "mono"
+  | "neon"
+  | "glow"
+  | "scanline"
+  | "classic"
+  | "retro"
+  | "glass"
+  | "neumorphic";
+
+export type RenderThemePresetId = StylePresetId;
 
 export type ExportStage =
   | "idle"
@@ -33,15 +50,20 @@ export type ExportStage =
 export type ResolutionPresetId =
   | "landscape-720"
   | "landscape-1080"
+  | "landscape-2160"
   | "portrait-720"
   | "portrait-1080"
+  | "portrait-2160"
   | "square-1080";
+
+export type ResolutionTier = "standard" | "pro";
 
 export type CanvasPreset = {
   id: ResolutionPresetId;
   label: string;
   width: number;
   height: number;
+  tier: ResolutionTier;
 };
 
 export type TimerContentSettings = {
@@ -60,6 +82,7 @@ export type CanvasSettings = {
 
 export type TextStyleSettings = {
   fontFamily: FontFamilyPreset;
+  customFontFamily?: string;
   fontSize: number;
   fontWeight: number;
   letterSpacing: number;
@@ -80,6 +103,12 @@ export type PlacementSettings = {
   offsetY: number;
 };
 
+export type AudioCueVariant = "none" | "tick" | "beep" | "tick-and-beep";
+
+export type AudioSettings = {
+  variant: AudioCueVariant;
+};
+
 export type ExportSettings = {
   format: GeneratorFormat;
   fps: number;
@@ -92,16 +121,34 @@ export type GeneratorSettings = {
   textStyle: TextStyleSettings;
   placement: PlacementSettings;
   export: ExportSettings;
+  audio: AudioSettings;
   themePresetId: RenderThemePresetId;
 };
+
+export type FrameSurface = {
+  width: number;
+  height: number;
+};
+
+export type StylePresetDecoratorContext = {
+  surface: FrameSurface;
+};
+
+export type StylePresetDecorator = (
+  context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  decorator: StylePresetDecoratorContext,
+) => void;
 
 export type ThemePreset = {
   id: RenderThemePresetId;
   label: string;
   description: string;
+  isPro: boolean;
   textStyle: Partial<TextStyleSettings>;
   placement?: Partial<PlacementSettings>;
   canvas?: Partial<Pick<CanvasSettings, "backgroundMode" | "backgroundColor">>;
+  drawBackdrop?: StylePresetDecorator;
+  drawOverlay?: StylePresetDecorator;
 };
 
 export type ExportProgressState = {

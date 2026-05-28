@@ -14,21 +14,24 @@ import {
 import {
   createRenderFrameState,
   measureRenderTextBox,
-  renderFrameToCanvas,
+  renderStyledFrame,
   resolveCanvasFontFamily,
 } from "@/lib/generator/render-frame";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
 import type { GeneratorSettings } from "@/lib/generator/types";
+import { drawWatermark } from "@/lib/generator/watermark";
 
 type PreviewPanelProps = {
   settings: GeneratorSettings;
   ui: RootPageContent["generatorUi"]["previewPanel"];
+  showWatermark: boolean;
   onToggleSafeArea: () => void;
 };
 
 export function PreviewPanel({
   settings,
   ui,
+  showWatermark,
   onToggleSafeArea,
 }: PreviewPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -116,7 +119,7 @@ export function PreviewPanel({
       return;
     }
 
-    context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolveCanvasFontFamily(settings.textStyle.fontFamily)}`;
+    context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolveCanvasFontFamily(settings.textStyle.fontFamily, settings.textStyle.customFontFamily)}`;
     const textBox = measureRenderTextBox(context, displayText, {
       fontFamily: settings.textStyle.fontFamily,
       fontSize: settings.textStyle.fontSize,
@@ -140,8 +143,15 @@ export function PreviewPanel({
       safeAreaInset: 32,
     });
 
-    renderFrameToCanvas(context, frameState);
-  }, [displayText, elapsedSeconds, settings]);
+    renderStyledFrame(context, frameState, settings.themePresetId);
+
+    if (showWatermark) {
+      drawWatermark(context, {
+        canvasWidth: settings.canvas.width,
+        canvasHeight: settings.canvas.height,
+      });
+    }
+  }, [displayText, elapsedSeconds, settings, showWatermark]);
 
   const handlePlay = () => {
     if (elapsedSeconds >= settings.timer.durationSeconds) {

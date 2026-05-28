@@ -1,6 +1,11 @@
 import { getTimerBoxPosition } from "@/lib/generator/layout";
+import { getStylePresetDecorators } from "@/lib/generator/style-presets/decorators";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
-import type { GeneratorSettings, TextStyleSettings } from "@/lib/generator/types";
+import type {
+  GeneratorSettings,
+  RenderThemePresetId,
+  TextStyleSettings,
+} from "@/lib/generator/types";
 
 type TextBoxSize = {
   width: number;
@@ -22,6 +27,7 @@ type RenderFrameStateInput = {
 type FrameTextStyle = Pick<
   TextStyleSettings,
   | "fontFamily"
+  | "customFontFamily"
   | "fontSize"
   | "fontWeight"
   | "letterSpacing"
@@ -50,7 +56,15 @@ export type RenderFrameState = {
   };
 };
 
-export function resolveCanvasFontFamily(fontFamily: FrameTextStyle["fontFamily"]) {
+export function resolveCanvasFontFamily(
+  fontFamily: FrameTextStyle["fontFamily"],
+  customFontFamily?: string,
+) {
+  if (customFontFamily) {
+    const fallback =
+      fontFamily === "geist-sans" ? "ui-sans-serif, sans-serif" : "ui-monospace, monospace";
+    return `"${customFontFamily}", ${fallback}`;
+  }
   return fontFamily === "geist-sans" ? "ui-sans-serif, sans-serif" : "ui-monospace, monospace";
 }
 
@@ -173,7 +187,7 @@ export function measureRenderTextBox(
   text: string,
   style: FrameTextStyle,
 ): TextBoxSize {
-  context.font = `${style.fontWeight} ${style.fontSize}px ${resolveCanvasFontFamily(style.fontFamily)}`;
+  context.font = `${style.fontWeight} ${style.fontSize}px ${resolveCanvasFontFamily(style.fontFamily, style.customFontFamily)}`;
   const textMetrics = context.measureText(text);
 
   return {
@@ -195,7 +209,7 @@ export function renderFrameToCanvas(
     context.fillRect(0, 0, frame.width, frame.height);
   }
 
-  context.font = `${style.fontWeight} ${style.fontSize}px ${resolveCanvasFontFamily(style.fontFamily)}`;
+  context.font = `${style.fontWeight} ${style.fontSize}px ${resolveCanvasFontFamily(style.fontFamily, style.customFontFamily)}`;
   context.textBaseline = "top";
   context.shadowBlur = style.shadowBlur;
   context.shadowColor = style.shadowColor;
@@ -212,4 +226,52 @@ export function renderFrameToCanvas(
   context.shadowColor = style.glowColor || style.shadowColor;
   context.fillStyle = style.textColor;
   context.fillText(text, position.x, position.y);
+}
+
+export function renderStyledFrame(
+  context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  frameState: RenderFrameState,
+  presetId: RenderThemePresetId,
+) {
+  const { frame } = frameState;
+  const decoratorContext = {
+    surface: { width: frame.width, height: frame.height },
+  };
+  const { drawBackdrop, drawOverlay } = getStylePresetDecorators(presetId);
+
+  context.clearRect(0, 0, frame.width, frame.height);
+
+  if (frameState.backgroundFill) {
+    context.fillStyle = frameState.backgroundFill;
+    context.fillRect(0, 0, frame.width, frame.height);
+  }
+
+  if (drawBackdrop) {
+    drawBackdrop(context, decoratorContext);
+  }
+
+  const { position, style, text } = frameState;
+  context.save();
+  context.font = `${style.fontWeight} ${style.fontSize}px ${resolveCanvasFontFamily(style.fontFamily, style.customFontFamily)}`;
+  context.textBaseline = "top";
+  context.shadowBlur = style.shadowBlur;
+  context.shadowColor = style.shadowColor;
+  context.shadowOffsetX = style.shadowOffsetX;
+  context.shadowOffsetY = style.shadowOffsetY;
+
+  if (style.strokeWidth > 0) {
+    context.lineWidth = style.strokeWidth;
+    context.strokeStyle = style.strokeColor;
+    context.strokeText(text, position.x, position.y);
+  }
+
+  context.shadowBlur = Math.max(style.shadowBlur, style.glowBlur);
+  context.shadowColor = style.glowColor || style.shadowColor;
+  context.fillStyle = style.textColor;
+  context.fillText(text, position.x, position.y);
+  context.restore();
+
+  if (drawOverlay) {
+    drawOverlay(context, decoratorContext);
+  }
 }

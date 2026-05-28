@@ -1,12 +1,12 @@
 import type { exportWebmLocally } from "@/lib/generator/export/webm";
 
-type PngSequenceWorker = Pick<Worker, "terminate" | "postMessage" | "onmessage">;
+type ExportWorker = Pick<Worker, "terminate" | "postMessage" | "onmessage">;
 type WebmExporterModule = {
   exportWebmLocally: typeof exportWebmLocally;
 };
 
 type LazyExportRuntimeDependencies = {
-  createWorker: () => PngSequenceWorker;
+  createWorker: () => ExportWorker;
   loadWebmExporter: () => Promise<WebmExporterModule>;
 };
 
@@ -31,21 +31,21 @@ export function createLazyExportRuntime(
     loadWebmExporter: loadDefaultWebmExporter,
   },
 ) {
-  let pngSequenceWorker: PngSequenceWorker | null = null;
+  let exportWorker: ExportWorker | null = null;
   let webmExporterPromise: Promise<WebmExporterModule> | null = null;
 
   return {
-    getPngSequenceWorker() {
-      pngSequenceWorker ??= dependencies.createWorker();
-      return pngSequenceWorker;
+    getExportWorker() {
+      exportWorker ??= dependencies.createWorker();
+      return exportWorker;
     },
     loadWebmExporter() {
       webmExporterPromise ??= dependencies.loadWebmExporter();
       return webmExporterPromise;
     },
-    terminatePngSequenceWorker() {
-      pngSequenceWorker?.terminate();
-      pngSequenceWorker = null;
+    terminateExportWorker() {
+      exportWorker?.terminate();
+      exportWorker = null;
     },
   };
 }

@@ -59,7 +59,7 @@ describe("createRenderFrameState", () => {
 
   it("keeps preset visual tokens in the resolved frame state", () => {
     const settings = createGeneratorSettings({
-      themePresetId: "broadcast-alert",
+      themePresetId: "classic",
     });
 
     const frameState = createRenderFrameState({

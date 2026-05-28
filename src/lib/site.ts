@@ -5,9 +5,9 @@ import {
   buildLocalizedPath,
   defaultLocale,
   enabledLocales,
+  localeOgFormats,
   type EnabledLocale,
   type AppLocale,
-  type SiteDictionary,
 } from "./i18n.ts";
 
 const defaultSiteUrl = "https://timeoverlay.co";
@@ -52,6 +52,14 @@ export const siteKeywords = [
 
 export const siteThemeColor = "#05060a";
 
+export const siteOgImage = {
+  url: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: "Time Overlay — countdown timer overlays for video and live streams",
+  type: "image/png",
+} as const;
+
 export function buildSiteIconMetadata(): NonNullable<Metadata["icons"]> {
   return {
     icon: [
@@ -84,27 +92,33 @@ export const publicRouteDefinitions: readonly HomepageRouteDefinition[] = [
   },
 ] as const;
 
-function buildCompleteLanguageAlternates(path: string): Record<EnabledLocale, string> {
+type SitemapAlternateKey = EnabledLocale | "x-default";
+
+function buildCompleteSitemapAlternates(path: string): Record<SitemapAlternateKey, string> {
   const alternates = buildLanguageAlternates(path, enabledLocales);
-  const completeAlternates = {} as Record<EnabledLocale, string>;
+  const complete = {} as Record<SitemapAlternateKey, string>;
 
   for (const locale of enabledLocales) {
     const localizedPath = alternates[locale];
     if (!localizedPath) {
       throw new Error(`Missing localized alternate for locale: ${locale}`);
     }
-
-    completeAlternates[locale] = localizedPath;
+    complete[locale] = localizedPath;
   }
 
-  return completeAlternates;
+  const defaultPath = alternates["x-default"];
+  if (!defaultPath) {
+    throw new Error("Missing x-default alternate");
+  }
+  complete["x-default"] = defaultPath;
+
+  return complete;
 }
 
-export function getLocalizedNavItems(locale: AppLocale, dictionary: SiteDictionary) {
-  return homepageAnchorModel.map((item) => ({
-    href: buildLocalizedPath(item.path, locale),
-    label: dictionary.nav[item.key],
-  }));
+function buildOpenGraphAlternateLocales(locale: AppLocale): string[] {
+  return enabledLocales
+    .filter((alternate) => alternate !== locale)
+    .map((alternate) => localeOgFormats[alternate]);
 }
 
 export function createPageMetadata({
@@ -119,6 +133,13 @@ export function createPageMetadata({
   locale?: AppLocale;
 }): Metadata {
   const canonicalPath = buildLocalizedPath(path, locale);
+  const ogImage = {
+    url: siteOgImage.url,
+    width: siteOgImage.width,
+    height: siteOgImage.height,
+    alt: siteOgImage.alt,
+    type: siteOgImage.type,
+  };
 
   return {
     metadataBase: new URL(siteConfig.url),
@@ -138,14 +159,15 @@ export function createPageMetadata({
       url: canonicalPath,
       siteName: siteConfig.name,
       type: "website",
-      locale,
-      images: ["/icon.svg"],
+      locale: localeOgFormats[locale],
+      alternateLocale: buildOpenGraphAlternateLocales(locale),
+      images: [ogImage],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description,
-      images: ["/icon.svg"],
+      images: [siteOgImage.url],
     },
   };
 }
@@ -170,11 +192,11 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
   return enabledLocales.flatMap((locale) =>
     publicRouteDefinitions.map((route) => {
       const localizedRoutePath = buildLocalizedPath(route.href, locale);
-      const localized = buildCompleteLanguageAlternates(route.href);
+      const localized = buildCompleteSitemapAlternates(route.href);
       const languageUrls = Object.fromEntries(
-        enabledLocales.map((alternateLocale) => [
-          alternateLocale,
-          new URL(localized[alternateLocale], siteConfig.url).toString(),
+        (Object.keys(localized) as SitemapAlternateKey[]).map((key) => [
+          key,
+          new URL(localized[key], siteConfig.url).toString(),
         ]),
       );
 

@@ -31,6 +31,7 @@ describe("localized SEO helpers", () => {
       en: "/",
       fr: "/fr",
       ja: "/ja",
+      "x-default": "/",
     });
     expect(metadata.icons).toMatchObject({
       icon: [
@@ -44,14 +45,26 @@ describe("localized SEO helpers", () => {
     expect(metadata.keywords).toContain("overlay timer");
     expect(metadata.metadataBase?.toString()).toBe(`${siteConfig.url}/`);
     expect(metadata.openGraph).toMatchObject({
-      locale: "fr",
+      locale: "fr_FR",
       title: "Minuteur overlay",
       description: "Description FR",
-      images: ["/icon.svg"],
+      images: [
+        {
+          url: "/og.png",
+          width: 1200,
+          height: 630,
+          type: "image/png",
+        },
+      ],
     });
+    expect(metadata.openGraph?.alternateLocale).toEqual(
+      expect.arrayContaining(["en_US", "ja_JP", "ar_AR"]),
+    );
     expect(metadata.twitter).toMatchObject({
+      card: "summary_large_image",
       title: "Minuteur overlay",
       description: "Description FR",
+      images: ["/og.png"],
     });
   });
 

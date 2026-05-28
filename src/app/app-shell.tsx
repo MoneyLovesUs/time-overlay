@@ -2,10 +2,16 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 
-import { defaultLocale } from "@/lib/i18n";
+import {
+  defaultLocale,
+  enabledLocales,
+  getLocaleDirection,
+  isEnabledLocale,
+} from "@/lib/i18n";
 import {
   createRootPageMetadata,
   siteConfig,
+  siteOgImage,
   siteThemeColor,
 } from "@/lib/site";
 
@@ -105,10 +111,30 @@ type AppDocumentProps = Readonly<{
   lang: string;
 }>;
 
+const webApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: siteConfig.name,
+  url: siteConfig.url,
+  description: siteConfig.description,
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Web",
+  browserRequirements: "Requires JavaScript and a modern browser with Canvas + WebM support.",
+  inLanguage: [...enabledLocales],
+  image: new URL(siteOgImage.url, siteConfig.url).toString(),
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+  },
+} as const;
+
 export function AppDocument({ children, lang }: AppDocumentProps) {
+  const dir = isEnabledLocale(lang) ? getLocaleDirection(lang) : "ltr";
   return (
     <html
       lang={lang}
+      dir={dir}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
@@ -125,6 +151,10 @@ export function AppDocument({ children, lang }: AppDocumentProps) {
           id="google-analytics"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationJsonLd) }}
         />
       </head>
       <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">

@@ -3,12 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   defaultLocale,
   enabledLocales,
-  knownLocales,
+  getLocaleDirection,
   buildLocalizedPath,
   buildLanguageAlternates,
-  getDictionary,
 } from "@/lib/i18n";
-import { buildSitemapEntries, getLocalizedNavItems, siteConfig } from "@/lib/site";
+import { buildSitemapEntries, siteConfig } from "@/lib/site";
 
 describe("i18n config", () => {
   it("supports the approved locale matrix with english unprefixed", () => {
@@ -31,7 +30,6 @@ describe("i18n config", () => {
       "nl",
       "sv",
     ]);
-    expect(knownLocales).toEqual(enabledLocales);
     expect(buildLocalizedPath("/", "en")).toBe("/");
     expect(buildLocalizedPath("/", "ja")).toBe("/ja");
     expect(buildLocalizedPath("/#faq", "pt")).toBe("/pt#faq");
@@ -52,30 +50,33 @@ describe("i18n config", () => {
       hi: "/hi",
       nl: "/nl",
       sv: "/sv",
+      "x-default": "/",
     });
+  });
+
+  it("flags RTL locales correctly", () => {
+    expect(getLocaleDirection("ar")).toBe("rtl");
+    expect(getLocaleDirection("en")).toBe("ltr");
+    expect(getLocaleDirection("ja")).toBe("ltr");
   });
 });
 
 describe("site helpers", () => {
-  it("exposes homepage anchor nav items derived from the dictionary", async () => {
-    const dictionary = await getDictionary(defaultLocale);
-    const navItems = getLocalizedNavItems(defaultLocale, dictionary);
-
-    expect(navItems.map((item) => item.href)).toEqual(["/#tool", "/#faq", "/#export-formats"]);
-  });
-
-  it("emits localized sitemap entries with hreflang alternates", () => {
+  it("emits localized sitemap entries with hreflang alternates plus x-default", () => {
     const entries = buildSitemapEntries();
     expect(entries).toHaveLength(16);
 
     const languages = entries[0].alternates?.languages;
     expect(languages).toBeDefined();
-    expect(Object.keys(languages!)).toEqual(enabledLocales);
+    expect(Object.keys(languages!)).toEqual([...enabledLocales, "x-default"]);
     expect(languages![defaultLocale]).toBe(
       new URL(buildLocalizedPath("/", defaultLocale), siteConfig.url).toString(),
     );
     expect(languages!["ja"]).toBe(
       new URL(buildLocalizedPath("/", "ja"), siteConfig.url).toString(),
+    );
+    expect(languages!["x-default"]).toBe(
+      new URL(buildLocalizedPath("/", defaultLocale), siteConfig.url).toString(),
     );
   });
 });

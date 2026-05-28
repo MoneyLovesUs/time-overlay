@@ -6,8 +6,7 @@ import {
   buildLocalizedPath,
   defaultLocale,
   enabledLocales,
-  getDictionary,
-  knownLocales,
+  getLocaleDirection,
 } from "../src/lib/i18n.ts";
 import {
   buildSitemapEntries,
@@ -35,7 +34,6 @@ test("locale config matches the approved locale matrix", () => {
     "nl",
     "sv",
   ]);
-  assert.deepEqual(knownLocales, enabledLocales);
 });
 
 test("buildLocalizedPath leaves the default locale unprefixed", () => {
@@ -48,11 +46,18 @@ test("buildLocalizedPath prefixes non-default locales", () => {
   assert.equal(buildLocalizedPath("/faq", "ja"), "/ja/faq");
 });
 
-test("buildLanguageAlternates can generate localized hreflang paths", () => {
+test("buildLanguageAlternates can generate localized hreflang paths with x-default", () => {
   assert.deepEqual(buildLanguageAlternates("/faq", ["en", "ja"]), {
     en: "/faq",
     ja: "/ja/faq",
+    "x-default": "/faq",
   });
+});
+
+test("getLocaleDirection flags RTL locales", () => {
+  assert.equal(getLocaleDirection("ar"), "rtl");
+  assert.equal(getLocaleDirection("en"), "ltr");
+  assert.equal(getLocaleDirection("ja"), "ltr");
 });
 
 test("createPageMetadata exposes all alternates when multiple locales exist", () => {
@@ -74,12 +79,8 @@ test("default site config and sitemap entries point at the production domain", (
 
   assert.equal(siteConfig.url, "https://timeoverlay.co");
   assert.equal(homeEntry?.url, "https://timeoverlay.co/");
-});
-
-test("english dictionary is available for shared site chrome", async () => {
-  const dictionary = await getDictionary("en");
-
-  assert.equal(dictionary.site.description.length > 0, true);
-  assert.equal(dictionary.nav.overview, "Timer overview");
-  assert.equal(dictionary.footer.legalTitle, "Legal");
+  assert.equal(
+    homeEntry?.alternates?.languages?.["x-default"],
+    "https://timeoverlay.co/",
+  );
 });

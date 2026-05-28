@@ -30,6 +30,18 @@ export function RootSeoSection({ locale, seoSection }: RootSeoSectionProps) {
       },
     })),
   };
+  const howToJsonLdData = {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: seoSection.workflowHeading,
+    description: seoSection.description,
+    step: seoSection.workflowSteps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.title,
+      text: step.body,
+    })),
+  };
 
   return (
     <section
@@ -39,6 +51,10 @@ export function RootSeoSection({ locale, seoSection }: RootSeoSectionProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLdData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLdData) }}
       />
 
       <div

@@ -18,8 +18,7 @@ export const enabledLocales = [
 ] as const;
 export type EnabledLocale = (typeof enabledLocales)[number];
 
-export const knownLocales = enabledLocales;
-export type AppLocale = (typeof knownLocales)[number];
+export type AppLocale = EnabledLocale;
 
 export const defaultLocale: EnabledLocale = "en";
 
@@ -42,38 +41,30 @@ export const localeLabels: Record<EnabledLocale, string> = {
   sv: "Svenska",
 };
 
-export type SiteDictionary = {
-  site: {
-    description: string;
-  };
-  nav: {
-    overview: string;
-    qa: string;
-    howItWorks: string;
-  };
-  header: {
-    shellLabel: string;
-  };
-  footer: {
-    systemRail: string;
-    publicStatus: string;
-    identityTitle: string;
-    exploreTitle: string;
-    legalTitle: string;
-    legalNotice: string;
-  };
+const rtlLocales = new Set<EnabledLocale>(["ar"]);
+
+export function getLocaleDirection(locale: EnabledLocale): "ltr" | "rtl" {
+  return rtlLocales.has(locale) ? "rtl" : "ltr";
+}
+
+export const localeOgFormats: Record<EnabledLocale, string> = {
+  en: "en_US",
+  es: "es_ES",
+  pt: "pt_BR",
+  ru: "ru_RU",
+  fr: "fr_FR",
+  de: "de_DE",
+  ko: "ko_KR",
+  ja: "ja_JP",
+  fi: "fi_FI",
+  "zh-hant": "zh_TW",
+  ar: "ar_AR",
+  th: "th_TH",
+  cs: "cs_CZ",
+  hi: "hi_IN",
+  nl: "nl_NL",
+  sv: "sv_SE",
 };
-
-const loadEnglishDictionary = () =>
-  import("./dictionaries/en.ts").then((module) => module.default);
-
-const dictionaryLoaders = enabledLocales.reduce<Record<EnabledLocale, () => Promise<SiteDictionary>>>(
-  (acc, locale) => {
-    acc[locale] = loadEnglishDictionary;
-    return acc;
-  },
-  {} as Record<EnabledLocale, () => Promise<SiteDictionary>>,
-);
 
 function normalizePublicPath(path: string): string {
   const trimmed = path.trim();
@@ -111,17 +102,16 @@ export function buildLocalizedPath(path: string, locale: AppLocale = defaultLoca
   return hash ? `${localizedBase}#${hash}` : localizedBase;
 }
 
+export type LanguageAlternateKey = AppLocale | "x-default";
+
 export function buildLanguageAlternates(
   path: string,
   locales: readonly AppLocale[] = enabledLocales,
-): Partial<Record<AppLocale, string>> {
-  const alternates: Partial<Record<AppLocale, string>> = {};
+): Partial<Record<LanguageAlternateKey, string>> {
+  const alternates: Partial<Record<LanguageAlternateKey, string>> = {};
   for (const locale of locales) {
     alternates[locale] = buildLocalizedPath(path, locale);
   }
+  alternates["x-default"] = buildLocalizedPath(path, defaultLocale);
   return alternates;
-}
-
-export async function getDictionary(locale: EnabledLocale = defaultLocale): Promise<SiteDictionary> {
-  return dictionaryLoaders[locale]();
 }

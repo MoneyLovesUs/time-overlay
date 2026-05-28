@@ -1,14 +1,17 @@
 import type { ExportProgressState, GeneratorSettings } from "@/lib/generator/types";
+import { synthesizeAudioCues } from "@/lib/generator/encode/audio-cues";
 import { createExportJobPlan } from "@/lib/generator/export/job";
-import { getPreferredWebmMimeType } from "@/lib/generator/feature-detection";
+import { getPreferredAlphaWebmMimeType } from "@/lib/generator/feature-detection";
 import {
   createRenderFrameState,
   measureRenderTextBox,
-  renderFrameToCanvas,
+  renderStyledFrame,
 } from "@/lib/generator/render-frame";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
+import { drawWatermark } from "@/lib/generator/watermark";
 
 type WebmExportOptions = {
+  applyWatermark: boolean;
   onProgress: (progress: ExportProgressState) => void;
 };
 
@@ -19,16 +22,17 @@ function wait(durationMs: number) {
 }
 
 /**
- * WebM export intentionally stays on the main thread because MediaRecorder and
- * captureStream are browser APIs designed for document contexts. PNG sequence
- * remains the heavy worker-based path; WebM is the convenience path when the
- * browser supports it.
+ * WebM export stays on the main thread because MediaRecorder and captureStream
+ * are document-level APIs. The codec is forced to VP8 because Chromium's VP9
+ * MediaRecorder pipeline does not currently emit alpha side data, while VP8
+ * preserves the canvas alpha channel end-to-end. Editors (Premiere, DaVinci,
+ * CapCut) import the result as transparent footage with no further conversion.
  */
 export async function exportWebmLocally(
   settings: GeneratorSettings,
-  { onProgress }: WebmExportOptions,
+  { applyWatermark, onProgress }: WebmExportOptions,
 ) {
-  const mimeType = getPreferredWebmMimeType();
+  const mimeType = getPreferredAlphaWebmMimeType();
 
   if (!mimeType) {
     throw new Error("This browser does not support WebM export.");
@@ -38,7 +42,7 @@ export async function exportWebmLocally(
   canvas.width = settings.canvas.width;
   canvas.height = settings.canvas.height;
 
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext("2d", { alpha: true });
 
   if (!context) {
     throw new Error("Could not create a canvas context for WebM export.");
@@ -49,6 +53,30 @@ export async function exportWebmLocally(
   }
 
   const stream = canvas.captureStream(settings.export.fps);
+
+  const audioBuffer = await synthesizeAudioCues({
+    durationSeconds: settings.timer.durationSeconds,
+    variant: settings.audio.variant,
+  });
+  let audioContext: AudioContext | null = null;
+  let audioSourceNode: AudioBufferSourceNode | null = null;
+  if (audioBuffer && typeof AudioContext !== "undefined") {
+    try {
+      audioContext = new AudioContext({ sampleRate: audioBuffer.sampleRate });
+      const destination = audioContext.createMediaStreamDestination();
+      audioSourceNode = audioContext.createBufferSource();
+      audioSourceNode.buffer = audioBuffer;
+      audioSourceNode.connect(destination);
+      for (const track of destination.stream.getAudioTracks()) {
+        stream.addTrack(track);
+      }
+    } catch {
+      audioContext?.close().catch(() => {});
+      audioContext = null;
+      audioSourceNode = null;
+    }
+  }
+
   const recorder = new MediaRecorder(stream, {
     mimeType,
     videoBitsPerSecond: settings.export.quality === "high" ? 8_000_000 : 4_000_000,
@@ -77,6 +105,9 @@ export async function exportWebmLocally(
   });
 
   recorder.start();
+  if (audioSourceNode) {
+    audioSourceNode.start(0);
+  }
 
   for (let frameIndex = 0; frameIndex < plan.totalFrames; frameIndex += 1) {
     const elapsedSeconds = frameIndex / settings.export.fps;
@@ -86,6 +117,7 @@ export async function exportWebmLocally(
     );
     const textBox = measureRenderTextBox(context, displayText, {
       fontFamily: settings.textStyle.fontFamily,
+      customFontFamily: settings.textStyle.customFontFamily,
       fontSize: settings.textStyle.fontSize,
       fontWeight: settings.textStyle.fontWeight,
       letterSpacing: settings.textStyle.letterSpacing,
@@ -106,7 +138,14 @@ export async function exportWebmLocally(
       safeAreaInset: 32,
     });
 
-    renderFrameToCanvas(context, frameState);
+    renderStyledFrame(context, frameState, settings.themePresetId);
+
+    if (applyWatermark) {
+      drawWatermark(context, {
+        canvasWidth: settings.canvas.width,
+        canvasHeight: settings.canvas.height,
+      });
+    }
 
     if (
       frameIndex === 0 ||
@@ -126,10 +165,12 @@ export async function exportWebmLocally(
 
   await wait(frameDelayMs);
   recorder.stop();
+  audioSourceNode?.stop();
 
   const blob = await blobPromise;
 
   stream.getTracks().forEach((track) => track.stop());
+  audioContext?.close().catch(() => {});
 
   return {
     blob,

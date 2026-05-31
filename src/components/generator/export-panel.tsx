@@ -171,6 +171,7 @@ export function ExportPanel({
               description={ui.webmDescription}
               proBadge={ui.proBadge}
               lockedHint={ui.proLockedHint}
+              unavailableReason={ui.advisoryMessages.webmUnavailableError}
               onSelect={() => onFormatChange("webm")}
             />
 

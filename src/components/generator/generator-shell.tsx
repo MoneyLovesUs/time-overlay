@@ -45,6 +45,7 @@ import {
 import { isProActive, useProState } from "@/lib/license/state";
 import { validateLicenseKey } from "@/lib/license/validate";
 import { trackEvent } from "@/lib/analytics/events";
+import { detectClientEnvironment } from "@/lib/analytics/environment";
 import type {
   AudioCueVariant,
   BackgroundMode,
@@ -88,6 +89,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
+  const lastUnsupportedCodeRef = useRef<string | null>(null);
   const isPro = isProActive(proState);
   const applyWatermark = !isPro;
 
@@ -103,6 +105,22 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     () => getExportAdvisory(settings, support),
     [settings, support],
   );
+  // Stable context attached to every export funnel event. Without browser/device
+  // and capability flags, export_failed is a black box — we cannot tell a Safari
+  // codec gap from a low-memory crash, or a mobile drop-off from a desktop one.
+  const analyticsEnvironment = useMemo<Record<string, string | number | boolean>>(() => {
+    const env = detectClientEnvironment();
+    return {
+      browser: env.browser,
+      browserVersion: env.browserVersion,
+      os: env.os,
+      deviceType: env.deviceType,
+      supportsWebm: support.supportsWebm ?? "unknown",
+      supportsVp9Alpha: support.supportsVp9Alpha ?? "unknown",
+      supportsHevcAlpha: support.supportsHevcAlpha ?? "unknown",
+      hasWorkerSupport: support.hasWorkerSupport ?? "unknown",
+    };
+  }, [support]);
   const localizeProgressMessage = (
     progress: ExportProgressState,
   ): ExportProgressState => {
@@ -410,6 +428,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         trackEvent("export_completed", {
           format: settings.export.format,
           fileName: event.data.payload.fileName,
+          ...analyticsEnvironment,
         });
         downloadBlob(event.data.payload.blob, event.data.payload.fileName);
         return;
@@ -430,9 +449,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       trackEvent("export_failed", {
         format: settings.export.format,
         errorCode: code ?? "unknown",
+        errorMessage: event.data.payload.message,
+        ...analyticsEnvironment,
       });
     },
-    [settings.export.format, ui.exportPanel.runtimeMessages],
+    [settings.export.format, ui.exportPanel.runtimeMessages, analyticsEnvironment],
   );
 
   useEffect(() => {
@@ -442,7 +463,33 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     };
   }, []);
 
+  // When capability detection puts the selected format into a hard-error state,
+  // the Export button is disabled and the user produces no funnel events at all.
+  // Emit one diagnostic per distinct blocking code so this otherwise-invisible
+  // "cannot export here" cohort shows up in analytics.
+  useEffect(() => {
+    if (exportAdvisory.severity !== "error" || !exportAdvisory.code) {
+      lastUnsupportedCodeRef.current = null;
+      return;
+    }
+    if (lastUnsupportedCodeRef.current === exportAdvisory.code) {
+      return;
+    }
+    lastUnsupportedCodeRef.current = exportAdvisory.code;
+    trackEvent("export_unsupported", {
+      format: settings.export.format,
+      reason: exportAdvisory.code,
+      ...analyticsEnvironment,
+    });
+  }, [exportAdvisory.severity, exportAdvisory.code, settings.export.format, analyticsEnvironment]);
+
   const handleExport = async () => {
+    // The Export button is disabled in this state, but guard anyway so a stray
+    // call can never run into a guaranteed throw (and skew the failure rate).
+    if (exportAdvisory.severity === "error") {
+      return;
+    }
+
     const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
     exportTotalsRef.current = totalFrames;
 
@@ -452,6 +499,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       durationSeconds: settings.timer.durationSeconds,
       resolution: settings.canvas.resolutionPresetId,
       isPro,
+      ...analyticsEnvironment,
     });
 
     setIsExporting(true);
@@ -483,6 +531,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             { fileName: result.fileName },
           ),
         });
+        trackEvent("export_completed", {
+          format: settings.export.format,
+          fileName: result.fileName,
+          ...analyticsEnvironment,
+        });
         downloadBlob(result.blob, result.fileName);
       } catch (error) {
         setIsExporting(false);
@@ -494,6 +547,15 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             error instanceof Error
               ? error.message
               : ui.exportPanel.runtimeMessages.webmFailedUnexpectedly,
+        });
+        // WebM runs on the main thread, so its failures never reach the worker
+        // message handler. Reporting them here is what makes Safari/mobile codec
+        // gaps visible instead of silently vanishing from the funnel.
+        trackEvent("export_failed", {
+          format: settings.export.format,
+          errorCode: "webmFailedUnexpectedly",
+          errorMessage: error instanceof Error ? error.message : undefined,
+          ...analyticsEnvironment,
         });
       }
       return;
@@ -537,13 +599,19 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           uploadedFont: uploadedFont ?? undefined,
         },
       });
-    } catch {
+    } catch (error) {
       setIsExporting(false);
       setExportProgress({
         stage: "error",
         completedFrames: 0,
         totalFrames: 0,
         message: ui.exportPanel.runtimeMessages.exportWorkerUnavailable,
+      });
+      trackEvent("export_failed", {
+        format: settings.export.format,
+        errorCode: "exportWorkerUnavailable",
+        errorMessage: error instanceof Error ? error.message : undefined,
+        ...analyticsEnvironment,
       });
     }
   };

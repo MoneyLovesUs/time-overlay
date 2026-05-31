@@ -2,14 +2,15 @@ import type { RootPageContent } from "@/content/root/types";
 
 const enRootPageContent = {
   metadata: {
-    title: "Time Overlay — Free Countdown Timer Overlay Generator",
+    title: "Time Overlay — Free Transparent Timer Overlay Generator",
     description:
-      "Time Overlay generates transparent countdown timer overlays in your browser. Preview a Time Overlay live, export PNG sequence or WebM with alpha for editors.",
+      "Time Overlay is a free transparent timer overlay generator. Build a countdown overlay timer in your browser and export PNG or WebM with alpha for any editor.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
-    heading: "Build a Time Overlay, preview the countdown, then export it for your edit.",
-    intro: "Recommended first Time Overlay: `30s`, `PNG sequence`, `bottom-right`.",
+    heading:
+      "Build a transparent timer overlay, preview the countdown, then export it for your video edit.",
+    intro: "Recommended first timer overlay: `30s`, `PNG sequence`, `bottom-right`.",
   },
   siteChrome: {
     siteName: "Time Overlay",
@@ -235,7 +236,7 @@ const enRootPageContent = {
     aboutPoints: [
       "Time Overlay is a local-first Time Overlay generator built for creators who need countdown graphics without uploading footage to a remote render service.",
       "The Time Overlay page is intentionally compact: one working tool surface, one export explanation block, and one SEO support area that answers the workflow questions people search for before trusting a timer tool.",
-      "That makes Time Overlay useful both as a real production utility and as a crawlable Time Overlay landing page for related queries such as countdown timer overlay, transparent countdown overlay, and timer overlay for video editing.",
+      "That makes Time Overlay useful both as a real production utility and as a crawlable Time Overlay landing page for related queries such as timer overlay, overlay timer, transparent timer overlay, and countdown timer overlay for video editing.",
     ],
     aboutCta: {
       beforeLink:

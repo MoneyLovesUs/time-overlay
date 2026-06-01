@@ -242,6 +242,23 @@ const esRootPageContent = {
     faqSubtitle: "Fundamentos del temporizador overlay",
     faqItems: [
       {
+        question: "¿Cómo agrego un temporizador overlay a un video?",
+        answer:
+          "Configura la duración y el estilo en el generador de arriba y luego exporta. Elige PNG Sequence para el temporizador overlay transparente más fiable, o WebM para un único archivo de video transparente, y colócalo en una capa sobre tu metraje en CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve u OBS.",
+      },
+      {
+        question:
+          "¿Puedo crear un temporizador overlay transparente para OBS o Twitch?",
+        answer:
+          "Sí. Exporta el formato WebM con transparencia y añádelo como capa de video en OBS, Streamlabs o Twitch Studio. El fondo ya viene recortado, así que la cuenta regresiva queda limpia sobre tu escena sin un paso extra de chroma.",
+      },
+      {
+        question:
+          "¿Cuál es la diferencia entre un temporizador overlay y un overlay de cuenta regresiva?",
+        answer:
+          "Normalmente son lo mismo: un temporizador overlay que cuenta hacia atrás desde una duración fija hasta cero sobre tu video. Esta herramienta crea un temporizador overlay con cuenta regresiva, así que define el total de segundos, elige un formato como MM:SS y expórtalo para tu editor.",
+      },
+      {
         question: "¿Puedo exportar un temporizador overlay con transparencia?",
         answer:
           "Sí. La ruta local-first más segura es PNG Sequence, porque los editores manejan mejor los recursos transparentes basados en imágenes que los flujos de video comprimido. WebM está disponible cuando el navegador lo soporta, pero PNG Sequence sigue siendo la entrega más fiable cuando la transparencia es crítica.",

@@ -243,6 +243,23 @@ const deRootPageContent = {
     faqSubtitle: "Overlay-Timer Grundlagen",
     faqItems: [
       {
+        question: "Wie füge ich einem Video einen Overlay-Timer hinzu?",
+        answer:
+          "Stelle Dauer und Stil im Generator oben ein und exportiere dann. Wähle PNG Sequence für den zuverlässigsten transparenten Overlay-Timer oder WebM für eine einzelne transparente Videodatei und lege sie als Ebene über dein Footage in CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve oder OBS.",
+      },
+      {
+        question:
+          "Kann ich einen transparenten Overlay-Timer für OBS oder Twitch erstellen?",
+        answer:
+          "Ja. Exportiere das Format WebM (mit Alpha) und füge es als Videoebene in OBS, Streamlabs oder Twitch Studio hinzu. Der Hintergrund ist bereits freigestellt, sodass der Countdown ohne zusätzlichen Chroma-Key sauber über deiner Szene liegt.",
+      },
+      {
+        question:
+          "Was ist der Unterschied zwischen einem Overlay-Timer und einem Countdown-Overlay?",
+        answer:
+          "Meist ist es dasselbe: ein Overlay-Timer, der über deinem Video von einer festgelegten Dauer auf null herunterzählt. Dieses Tool erstellt einen Countdown-Overlay-Timer, also lege die Gesamtsekunden fest, wähle ein Anzeigeformat wie MM:SS und exportiere ihn für deinen Editor.",
+      },
+      {
         question: "Kann ich einen Overlay-Timer mit Transparenz exportieren?",
         answer:
           "Ja. Der sicherste Local-First-Weg ist PNG Sequence, weil Schnittprogramme bildbasierte transparente Assets zuverlässiger verarbeiten als komprimierte Video-Workflows. WebM ist verfügbar, wenn der Browser es unterstützt, aber bei Transparenz bleibt PNG Sequence meist die robusteste Übergabe.",

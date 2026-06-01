@@ -170,4 +170,13 @@ export type RootPageContent = {
     faqSubtitle: string;
     faqItems: readonly RootFaqItem[];
   };
+  guidesSection?: {
+    eyebrow: string;
+    heading: string;
+    intro: string;
+    links: readonly {
+      slug: string;
+      label: string;
+    }[];
+  };
 };

@@ -5,6 +5,7 @@ import { LazyGeneratorShell } from "@/components/site/lazy-generator-shell";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { RootSeoSection } from "@/components/site/root-seo-section";
+import { RootGuidesSection } from "@/components/site/root-guides-section";
 
 type RootPageProps = {
   locale: EnabledLocale;
@@ -49,6 +50,9 @@ export function RootPage({ locale, content }: RootPageProps) {
       />
       <LazyGeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
       <RootSeoSection locale={locale} seoSection={content.seoSection} />
+      {content.guidesSection ? (
+        <RootGuidesSection locale={locale} guidesSection={content.guidesSection} />
+      ) : null}
       <SiteFooter
         navItems={footerNavItems}
         siteDescription={content.siteChrome.siteDescription}

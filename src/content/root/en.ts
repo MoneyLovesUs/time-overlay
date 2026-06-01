@@ -4,7 +4,7 @@ const enRootPageContent = {
   metadata: {
     title: "Timer Overlay Generator — Free Transparent Countdown | Time Overlay",
     description:
-      "Free timer overlay generator. Build a transparent countdown timer right in your browser and export PNG or WebM with alpha for CapCut, Premiere, OBS, and DaVinci. No upload, no watermark.",
+      "Time Overlay is a free timer overlay generator. Build a transparent countdown in-browser and export PNG or WebM with alpha for CapCut, Premiere, OBS, DaVinci.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -216,7 +216,7 @@ const enRootPageContent = {
       },
     ],
     usageEyebrow: "How to use",
-    usageHeading: "How to add a timer overlay to your video",
+    usageHeading: "How to use Time Overlay in your video",
     usageNotes: [
       "Open the generator, set the timer length, and preview the overlay before exporting anything.",
       "Use the PNG sequence for a transparent timer overlay in CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve, or any workflow that prefers image assets.",
@@ -264,7 +264,7 @@ const enRootPageContent = {
           "They usually mean the same thing: a timer overlay that counts down from a set duration to zero on top of your video. This tool builds a countdown timer overlay, so set the total seconds, pick a display format like MM:SS, and export it for your editor.",
       },
       {
-        question: "Can I export a timer overlay with transparency?",
+        question: "Can I export a Time Overlay with transparency?",
         answer:
           "Yes. The safest route is a PNG sequence, because editors handle image-based transparent assets more reliably than compressed video. The WebM (with alpha) export is the single-file alternative when you want a transparent video layer instead of an image sequence.",
       },

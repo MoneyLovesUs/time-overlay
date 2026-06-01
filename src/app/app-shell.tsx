@@ -92,6 +92,7 @@ export async function generateDefaultLayoutMetadata(): Promise<Metadata> {
     verification: {
       other: {
         _foundr: "a2e7581355636cb842aa09283f303628",
+        "saashub-verification": "igknz9129ppt",
       },
     },
     title: {

@@ -79,6 +79,7 @@ describe("localized SEO helpers", () => {
     expect(metadata.verification).toEqual({
       other: {
         _foundr: "a2e7581355636cb842aa09283f303628",
+        "saashub-verification": "igknz9129ppt",
       },
     });
   });

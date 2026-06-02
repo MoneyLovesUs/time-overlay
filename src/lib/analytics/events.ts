@@ -17,9 +17,6 @@ export type AnalyticsEventName =
   | "export_completed"
   | "export_failed"
   | "export_unsupported"
-  | "paywall_shown"
-  | "checkout_started"
-  | "license_activated"
   | "preset_selected";
 
 export function trackEvent(

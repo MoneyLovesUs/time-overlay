@@ -12,7 +12,6 @@ import {
 
 import { ControlPanel } from "@/components/generator/control-panel";
 import { ExportPanel } from "@/components/generator/export-panel";
-import { PaywallModal } from "@/components/generator/paywall-modal";
 import { PreviewPanel } from "@/components/generator/preview-panel";
 import { ThemePresetPicker } from "@/components/generator/theme-preset-picker";
 import type { RootPageContent } from "@/content/root/types";
@@ -43,7 +42,6 @@ import {
   type UploadedFont,
 } from "@/lib/generator/font-loader";
 import { isProActive, useProState } from "@/lib/license/state";
-import { validateLicenseKey } from "@/lib/license/validate";
 import { trackEvent } from "@/lib/analytics/events";
 import { detectClientEnvironment } from "@/lib/analytics/environment";
 import type {
@@ -66,14 +64,6 @@ type GeneratorShellProps = {
   ui: RootPageContent["generatorUi"];
 };
 
-type PaywallTrigger =
-  | "format-vp9-alpha"
-  | "format-hevc-alpha"
-  | "resolution-4k"
-  | "duration-over-60s"
-  | "preset-locked"
-  | null;
-
 export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [settings, setSettings] = useState<GeneratorSettings>(() => ({
     ...DEFAULT_GENERATOR_SETTINGS,
@@ -83,9 +73,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   );
   const [isExporting, setIsExporting] = useState(false);
   const [support, setSupport] = useState(getInitialLocalExportSupport);
-  const [paywallTrigger, setPaywallTrigger] = useState<PaywallTrigger>(null);
   const [uploadedFont, setUploadedFont] = useState<UploadedFont | null>(null);
-  const { state: proState, activate: activateLicense } = useProState();
+  const { state: proState } = useProState();
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
@@ -185,8 +174,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return durationSeconds;
     }
     if (durationSeconds > GENERATOR_FREE_DURATION_LIMIT_SECONDS) {
-      trackEvent("paywall_shown", { trigger: "duration-over-60s" });
-      setPaywallTrigger("duration-over-60s");
       return GENERATOR_FREE_DURATION_LIMIT_SECONDS;
     }
     return durationSeconds;
@@ -215,8 +202,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   const handleResolutionPresetChange = (resolutionPresetId: ResolutionPresetId) => {
     if (GENERATOR_PRO_RESOLUTION_PRESETS.has(resolutionPresetId) && !isPro) {
-      trackEvent("paywall_shown", { trigger: "resolution-4k" });
-      setPaywallTrigger("resolution-4k");
       return;
     }
     updateSettings((current) => ({
@@ -260,13 +245,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   const handleFormatChange = (format: GeneratorFormat) => {
     if (GENERATOR_PRO_FORMATS.has(format) && !isPro) {
-      if (format === "webm-vp9-alpha") {
-        trackEvent("paywall_shown", { trigger: "format-vp9-alpha" });
-        setPaywallTrigger("format-vp9-alpha");
-      } else if (format === "mov-hevc-alpha") {
-        trackEvent("paywall_shown", { trigger: "format-hevc-alpha" });
-        setPaywallTrigger("format-hevc-alpha");
-      }
       return;
     }
     updateSettings((current) => ({
@@ -322,8 +300,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     });
 
     if (preset.isPro && !isPro) {
-      trackEvent("paywall_shown", { trigger: "preset-locked" });
-      setPaywallTrigger("preset-locked");
       return;
     }
 
@@ -347,8 +323,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   const handleTextColorChange = (textColor: string) => {
     if (!isPro) {
-      trackEvent("paywall_shown", { trigger: "preset-locked" });
-      setPaywallTrigger("preset-locked");
       return;
     }
     updateSettings((current) => ({
@@ -362,8 +336,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   const handleFontUpload = async (file: File) => {
     if (!isPro) {
-      trackEvent("paywall_shown", { trigger: "preset-locked" });
-      setPaywallTrigger("preset-locked");
       return;
     }
     try {
@@ -668,10 +640,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
               onUploadFont={handleFontUpload}
               onClearUploadedFont={handleClearUploadedFont}
               onAudioVariantChange={handleAudioVariantChange}
-              onProLockedClick={() => {
-                trackEvent("paywall_shown", { trigger: "preset-locked" });
-                setPaywallTrigger("preset-locked");
-              }}
+              onProLockedClick={() => {}}
             />
             <PreviewPanel
               settings={deferredSettings}
@@ -695,23 +664,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           </div>
         </div>
       </section>
-
-      <PaywallModal
-        trigger={paywallTrigger}
-        onActivateLicense={async (licenseKey: string) => {
-          const result = await validateLicenseKey(licenseKey);
-          if (result.kind === "valid") {
-            activateLicense(result.licenseKey);
-            trackEvent("license_activated", { source: "modal" });
-            return true;
-          }
-          return false;
-        }}
-        onCheckoutStart={() => {
-          trackEvent("checkout_started", { trigger: paywallTrigger ?? "unknown" });
-        }}
-        onClose={() => setPaywallTrigger(null)}
-      />
     </main>
   );
 }

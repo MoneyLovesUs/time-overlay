@@ -18,8 +18,9 @@ export type ProState =
  * Master switch for monetization. While this is `false`, every feature flagged
  * as Pro is fully unlocked for every visitor and no paywall UI is shown.
  *
- * See docs/superpowers/specs/2026-05-28-paywall-reactivation-plan.md for the
- * full re-activation playbook.
+ * The free/Pro tier split (which features count as Pro) is intentionally kept so a
+ * future checkout integration can flip this on without re-designing the gating.
+ * No payment provider is wired up right now.
  */
 export const PAYWALL_ENABLED = false;
 

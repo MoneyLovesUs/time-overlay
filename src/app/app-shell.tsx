@@ -136,6 +136,7 @@ export function AppDocument({ children, lang }: AppDocumentProps) {
     <html
       lang={lang}
       dir={dir}
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
@@ -158,7 +159,10 @@ export function AppDocument({ children, lang }: AppDocumentProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationJsonLd) }}
         />
       </head>
-      <body className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground">
+      <body
+        suppressHydrationWarning
+        className="relative flex min-h-full flex-col overflow-x-hidden bg-background text-foreground"
+      >
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10">
           <div className={shellBackdropPlaneClass} />
           <div className={shellBackdropAtmosphereClass} />

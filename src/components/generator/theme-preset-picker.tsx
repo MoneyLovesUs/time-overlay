@@ -1,4 +1,5 @@
 import { Lock, Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
 
 import { cn } from "@/lib/utils";
 import type { RootPageContent } from "@/content/root/types";
@@ -33,6 +34,24 @@ export function ThemePresetPicker({
         {presets.map((preset) => {
           const isActive = preset.id === activePresetId;
           const locked = preset.isPro && !isPro;
+          const ts = preset.textStyle;
+          const previewStyle: CSSProperties = {
+            color: ts.textColor,
+            fontFamily: ts.fontFamily === "geist-mono" ? "monospace" : "sans-serif",
+            textShadow:
+              [
+                ts.glowBlur && ts.glowColor
+                  ? `0 0 ${Math.min(ts.glowBlur, 14)}px ${ts.glowColor}`
+                  : null,
+                ts.shadowBlur && ts.shadowColor
+                  ? `${ts.shadowOffsetX ?? 0}px ${ts.shadowOffsetY ?? 0}px ${Math.min(ts.shadowBlur, 10)}px ${ts.shadowColor}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(", ") || undefined,
+            WebkitTextStroke:
+              ts.strokeWidth && ts.strokeColor ? `1px ${ts.strokeColor}` : undefined,
+          };
 
           return (
             <button
@@ -46,6 +65,13 @@ export function ThemePresetPicker({
                   : "border-border/80 bg-background/60 text-muted-foreground hover:border-tertiary/50 hover:text-foreground",
               )}
             >
+              <span
+                aria-hidden="true"
+                className="mb-1.5 flex h-11 w-full items-center justify-center rounded-sm border border-border/40 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),rgba(0,0,0,0.4))] text-xl font-bold normal-case tracking-normal tabular-nums"
+                style={previewStyle}
+              >
+                0:30
+              </span>
               <span className="flex w-full items-center justify-between gap-2">
                 <span className="truncate">{ui.presetLabels[preset.id]}</span>
                 {PAYWALL_ENABLED && preset.isPro ? (

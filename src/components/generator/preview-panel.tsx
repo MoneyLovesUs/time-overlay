@@ -184,7 +184,21 @@ export function PreviewPanel({
           <div className="relative aspect-video">
             <canvas
               ref={canvasRef}
-              className="block h-full w-full bg-transparent"
+              onClick={() => (isPlaying ? handlePause() : handlePlay())}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  if (isPlaying) {
+                    handlePause();
+                  } else {
+                    handlePlay();
+                  }
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={isPlaying ? ui.pauseButton : ui.playButton}
+              className="block h-full w-full cursor-pointer bg-transparent outline-none focus-visible:ring-1 focus-visible:ring-primary/60"
             />
             {settings.canvas.showSafeArea ? (
               <div className="pointer-events-none absolute inset-[8%] border border-dashed border-white/10" />

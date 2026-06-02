@@ -51,10 +51,21 @@ function GeneratorShellFallback({
             </div>
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-[20rem_minmax(0,1fr)_18rem]">
-            <div className="cyber-panel cyber-chamfer min-h-72 animate-pulse bg-background/40" />
-            <div className="cyber-panel cyber-chamfer min-h-72 animate-pulse bg-background/40" />
-            <div className="cyber-panel cyber-chamfer min-h-72 animate-pulse bg-background/40" />
+          <div
+            aria-busy="true"
+            className="grid cursor-progress gap-5 xl:grid-cols-[20rem_minmax(0,1fr)_18rem]"
+          >
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
+                className="cyber-panel cyber-chamfer pointer-events-none flex min-h-72 select-none items-center justify-center bg-background/40"
+              >
+                <span
+                  aria-hidden="true"
+                  className="size-6 animate-spin rounded-full border-2 border-primary/30 border-t-primary"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>

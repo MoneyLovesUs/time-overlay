@@ -624,43 +624,49 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           />
 
           <div className="grid gap-5 xl:grid-cols-[20rem_minmax(0,1fr)_18rem]">
-            <ControlPanel
-              settings={settings}
-              canvasPresets={GENERATOR_CANVAS_PRESETS}
-              ui={ui.controlPanel}
-              isPro={isPro}
-              uploadedFontName={uploadedFont?.family ?? null}
-              onDurationChange={handleDurationChange}
-              onDisplayFormatChange={handleDisplayFormatChange}
-              onResolutionPresetChange={handleResolutionPresetChange}
-              onBackgroundModeChange={handleBackgroundModeChange}
-              onFontFamilyChange={handleFontFamilyChange}
-              onAnchorChange={handleAnchorChange}
-              onTextColorChange={handleTextColorChange}
-              onUploadFont={handleFontUpload}
-              onClearUploadedFont={handleClearUploadedFont}
-              onAudioVariantChange={handleAudioVariantChange}
-              onProLockedClick={() => {}}
-            />
-            <PreviewPanel
-              settings={deferredSettings}
-              ui={ui.previewPanel}
-              showWatermark={applyWatermark}
-              onToggleSafeArea={handleToggleSafeArea}
-            />
-            <ExportPanel
-              advisory={exportAdvisory}
-              exportProgress={exportProgress}
-              isExporting={isExporting}
-              onExport={handleExport}
-              settings={settings}
-              ui={ui.exportPanel}
-              onFormatChange={handleFormatChange}
-              onFpsChange={handleFpsChange}
-              onQualityChange={handleQualityChange}
-              support={support}
-              isPro={isPro}
-            />
+            <div className="order-2 xl:order-none [&>*]:h-full">
+              <ControlPanel
+                settings={settings}
+                canvasPresets={GENERATOR_CANVAS_PRESETS}
+                ui={ui.controlPanel}
+                isPro={isPro}
+                uploadedFontName={uploadedFont?.family ?? null}
+                onDurationChange={handleDurationChange}
+                onDisplayFormatChange={handleDisplayFormatChange}
+                onResolutionPresetChange={handleResolutionPresetChange}
+                onBackgroundModeChange={handleBackgroundModeChange}
+                onFontFamilyChange={handleFontFamilyChange}
+                onAnchorChange={handleAnchorChange}
+                onTextColorChange={handleTextColorChange}
+                onUploadFont={handleFontUpload}
+                onClearUploadedFont={handleClearUploadedFont}
+                onAudioVariantChange={handleAudioVariantChange}
+                onProLockedClick={() => {}}
+              />
+            </div>
+            <div className="order-1 xl:order-none [&>*]:h-full">
+              <PreviewPanel
+                settings={deferredSettings}
+                ui={ui.previewPanel}
+                showWatermark={applyWatermark}
+                onToggleSafeArea={handleToggleSafeArea}
+              />
+            </div>
+            <div className="order-3 xl:order-none [&>*]:h-full">
+              <ExportPanel
+                advisory={exportAdvisory}
+                exportProgress={exportProgress}
+                isExporting={isExporting}
+                onExport={handleExport}
+                settings={settings}
+                ui={ui.exportPanel}
+                onFormatChange={handleFormatChange}
+                onFpsChange={handleFpsChange}
+                onQualityChange={handleQualityChange}
+                support={support}
+                isPro={isPro}
+              />
+            </div>
           </div>
         </div>
       </section>

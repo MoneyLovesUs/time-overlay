@@ -91,7 +91,7 @@ export function PreviewPanel({
         rafRef.current = null;
       }
     };
-  }, [isPlaying, stepPreview]);
+  }, [isPlaying]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

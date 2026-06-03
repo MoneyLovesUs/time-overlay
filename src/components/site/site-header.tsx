@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BrandMark } from "@/components/site/brand-mark";
 import {
   buildLocalizedPath,
   enabledLocales,
@@ -37,15 +38,8 @@ export function SiteHeader({
                   href={localizedHomeHref}
                   className="inline-flex min-w-0 items-center gap-3 text-xs font-semibold uppercase tracking-[0.28em] text-foreground transition-colors hover:text-primary"
                 >
-                  <span
-                    aria-hidden="true"
-                    className="flex items-center gap-2 text-primary"
-                  >
-                    <span className="relative flex h-3 w-3 items-center justify-center">
-                      <span className="absolute inset-0 rounded-full bg-primary/25 blur-[6px]" />
-                      <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
-                    </span>
-                    <span className="h-px w-6 bg-gradient-to-r from-primary via-tertiary to-transparent" />
+                  <span aria-hidden="true" className="flex shrink-0">
+                    <BrandMark className="h-7 w-7" />
                   </span>
                   <span className="truncate">{siteName}</span>
                 </Link>

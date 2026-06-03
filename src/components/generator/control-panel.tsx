@@ -1,4 +1,4 @@
-import { Lock, Upload, X } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { useRef } from "react";
 
 import { ColorPicker } from "@/components/generator/color-picker";
@@ -14,16 +14,14 @@ import type {
 } from "@/lib/generator/types";
 import type { RootPageContent } from "@/content/root/types";
 import {
-  GENERATOR_FREE_DURATION_LIMIT_SECONDS,
+  GENERATOR_DURATION_LIMIT_SECONDS,
   GENERATOR_MIN_DURATION_SECONDS,
-  GENERATOR_PRO_DURATION_LIMIT_SECONDS,
 } from "@/lib/generator/defaults";
 
 type ControlPanelProps = {
   settings: GeneratorSettings;
   canvasPresets: readonly CanvasPreset[];
   ui: RootPageContent["generatorUi"]["controlPanel"];
-  isPro: boolean;
   uploadedFontName: string | null;
   onDurationChange: (durationSeconds: number) => void;
   onDisplayFormatChange: (displayFormat: TimerDisplayFormat) => void;
@@ -35,7 +33,6 @@ type ControlPanelProps = {
   onUploadFont: (file: File) => void;
   onClearUploadedFont: () => void;
   onAudioVariantChange: (variant: AudioCueVariant) => void;
-  onProLockedClick: () => void;
 };
 
 const fieldClassName =
@@ -45,7 +42,6 @@ export function ControlPanel({
   settings,
   canvasPresets,
   ui,
-  isPro,
   uploadedFontName,
   onDurationChange,
   onDisplayFormatChange,
@@ -57,15 +53,10 @@ export function ControlPanel({
   onUploadFont,
   onClearUploadedFont,
   onAudioVariantChange,
-  onProLockedClick,
 }: ControlPanelProps) {
   const fontInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleUploadClick = () => {
-    if (!isPro) {
-      onProLockedClick();
-      return;
-    }
     fontInputRef.current?.click();
   };
 
@@ -77,9 +68,7 @@ export function ControlPanel({
     event.target.value = "";
   };
 
-  const durationMax = isPro
-    ? GENERATOR_PRO_DURATION_LIMIT_SECONDS
-    : GENERATOR_FREE_DURATION_LIMIT_SECONDS;
+  const durationMax = GENERATOR_DURATION_LIMIT_SECONDS;
 
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
@@ -95,11 +84,6 @@ export function ControlPanel({
           </p>
           <label className="mt-4 block text-sm font-medium text-foreground">
             {ui.durationLabel}
-            {!isPro ? (
-              <span className="ml-2 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-                max {GENERATOR_FREE_DURATION_LIMIT_SECONDS}s · Pro 300s
-              </span>
-            ) : null}
             <input
               className={fieldClassName}
               onChange={(event) => onDurationChange(Number(event.target.value))}
@@ -145,13 +129,6 @@ export function ControlPanel({
                 </option>
               ))}
             </select>
-            {!isPro &&
-            canvasPresets.some((preset) => preset.tier === "pro") ? (
-              <span className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Lock className="size-3" />
-                4K resolutions require Pro
-              </span>
-            ) : null}
           </label>
           <label className="mt-4 block text-sm font-medium text-foreground">
             {ui.backgroundModeLabel}
@@ -221,9 +198,6 @@ export function ControlPanel({
             >
               <Upload className="size-3.5" />
               Upload font
-              {!isPro ? (
-                <Lock className="ml-1 size-3 text-secondary" />
-              ) : null}
             </button>
             {uploadedFontName ? (
               <button
@@ -249,9 +223,7 @@ export function ControlPanel({
             <ColorPicker
               label="Text color"
               value={settings.textStyle.textColor}
-              isPro={isPro}
               onChange={onTextColorChange}
-              onLockedClick={onProLockedClick}
             />
           </div>
 

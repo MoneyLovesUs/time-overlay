@@ -8,10 +8,8 @@ import {
   renderStyledFrame,
 } from "@/lib/generator/render-frame";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
-import { drawWatermark } from "@/lib/generator/watermark";
 
 type WebmExportOptions = {
-  applyWatermark: boolean;
   onProgress: (progress: ExportProgressState) => void;
 };
 
@@ -30,7 +28,7 @@ function wait(durationMs: number) {
  */
 export async function exportWebmLocally(
   settings: GeneratorSettings,
-  { applyWatermark, onProgress }: WebmExportOptions,
+  { onProgress }: WebmExportOptions,
 ) {
   const mimeType = getPreferredAlphaWebmMimeType();
 
@@ -139,13 +137,6 @@ export async function exportWebmLocally(
     });
 
     renderStyledFrame(context, frameState, settings.themePresetId);
-
-    if (applyWatermark) {
-      drawWatermark(context, {
-        canvasWidth: settings.canvas.width,
-        canvasHeight: settings.canvas.height,
-      });
-    }
 
     if (
       frameIndex === 0 ||

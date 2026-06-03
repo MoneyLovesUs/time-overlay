@@ -19,9 +19,6 @@ import {
   DEFAULT_EXPORT_PROGRESS_STATE,
   DEFAULT_GENERATOR_SETTINGS,
   GENERATOR_CANVAS_PRESETS,
-  GENERATOR_FREE_DURATION_LIMIT_SECONDS,
-  GENERATOR_PRO_FORMATS,
-  GENERATOR_PRO_RESOLUTION_PRESETS,
   GENERATOR_THEME_PRESETS,
   normalizeGeneratorSettings,
 } from "@/lib/generator/defaults";
@@ -41,7 +38,6 @@ import {
   readFontFile,
   type UploadedFont,
 } from "@/lib/generator/font-loader";
-import { isProActive, useProState } from "@/lib/license/state";
 import { trackEvent } from "@/lib/analytics/events";
 import { detectClientEnvironment } from "@/lib/analytics/environment";
 import type {
@@ -74,13 +70,10 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [support, setSupport] = useState(getInitialLocalExportSupport);
   const [uploadedFont, setUploadedFont] = useState<UploadedFont | null>(null);
-  const { state: proState } = useProState();
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
   const lastUnsupportedCodeRef = useRef<string | null>(null);
-  const isPro = isProActive(proState);
-  const applyWatermark = !isPro;
 
   const formatTemplate = (
     template: string,
@@ -152,7 +145,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return;
     }
     const preset = GENERATOR_THEME_PRESETS.find((item) => item.id === presetParam);
-    if (preset && !(preset.isPro && !isProActive(proState))) {
+    if (preset) {
       updateSettings((current) => ({
         ...current,
         themePresetId: preset.id,
@@ -161,7 +154,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         canvas: { ...current.canvas, ...preset.canvas },
       }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getExportRuntime = () => {
@@ -169,23 +161,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     return exportRuntimeRef.current;
   };
 
-  const enforceDurationLimit = (durationSeconds: number) => {
-    if (isPro) {
-      return durationSeconds;
-    }
-    if (durationSeconds > GENERATOR_FREE_DURATION_LIMIT_SECONDS) {
-      return GENERATOR_FREE_DURATION_LIMIT_SECONDS;
-    }
-    return durationSeconds;
-  };
-
   const handleDurationChange = (durationSeconds: number) => {
-    const enforced = enforceDurationLimit(durationSeconds);
     updateSettings((current) => ({
       ...current,
       timer: {
         ...current.timer,
-        durationSeconds: enforced,
+        durationSeconds,
       },
     }));
   };
@@ -201,9 +182,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleResolutionPresetChange = (resolutionPresetId: ResolutionPresetId) => {
-    if (GENERATOR_PRO_RESOLUTION_PRESETS.has(resolutionPresetId) && !isPro) {
-      return;
-    }
     updateSettings((current) => ({
       ...current,
       canvas: {
@@ -244,9 +222,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFormatChange = (format: GeneratorFormat) => {
-    if (GENERATOR_PRO_FORMATS.has(format) && !isPro) {
-      return;
-    }
     updateSettings((current) => ({
       ...current,
       export: {
@@ -293,15 +268,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return;
     }
 
-    trackEvent("preset_selected", {
-      presetId,
-      isLocked: preset.isPro && !isPro,
-      isPro,
-    });
-
-    if (preset.isPro && !isPro) {
-      return;
-    }
+    trackEvent("preset_selected", { presetId });
 
     updateSettings((current) => ({
       ...current,
@@ -322,9 +289,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleTextColorChange = (textColor: string) => {
-    if (!isPro) {
-      return;
-    }
     updateSettings((current) => ({
       ...current,
       textStyle: {
@@ -335,9 +299,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFontUpload = async (file: File) => {
-    if (!isPro) {
-      return;
-    }
     try {
       const font = await readFontFile(file);
       await loadFontIntoDocument(font);
@@ -470,7 +431,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       fps: settings.export.fps,
       durationSeconds: settings.timer.durationSeconds,
       resolution: settings.canvas.resolutionPresetId,
-      isPro,
       ...analyticsEnvironment,
     });
 
@@ -487,7 +447,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       try {
         const { exportWebmLocally } = await getExportRuntime().loadWebmExporter();
         const result = await exportWebmLocally(settings, {
-          applyWatermark,
           onProgress: (progress) => {
             setExportProgress(localizeProgressMessage(progress));
           },
@@ -553,8 +512,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           kind: "export-png-sequence",
           payload: {
             settings,
-            applyWatermark,
-            includeProResBundle: isPro,
             uploadedFont: uploadedFont ?? undefined,
           },
         });
@@ -567,7 +524,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         payload: {
           settings,
           target: alphaTarget,
-          applyWatermark,
           uploadedFont: uploadedFont ?? undefined,
         },
       });
@@ -618,7 +574,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           <ThemePresetPicker
             presets={GENERATOR_THEME_PRESETS}
             activePresetId={settings.themePresetId}
-            isPro={isPro}
             onSelectPreset={handleThemePresetChange}
             ui={ui.themePresetPicker}
           />
@@ -629,7 +584,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 settings={settings}
                 canvasPresets={GENERATOR_CANVAS_PRESETS}
                 ui={ui.controlPanel}
-                isPro={isPro}
                 uploadedFontName={uploadedFont?.family ?? null}
                 onDurationChange={handleDurationChange}
                 onDisplayFormatChange={handleDisplayFormatChange}
@@ -641,14 +595,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 onUploadFont={handleFontUpload}
                 onClearUploadedFont={handleClearUploadedFont}
                 onAudioVariantChange={handleAudioVariantChange}
-                onProLockedClick={() => {}}
               />
             </div>
             <div className="order-1 xl:order-none [&>*]:h-full">
               <PreviewPanel
                 settings={deferredSettings}
                 ui={ui.previewPanel}
-                showWatermark={applyWatermark}
                 onToggleSafeArea={handleToggleSafeArea}
               />
             </div>
@@ -664,7 +616,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 onFpsChange={handleFpsChange}
                 onQualityChange={handleQualityChange}
                 support={support}
-                isPro={isPro}
               />
             </div>
           </div>

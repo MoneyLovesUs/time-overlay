@@ -56,14 +56,11 @@ export type ResolutionPresetId =
   | "portrait-2160"
   | "square-1080";
 
-export type ResolutionTier = "standard" | "pro";
-
 export type CanvasPreset = {
   id: ResolutionPresetId;
   label: string;
   width: number;
   height: number;
-  tier: ResolutionTier;
 };
 
 export type TimerContentSettings = {
@@ -143,7 +140,6 @@ export type ThemePreset = {
   id: RenderThemePresetId;
   label: string;
   description: string;
-  isPro: boolean;
   textStyle: Partial<TextStyleSettings>;
   placement?: Partial<PlacementSettings>;
   canvas?: Partial<Pick<CanvasSettings, "backgroundMode" | "backgroundColor">>;

@@ -1,15 +1,12 @@
-import { Lock, Sparkles } from "lucide-react";
 import type { CSSProperties } from "react";
 
 import { cn } from "@/lib/utils";
 import type { RootPageContent } from "@/content/root/types";
-import { PAYWALL_ENABLED } from "@/lib/license/state";
 import type { RenderThemePresetId, ThemePreset } from "@/lib/generator/types";
 
 type ThemePresetPickerProps = {
   presets: readonly ThemePreset[];
   activePresetId: RenderThemePresetId;
-  isPro: boolean;
   onSelectPreset: (presetId: RenderThemePresetId) => void;
   ui: RootPageContent["generatorUi"]["themePresetPicker"];
 };
@@ -17,7 +14,6 @@ type ThemePresetPickerProps = {
 export function ThemePresetPicker({
   presets,
   activePresetId,
-  isPro,
   onSelectPreset,
   ui,
 }: ThemePresetPickerProps) {
@@ -33,7 +29,6 @@ export function ThemePresetPicker({
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
         {presets.map((preset) => {
           const isActive = preset.id === activePresetId;
-          const locked = preset.isPro && !isPro;
           const ts = preset.textStyle;
           const previewStyle: CSSProperties = {
             color: ts.textColor,
@@ -74,19 +69,7 @@ export function ThemePresetPicker({
               </span>
               <span className="flex w-full items-center justify-between gap-2">
                 <span className="truncate">{ui.presetLabels[preset.id]}</span>
-                {PAYWALL_ENABLED && preset.isPro ? (
-                  locked ? (
-                    <Lock className="size-3 shrink-0 text-secondary" />
-                  ) : (
-                    <Sparkles className="size-3 shrink-0 text-secondary" />
-                  )
-                ) : null}
               </span>
-              {PAYWALL_ENABLED && preset.isPro ? (
-                <span className="text-[9px] tracking-[0.24em] text-secondary">
-                  Pro
-                </span>
-              ) : null}
             </button>
           );
         })}

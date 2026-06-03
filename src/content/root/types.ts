@@ -114,8 +114,6 @@ export type RootPageContent = {
       vp9AlphaDescription: string;
       hevcAlphaLabel: string;
       hevcAlphaDescription: string;
-      proBadge: string;
-      proLockedHint: string;
       fpsLabel: string;
       fpsOptions: Record<24 | 30, string>;
       qualityLabel: string;

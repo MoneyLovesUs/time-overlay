@@ -19,19 +19,16 @@ import {
 } from "@/lib/generator/render-frame";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
 import type { GeneratorSettings } from "@/lib/generator/types";
-import { drawWatermark } from "@/lib/generator/watermark";
 
 type PreviewPanelProps = {
   settings: GeneratorSettings;
   ui: RootPageContent["generatorUi"]["previewPanel"];
-  showWatermark: boolean;
   onToggleSafeArea: () => void;
 };
 
 export function PreviewPanel({
   settings,
   ui,
-  showWatermark,
   onToggleSafeArea,
 }: PreviewPanelProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -144,14 +141,7 @@ export function PreviewPanel({
     });
 
     renderStyledFrame(context, frameState, settings.themePresetId);
-
-    if (showWatermark) {
-      drawWatermark(context, {
-        canvasWidth: settings.canvas.width,
-        canvasHeight: settings.canvas.height,
-      });
-    }
-  }, [displayText, elapsedSeconds, settings, showWatermark]);
+  }, [displayText, elapsedSeconds, settings]);
 
   const handlePlay = () => {
     if (elapsedSeconds >= settings.timer.durationSeconds) {

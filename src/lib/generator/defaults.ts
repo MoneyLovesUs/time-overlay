@@ -7,11 +7,7 @@ import type {
   ThemePreset,
 } from "@/lib/generator/types";
 
-export const GENERATOR_FREE_DURATION_LIMIT_SECONDS = 60;
-
-export const GENERATOR_PRO_DURATION_LIMIT_SECONDS = 300;
-
-export const GENERATOR_DURATION_LIMIT_SECONDS = GENERATOR_PRO_DURATION_LIMIT_SECONDS;
+export const GENERATOR_DURATION_LIMIT_SECONDS = 300;
 
 export const GENERATOR_MIN_DURATION_SECONDS = 3;
 
@@ -22,11 +18,6 @@ export const GENERATOR_SUPPORTED_FORMATS: readonly GeneratorFormat[] = [
   "mov-hevc-alpha",
   "gif",
 ];
-
-export const GENERATOR_PRO_FORMATS: ReadonlySet<GeneratorFormat> = new Set([
-  "webm-vp9-alpha",
-  "mov-hevc-alpha",
-]);
 
 export const GENERATOR_ALLOWED_FPS = [24, 30] as const;
 
@@ -52,27 +43,20 @@ export const GENERATOR_ALLOWED_ANCHORS: readonly PlacementAnchor[] = [
 ];
 
 export const GENERATOR_CANVAS_PRESETS: readonly CanvasPreset[] = [
-  { id: "landscape-720", label: "Landscape 1280x720", width: 1280, height: 720, tier: "standard" },
-  { id: "landscape-1080", label: "Landscape 1920x1080", width: 1920, height: 1080, tier: "standard" },
-  { id: "landscape-2160", label: "Landscape 3840x2160 (4K)", width: 3840, height: 2160, tier: "pro" },
-  { id: "portrait-720", label: "Portrait 720x1280", width: 720, height: 1280, tier: "standard" },
-  { id: "portrait-1080", label: "Portrait 1080x1920", width: 1080, height: 1920, tier: "standard" },
-  { id: "portrait-2160", label: "Portrait 2160x3840 (4K)", width: 2160, height: 3840, tier: "pro" },
-  { id: "square-1080", label: "Square 1080x1080", width: 1080, height: 1080, tier: "standard" },
+  { id: "landscape-720", label: "Landscape 1280x720", width: 1280, height: 720 },
+  { id: "landscape-1080", label: "Landscape 1920x1080", width: 1920, height: 1080 },
+  { id: "landscape-2160", label: "Landscape 3840x2160 (4K)", width: 3840, height: 2160 },
+  { id: "portrait-720", label: "Portrait 720x1280", width: 720, height: 1280 },
+  { id: "portrait-1080", label: "Portrait 1080x1920", width: 1080, height: 1920 },
+  { id: "portrait-2160", label: "Portrait 2160x3840 (4K)", width: 2160, height: 3840 },
+  { id: "square-1080", label: "Square 1080x1080", width: 1080, height: 1080 },
 ] as const;
-
-export const GENERATOR_PRO_RESOLUTION_PRESETS: ReadonlySet<CanvasPreset["id"]> = new Set(
-  GENERATOR_CANVAS_PRESETS.filter((preset) => preset.tier === "pro").map(
-    (preset) => preset.id,
-  ),
-);
 
 export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
   {
     id: "cyber",
     label: "Cyber",
     description: "Sharp mono numerals with a restrained cyan glow.",
-    isPro: false,
     textStyle: {
       fontFamily: "geist-mono",
       fontSize: 88,
@@ -94,7 +78,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "minimal",
     label: "Minimal",
     description: "Quiet sans numerals tuned for tutorials and screen recordings.",
-    isPro: false,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 80,
@@ -116,7 +99,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "mono",
     label: "Mono",
     description: "Plain monospace numerals. No glow, no fuss.",
-    isPro: false,
     textStyle: {
       fontFamily: "geist-mono",
       fontSize: 84,
@@ -138,7 +120,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "neon",
     label: "Neon",
     description: "Bright magenta glow for nightlife streams and party countdowns.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-mono",
       fontSize: 92,
@@ -160,7 +141,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "glow",
     label: "Glow",
     description: "Soft warm glow for cinematic intros and lifestyle content.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 88,
@@ -182,7 +162,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "scanline",
     label: "Scanline",
     description: "CRT phosphor green with horizontal scanline overlay.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-mono",
       fontSize: 90,
@@ -204,7 +183,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "classic",
     label: "Classic",
     description: "Bold broadcast numerals with a heavy stroke for noisy footage.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 96,
@@ -226,7 +204,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "retro",
     label: "Retro 80s",
     description: "Yellow and magenta shadow split for a synthwave countdown.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 92,
@@ -248,7 +225,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "glass",
     label: "Glass",
     description: "Frosted glassmorphism pill behind clean numerals.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 84,
@@ -270,7 +246,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     id: "neumorphic",
     label: "Neumorphic",
     description: "Soft mono-tone numerals with paired light and shadow.",
-    isPro: true,
     textStyle: {
       fontFamily: "geist-sans",
       fontSize: 82,
@@ -290,10 +265,6 @@ export const GENERATOR_THEME_PRESETS: readonly ThemePreset[] = [
     canvas: { backgroundMode: "solid", backgroundColor: "#1F2330" },
   },
 ] as const;
-
-export const GENERATOR_PRO_THEME_PRESETS: ReadonlySet<ThemePreset["id"]> = new Set(
-  GENERATOR_THEME_PRESETS.filter((preset) => preset.isPro).map((preset) => preset.id),
-);
 
 export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettings = {
   timer: {

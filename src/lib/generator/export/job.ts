@@ -26,8 +26,6 @@ export type ExportWorkerRequest =
       kind: "export-png-sequence";
       payload: {
         settings: GeneratorSettings;
-        applyWatermark: boolean;
-        includeProResBundle: boolean;
         uploadedFont?: UploadedFont;
       };
     }
@@ -36,7 +34,6 @@ export type ExportWorkerRequest =
       payload: {
         settings: GeneratorSettings;
         target: "webm-vp9" | "mov-hevc";
-        applyWatermark: boolean;
         uploadedFont?: UploadedFont;
       };
     };

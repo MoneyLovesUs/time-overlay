@@ -133,8 +133,6 @@ const enRootPageContent = {
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription:
         "Apple-friendly transparent video. Best on Safari and macOS.",
-      proBadge: "Pro",
-      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",

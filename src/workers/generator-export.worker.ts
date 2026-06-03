@@ -21,7 +21,6 @@ import {
 } from "@/lib/generator/render-frame";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
 import type { GeneratorSettings } from "@/lib/generator/types";
-import { drawWatermark } from "@/lib/generator/watermark";
 
 function postMessageToHost(message: ExportWorkerMessage) {
   self.postMessage(message);
@@ -32,7 +31,6 @@ type DrawFrameOptions = {
   settings: GeneratorSettings;
   frameIndex: number;
   fps: number;
-  applyWatermark: boolean;
 };
 
 function drawFrameToContext({
@@ -40,7 +38,6 @@ function drawFrameToContext({
   settings,
   frameIndex,
   fps,
-  applyWatermark,
 }: DrawFrameOptions) {
   const elapsedSeconds = frameIndex / fps;
   const displayText = formatCountdownTime(
@@ -70,20 +67,13 @@ function drawFrameToContext({
   });
 
   renderStyledFrame(context, frameState, settings.themePresetId);
-
-  if (applyWatermark) {
-    drawWatermark(context, {
-      canvasWidth: settings.canvas.width,
-      canvasHeight: settings.canvas.height,
-    });
-  }
 }
 
 type PngSequenceRequest = Extract<ExportWorkerRequest, { kind: "export-png-sequence" }>;
 type AlphaVideoRequest = Extract<ExportWorkerRequest, { kind: "export-alpha-video" }>;
 
 async function handlePngSequence(request: PngSequenceRequest) {
-  const { settings, applyWatermark, includeProResBundle, uploadedFont } = request.payload;
+  const { settings, uploadedFont } = request.payload;
 
   if (uploadedFont) {
     await loadFontIntoWorker(uploadedFont);
@@ -134,7 +124,6 @@ async function handlePngSequence(request: PngSequenceRequest) {
       settings,
       frameIndex,
       fps: settings.export.fps,
-      applyWatermark,
     });
 
     const blob = await canvas.convertToBlob({ type: "image/png" });
@@ -162,16 +151,14 @@ async function handlePngSequence(request: PngSequenceRequest) {
     }
   }
 
-  if (includeProResBundle) {
-    const bundle = buildProResBundle({
-      fps: settings.export.fps,
-      framePattern: "frame-%04d.png",
-    });
-    for (const file of PRORES_BUNDLE_FILES) {
-      const entry = new ZipPassThrough(file);
-      zip.add(entry);
-      entry.push(strToU8(bundle[file]), true);
-    }
+  const bundle = buildProResBundle({
+    fps: settings.export.fps,
+    framePattern: "frame-%04d.png",
+  });
+  for (const file of PRORES_BUNDLE_FILES) {
+    const entry = new ZipPassThrough(file);
+    zip.add(entry);
+    entry.push(strToU8(bundle[file]), true);
   }
 
   postMessageToHost({
@@ -188,7 +175,7 @@ async function handlePngSequence(request: PngSequenceRequest) {
 }
 
 async function handleAlphaVideo(request: AlphaVideoRequest) {
-  const { settings, target, applyWatermark, uploadedFont } = request.payload;
+  const { settings, target, uploadedFont } = request.payload;
 
   if (uploadedFont) {
     await loadFontIntoWorker(uploadedFont);
@@ -224,7 +211,6 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
         settings,
         frameIndex,
         fps: settings.export.fps,
-        applyWatermark,
       });
     },
     onProgress(progress) {

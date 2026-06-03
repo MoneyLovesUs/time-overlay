@@ -97,9 +97,7 @@ export function StylePresetPage({
                 When the {presetLabel} Time Overlay preset fits
               </h2>
               <p className="mt-3 leading-7 text-muted-foreground">
-                {preset.isPro
-                  ? `The ${presetLabel} Time Overlay is part of the Time Overlay Pro preset library. It pairs well with high-energy footage where the Time Overlay readability cannot fight the look.`
-                  : `The ${presetLabel} Time Overlay is one of the free Time Overlay presets. It is purpose-built for clean Time Overlay handoff into your editor with minimal customization.`}
+                {`The ${presetLabel} Time Overlay is purpose-built for clean Time Overlay handoff into your editor, and it pairs well with footage where readability cannot fight the look.`}
               </p>
             </div>
             <div>
@@ -132,9 +130,9 @@ export function StylePresetPage({
                 Color recommendations
               </h2>
               <p className="mt-3 leading-7 text-muted-foreground">
-                Stick with the preset palette for fast results. Pro members can
-                swap colors via the in-app color picker and keep the rest of the
-                preset intact, then export the customized {presetLabel} look.
+                Stick with the preset palette for fast results, or swap colors
+                via the in-app color picker and keep the rest of the preset
+                intact, then export the customized {presetLabel} look.
               </p>
             </div>
           </div>
@@ -156,7 +154,7 @@ export function StylePresetPage({
                     className="block border border-border/70 bg-background/60 px-4 py-4 transition-colors hover:border-tertiary/55"
                   >
                     <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-tertiary">
-                      {other.isPro ? "Pro preset" : "Free preset"}
+                      Style preset
                     </p>
                     <p className="mt-1 text-base font-medium text-foreground">
                       {otherLabel}

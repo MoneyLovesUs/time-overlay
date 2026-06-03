@@ -132,8 +132,6 @@ const fiRootPageContent = {
       vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
-      proBadge: "Pro",
-      proLockedHint: "Pro unlocks this format. Click to upgrade.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",

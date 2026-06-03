@@ -39,7 +39,6 @@ describe("localized generator ui", () => {
         advisory,
         exportProgress: DEFAULT_EXPORT_PROGRESS_STATE,
         isExporting: false,
-        isPro: false,
         onExport: () => {},
         onFormatChange: () => {},
         onFpsChange: () => {},

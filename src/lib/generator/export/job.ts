@@ -44,6 +44,17 @@ export type ExportWorkerMessage =
       payload: ExportProgressState;
     }
   | {
+      // A downscaled snapshot of the frame currently being encoded. Sent on a
+      // throttled cadence so the UI can show the export visibly "growing" during
+      // the wait. Best-effort: the worker omits it when createImageBitmap is
+      // unavailable, and the host degrades to a bar-only view.
+      kind: "preview";
+      payload: {
+        bitmap: ImageBitmap;
+        frameIndex: number;
+      };
+    }
+  | {
       kind: "complete";
       payload: {
         blob: Blob;

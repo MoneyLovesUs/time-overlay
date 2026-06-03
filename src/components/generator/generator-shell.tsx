@@ -27,6 +27,7 @@ import {
   type LazyExportRuntime,
 } from "@/lib/generator/export/runtime";
 import { downloadBlob } from "@/lib/generator/export/png-sequence";
+import { estimateRemainingMs } from "@/lib/generator/export/progress";
 import {
   getExportAdvisory,
   getInitialLocalExportSupport,
@@ -70,10 +71,32 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [support, setSupport] = useState(getInitialLocalExportSupport);
   const [uploadedFont, setUploadedFont] = useState<UploadedFont | null>(null);
+  const [etaMs, setEtaMs] = useState<number | null>(null);
+  const [previewBitmap, setPreviewBitmap] = useState<ImageBitmap | null>(null);
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
   const lastUnsupportedCodeRef = useRef<string | null>(null);
+  const exportStartedAtRef = useRef<number | null>(null);
+  const exportProgressRef = useRef<ExportProgressState>(exportProgress);
+  const abandonFiredRef = useRef(false);
+  const previewBitmapRef = useRef<ImageBitmap | null>(null);
+
+  // Swap in a fresh preview snapshot and release the previous bitmap. ImageBitmap
+  // holds GPU/canvas memory until close() is called, so leaking one per ~250ms of
+  // export would balloon memory on long renders.
+  const setPreview = useCallback((next: ImageBitmap | null) => {
+    if (previewBitmapRef.current && previewBitmapRef.current !== next) {
+      previewBitmapRef.current.close();
+    }
+    previewBitmapRef.current = next;
+    setPreviewBitmap(next);
+  }, []);
+
+  const elapsedExportMs = () =>
+    exportStartedAtRef.current === null
+      ? undefined
+      : Math.round(performance.now() - exportStartedAtRef.current);
 
   const formatTemplate = (
     template: string,
@@ -103,6 +126,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       hasWorkerSupport: support.hasWorkerSupport ?? "unknown",
     };
   }, [support]);
+  const isMobileDevice = analyticsEnvironment.deviceType !== "desktop";
+
   const localizeProgressMessage = (
     progress: ExportProgressState,
   ): ExportProgressState => {
@@ -343,12 +368,27 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const handleExportWorkerMessage = useCallback(
     (event: MessageEvent<ExportWorkerMessage>) => {
       if (event.data.kind === "progress") {
-        setExportProgress(localizeProgressMessage(event.data.payload));
+        const payload = event.data.payload;
+        setExportProgress(localizeProgressMessage(payload));
+        setEtaMs(
+          estimateRemainingMs(
+            elapsedExportMs() ?? 0,
+            payload.completedFrames,
+            payload.totalFrames,
+          ),
+        );
+        return;
+      }
+
+      if (event.data.kind === "preview") {
+        setPreview(event.data.payload.bitmap);
         return;
       }
 
       if (event.data.kind === "complete") {
         setIsExporting(false);
+        setPreview(null);
+        setEtaMs(null);
         setExportProgress({
           stage: "complete",
           completedFrames: exportTotalsRef.current,
@@ -358,43 +398,106 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             { fileName: event.data.payload.fileName },
           ),
         });
+        // Trigger the download first, then record completion, so the funnel's
+        // success event lines up with the moment the file actually leaves.
+        downloadBlob(event.data.payload.blob, event.data.payload.fileName);
         trackEvent("export_completed", {
           format: settings.export.format,
           fileName: event.data.payload.fileName,
+          durationMs: elapsedExportMs(),
           ...analyticsEnvironment,
         });
-        downloadBlob(event.data.payload.blob, event.data.payload.fileName);
         return;
       }
 
       setIsExporting(false);
+      setPreview(null);
+      setEtaMs(null);
       const code = event.data.payload.code;
       const fallback =
         code === "alphaVideoFailedUnexpectedly"
           ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
           : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
+      const baseMessage = event.data.payload.message ?? fallback;
+      const suggestedLabel =
+        settings.export.format !== "png-sequence" && support.supportsPngSequence
+          ? ui.exportPanel.pngSequenceLabel
+          : settings.export.format === "png-sequence" && support.supportsWebm
+            ? ui.exportPanel.webmLabel
+            : null;
+      const suggestionTemplate =
+        ui.exportPanel.progress?.fallbackSuggestionTemplate ??
+        "Tip: try {format} instead.";
+      const suggestion = suggestedLabel
+        ? suggestionTemplate.replace("{format}", suggestedLabel)
+        : null;
       setExportProgress({
         stage: "error",
         completedFrames: 0,
         totalFrames: 0,
-        message: event.data.payload.message ?? fallback,
+        message: suggestion ? `${baseMessage} ${suggestion}` : baseMessage,
       });
       trackEvent("export_failed", {
         format: settings.export.format,
         errorCode: code ?? "unknown",
         errorMessage: event.data.payload.message,
+        durationMs: elapsedExportMs(),
         ...analyticsEnvironment,
       });
     },
-    [settings.export.format, ui.exportPanel.runtimeMessages, analyticsEnvironment],
+    [
+      settings.export.format,
+      ui.exportPanel,
+      analyticsEnvironment,
+      support,
+      setPreview,
+    ],
   );
 
   useEffect(() => {
     return () => {
       exportRuntimeRef.current?.terminateExportWorker();
       exportRuntimeRef.current = null;
+      previewBitmapRef.current?.close();
+      previewBitmapRef.current = null;
     };
   }, []);
+
+  // Mirror the latest progress into a ref so the abandonment listener can read
+  // it without re-subscribing on every progress tick.
+  useEffect(() => {
+    exportProgressRef.current = exportProgress;
+  }, [exportProgress]);
+
+  // The desktop funnel loses ~1/3 of users mid-encode, and they currently vanish
+  // silently (export_started fires, nothing follows). Recording a leave-during-
+  // export event turns that black hole into a measurable stage-by-stage drop-off.
+  useEffect(() => {
+    if (!isExporting || typeof window === "undefined") {
+      return;
+    }
+    const reportAbandon = () => {
+      if (abandonFiredRef.current) {
+        return;
+      }
+      abandonFiredRef.current = true;
+      const progress = exportProgressRef.current;
+      trackEvent("export_abandoned", {
+        format: settings.export.format,
+        stage: progress.stage,
+        completedFrames: progress.completedFrames,
+        totalFrames: progress.totalFrames,
+        durationMs: elapsedExportMs(),
+        ...analyticsEnvironment,
+      });
+    };
+    window.addEventListener("pagehide", reportAbandon);
+    window.addEventListener("beforeunload", reportAbandon);
+    return () => {
+      window.removeEventListener("pagehide", reportAbandon);
+      window.removeEventListener("beforeunload", reportAbandon);
+    };
+  }, [isExporting, settings.export.format, analyticsEnvironment]);
 
   // When capability detection puts the selected format into a hard-error state,
   // the Export button is disabled and the user produces no funnel events at all.
@@ -425,6 +528,10 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
     const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
     exportTotalsRef.current = totalFrames;
+    exportStartedAtRef.current = performance.now();
+    abandonFiredRef.current = false;
+    setPreview(null);
+    setEtaMs(null);
 
     trackEvent("export_started", {
       format: settings.export.format,
@@ -449,10 +556,18 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         const result = await exportWebmLocally(settings, {
           onProgress: (progress) => {
             setExportProgress(localizeProgressMessage(progress));
+            setEtaMs(
+              estimateRemainingMs(
+                elapsedExportMs() ?? 0,
+                progress.completedFrames,
+                progress.totalFrames,
+              ),
+            );
           },
         });
 
         setIsExporting(false);
+        setEtaMs(null);
         setExportProgress({
           stage: "complete",
           completedFrames: totalFrames,
@@ -462,14 +577,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             { fileName: result.fileName },
           ),
         });
+        downloadBlob(result.blob, result.fileName);
         trackEvent("export_completed", {
           format: settings.export.format,
           fileName: result.fileName,
+          durationMs: elapsedExportMs(),
           ...analyticsEnvironment,
         });
-        downloadBlob(result.blob, result.fileName);
       } catch (error) {
         setIsExporting(false);
+        setEtaMs(null);
         setExportProgress({
           stage: "error",
           completedFrames: 0,
@@ -486,6 +603,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           format: settings.export.format,
           errorCode: "webmFailedUnexpectedly",
           errorMessage: error instanceof Error ? error.message : undefined,
+          durationMs: elapsedExportMs(),
           ...analyticsEnvironment,
         });
       }
@@ -529,6 +647,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       });
     } catch (error) {
       setIsExporting(false);
+      setEtaMs(null);
       setExportProgress({
         stage: "error",
         completedFrames: 0,
@@ -539,6 +658,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         format: settings.export.format,
         errorCode: "exportWorkerUnavailable",
         errorMessage: error instanceof Error ? error.message : undefined,
+        durationMs: elapsedExportMs(),
         ...analyticsEnvironment,
       });
     }
@@ -616,6 +736,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 onFpsChange={handleFpsChange}
                 onQualityChange={handleQualityChange}
                 support={support}
+                etaMs={etaMs}
+                previewBitmap={previewBitmap}
+                isMobile={isMobileDevice}
               />
             </div>
           </div>

@@ -16,6 +16,7 @@ export type AnalyticsEventName =
   | "export_started"
   | "export_completed"
   | "export_failed"
+  | "export_abandoned"
   | "export_unsupported"
   | "preset_selected";
 

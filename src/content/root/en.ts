@@ -181,6 +181,27 @@ const enRootPageContent = {
         pngSequenceFailedUnexpectedly:
           "PNG sequence export failed unexpectedly.",
       },
+      progress: {
+        remainingTemplate: "{time} left",
+        previewLabel: "Live preview",
+        elapsedLabel: "Building your overlay",
+        tips: [
+          "Everything renders locally in your browser — your frames never leave this device.",
+          "PNG sequence imports cleanly into Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+          "Keep this tab in focus for the fastest export.",
+          "Transparent exports drop straight onto your footage — no green screen needed.",
+        ],
+        desktopNote:
+          "Heads up: exporting works best on a desktop browser. On mobile, stick to PNG sequence or open this page on your computer.",
+        fallbackSuggestionTemplate: "Tip: try {format} instead.",
+        stageLabels: {
+          validating: "Preparing export",
+          rendering: "Rendering frames",
+          encoding: "Encoding video",
+          packaging: "Packaging files",
+          complete: "Done",
+        },
+      },
     },
   },
   seoSection: {

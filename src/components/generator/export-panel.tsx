@@ -1,5 +1,6 @@
-import { Download, FileStack, Film, Sparkles } from "lucide-react";
+import { Download, FileStack, Film, MonitorSmartphone, Sparkles } from "lucide-react";
 
+import { ExportProgressView } from "@/components/generator/export-progress-view";
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
 import type { ExportAdvisory, LocalExportSupport } from "@/lib/generator/feature-detection";
@@ -21,7 +22,13 @@ type ExportPanelProps = {
   onFpsChange: (fps: number) => void;
   onQualityChange: (quality: ExportQualityPreset) => void;
   support: LocalExportSupport;
+  etaMs?: number | null;
+  previewBitmap?: ImageBitmap | null;
+  isMobile?: boolean;
 };
+
+const DEFAULT_DESKTOP_NOTE =
+  "Heads up: exporting works best on a desktop browser. On mobile, stick to PNG sequence or open this page on your computer.";
 
 const fieldClassName =
   "mt-2 h-10 w-full rounded-none border border-border/80 bg-background/65 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-tertiary";
@@ -87,6 +94,9 @@ export function ExportPanel({
   onFpsChange,
   onQualityChange,
   support,
+  etaMs = null,
+  previewBitmap = null,
+  isMobile = false,
 }: ExportPanelProps) {
   const advisoryClassName =
     advisory.severity === "error"
@@ -210,6 +220,13 @@ export function ExportPanel({
           </p>
         </div>
 
+        {isMobile && !isExporting ? (
+          <div className="flex items-start gap-2 rounded-none border border-secondary/35 bg-secondary/10 px-4 py-3 text-[12px] leading-5 text-foreground">
+            <MonitorSmartphone className="mt-0.5 size-4 shrink-0 text-secondary" />
+            <span>{ui.progress?.desktopNote ?? DEFAULT_DESKTOP_NOTE}</span>
+          </div>
+        ) : null}
+
         <Button
           className="h-11 w-full justify-between rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
           disabled={isExporting || advisory.severity === "error"}
@@ -219,14 +236,15 @@ export function ExportPanel({
           <Download className="size-4" />
         </Button>
 
-        <div className="rounded-none border border-border/80 bg-background/65 px-4 py-3 text-sm text-muted-foreground">
-          <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
-            {ui.exportStatusTitle}
-          </p>
-          <p className="mt-2 leading-6">
-            {exportProgress.message || ui.exportStatusIdle}
-          </p>
-        </div>
+        <ExportProgressView
+          exportProgress={exportProgress}
+          isExporting={isExporting}
+          etaMs={etaMs}
+          previewBitmap={previewBitmap}
+          statusTitle={ui.exportStatusTitle}
+          idleMessage={ui.exportStatusIdle}
+          progressCopy={ui.progress}
+        />
       </div>
     </section>
   );

@@ -144,6 +144,24 @@ export type RootPageContent = {
         alphaVideoFailedUnexpectedly: string;
         pngSequenceFailedUnexpectedly: string;
       };
+      // Optional perceived-wait copy for the live export progress view. Optional
+      // so non-English locales can omit it and fall back to built-in English
+      // defaults; the numeric parts (percent, ETA) are language-neutral.
+      progress?: {
+        remainingTemplate: string;
+        previewLabel: string;
+        elapsedLabel: string;
+        tips: readonly string[];
+        desktopNote: string;
+        fallbackSuggestionTemplate: string;
+        stageLabels: {
+          validating: string;
+          rendering: string;
+          encoding: string;
+          packaging: string;
+          complete: string;
+        };
+      };
     };
   };
   seoSection: {

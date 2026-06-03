@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { createGeneratorSettings } from "@/lib/generator/defaults";
 import {
+  detectCanvasCaptureStream,
   getExportAdvisory,
   getInitialLocalExportSupport,
 } from "@/lib/generator/feature-detection";
@@ -15,6 +16,37 @@ describe("getInitialLocalExportSupport", () => {
       supportsVp9Alpha: null,
       supportsHevcAlpha: null,
     });
+  });
+});
+
+describe("detectCanvasCaptureStream", () => {
+  const originalDocument = (globalThis as { document?: unknown }).document;
+
+  afterEach(() => {
+    if (originalDocument === undefined) {
+      delete (globalThis as { document?: unknown }).document;
+    } else {
+      (globalThis as { document?: unknown }).document = originalDocument;
+    }
+  });
+
+  it("returns false when there is no document (SSR/worker)", () => {
+    delete (globalThis as { document?: unknown }).document;
+    expect(detectCanvasCaptureStream()).toBe(false);
+  });
+
+  it("returns false when the canvas lacks captureStream", () => {
+    (globalThis as { document?: unknown }).document = {
+      createElement: () => ({}),
+    };
+    expect(detectCanvasCaptureStream()).toBe(false);
+  });
+
+  it("returns true when the canvas exposes captureStream", () => {
+    (globalThis as { document?: unknown }).document = {
+      createElement: () => ({ captureStream: () => ({}) }),
+    };
+    expect(detectCanvasCaptureStream()).toBe(true);
   });
 });
 

@@ -61,6 +61,25 @@ function detectMediaRecorderWebm() {
   );
 }
 
+/**
+ * WebM export feeds canvas frames through `canvas.captureStream()`, which iOS
+ * Safari and the WebKit-backed iOS Chrome do not implement even when
+ * MediaRecorder reports a supported mime type. Probing it up front lets the
+ * advisory disable WebM *before* the click, instead of letting the export throw
+ * mid-run and surface as a silent export_failed.
+ */
+export function detectCanvasCaptureStream(): boolean {
+  if (typeof document === "undefined") {
+    return false;
+  }
+  try {
+    const canvas = document.createElement("canvas");
+    return typeof canvas.captureStream === "function";
+  } catch {
+    return false;
+  }
+}
+
 async function detectAlphaCodec(codec: string) {
   if (typeof VideoEncoder === "undefined") {
     return false;
@@ -85,7 +104,9 @@ export function getLocalExportSupport(): LocalExportSupport {
   const hasWorkerSupport = typeof Worker !== "undefined";
   const supportsPngSequence =
     typeof Blob !== "undefined" && typeof URL !== "undefined";
-  const supportsWebm = detectMediaRecorderWebm();
+  // Both a usable WebM mime type AND captureStream are required; either missing
+  // means the WebM path cannot complete in this browser.
+  const supportsWebm = detectMediaRecorderWebm() && detectCanvasCaptureStream();
 
   return {
     hasWorkerSupport,

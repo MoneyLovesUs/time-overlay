@@ -22,8 +22,50 @@ import {
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
 import type { GeneratorSettings } from "@/lib/generator/types";
 
-function postMessageToHost(message: ExportWorkerMessage) {
+function postMessageToHost(
+  message: ExportWorkerMessage,
+  transfer?: Transferable[],
+) {
+  if (transfer && transfer.length > 0) {
+    self.postMessage(message, transfer);
+    return;
+  }
   self.postMessage(message);
+}
+
+// Cadence for streaming progress back to the host. Posting every frame floods
+// the message channel on long exports; throttling by wall-clock keeps the bar
+// smooth (the host interpolates between updates) without the overhead.
+const PROGRESS_INTERVAL_MS = 90;
+// Live preview snapshots are heavier (createImageBitmap + structured transfer),
+// so they run on a slower beat than the numeric progress.
+const PREVIEW_INTERVAL_MS = 250;
+const PREVIEW_MAX_WIDTH = 320;
+
+const canCreateImageBitmap = typeof createImageBitmap === "function";
+
+/**
+ * Post a downscaled snapshot of the current canvas as a transferable bitmap.
+ * Best-effort: any failure (unsupported API, detached canvas) is swallowed so a
+ * preview hiccup can never abort the export itself.
+ */
+async function emitPreview(canvas: OffscreenCanvas, frameIndex: number) {
+  if (!canCreateImageBitmap || canvas.width === 0 || canvas.height === 0) {
+    return;
+  }
+  try {
+    const scale = Math.min(1, PREVIEW_MAX_WIDTH / canvas.width);
+    const bitmap = await createImageBitmap(canvas, {
+      resizeWidth: Math.max(1, Math.round(canvas.width * scale)),
+      resizeHeight: Math.max(1, Math.round(canvas.height * scale)),
+      resizeQuality: "low",
+    });
+    postMessageToHost({ kind: "preview", payload: { bitmap, frameIndex } }, [
+      bitmap,
+    ]);
+  } catch {
+    // Preview is decorative; ignore.
+  }
 }
 
 type DrawFrameOptions = {
@@ -93,6 +135,8 @@ async function handlePngSequence(request: PngSequenceRequest) {
 
   const chunks: Uint8Array[] = [];
   let totalSize = 0;
+  let lastProgressAt = 0;
+  let lastPreviewAt = 0;
 
   const zip = new Zip((err, chunk, final) => {
     if (err) {
@@ -134,11 +178,12 @@ async function handlePngSequence(request: PngSequenceRequest) {
     zip.add(entry);
     entry.push(frameBytes, true);
 
-    if (
-      frameIndex === 0 ||
-      frameIndex === plan.totalFrames - 1 ||
-      (frameIndex + 1) % 5 === 0
-    ) {
+    const now = performance.now();
+    const isBoundaryFrame =
+      frameIndex === 0 || frameIndex === plan.totalFrames - 1;
+
+    if (isBoundaryFrame || now - lastProgressAt >= PROGRESS_INTERVAL_MS) {
+      lastProgressAt = now;
       postMessageToHost({
         kind: "progress",
         payload: {
@@ -148,6 +193,11 @@ async function handlePngSequence(request: PngSequenceRequest) {
           message: "",
         },
       });
+    }
+
+    if (isBoundaryFrame || now - lastPreviewAt >= PREVIEW_INTERVAL_MS) {
+      lastPreviewAt = now;
+      await emitPreview(canvas, frameIndex + 1);
     }
   }
 
@@ -193,6 +243,9 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
 
   const baseBitrate = settings.export.quality === "high" ? 12_000_000 : 6_000_000;
 
+  let previewCanvas: OffscreenCanvas | null = null;
+  let lastPreviewAt = 0;
+
   const result = await encodeAlphaVideo({
     target,
     width: settings.canvas.width,
@@ -206,6 +259,7 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
       if (!context) {
         throw new Error("Could not create encoder canvas context.");
       }
+      previewCanvas = canvas;
       drawFrameToContext({
         context,
         settings,
@@ -218,6 +272,11 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
         kind: "progress",
         payload: progress,
       });
+      const now = performance.now();
+      if (previewCanvas && now - lastPreviewAt >= PREVIEW_INTERVAL_MS) {
+        lastPreviewAt = now;
+        void emitPreview(previewCanvas, progress.completedFrames);
+      }
     },
   });
 

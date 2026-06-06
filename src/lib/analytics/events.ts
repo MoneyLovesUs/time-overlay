@@ -1,3 +1,5 @@
+import posthog from "posthog-js";
+
 type GtagFn = (...args: unknown[]) => void;
 
 declare global {
@@ -27,6 +29,12 @@ export function trackEvent(
   if (typeof window === "undefined") {
     return;
   }
+
+  // PostHog (initialised in instrumentation-client.ts before hydration).
+  // Forwarding the funnel events here lets us analyse them alongside
+  // autocaptured pageviews. Every caller fires on a user interaction, which
+  // can only happen after init has run — capture() is a noop before init.
+  posthog.capture(event, payload);
 
   const gtag: GtagFn | undefined =
     typeof window.gtag === "function" ? window.gtag : undefined;

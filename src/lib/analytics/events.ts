@@ -30,9 +30,10 @@ export function trackEvent(
     return;
   }
 
-  // PostHog (initialised in instrumentation-client.ts). Forwarding the funnel
-  // events here lets us analyse them alongside autocaptured pageviews. Safe to
-  // call before init — posthog-js queues events until it is ready.
+  // PostHog (initialised in instrumentation-client.ts before hydration).
+  // Forwarding the funnel events here lets us analyse them alongside
+  // autocaptured pageviews. Every caller fires on a user interaction, which
+  // can only happen after init has run — capture() is a noop before init.
   posthog.capture(event, payload);
 
   const gtag: GtagFn | undefined =

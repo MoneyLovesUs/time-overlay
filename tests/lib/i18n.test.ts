@@ -64,7 +64,7 @@ describe("i18n config", () => {
 describe("site helpers", () => {
   it("emits localized sitemap entries with hreflang alternates plus x-default", () => {
     const entries = buildSitemapEntries();
-    // homepage + 10 style presets + 6 guides = 17 routes × 16 locales = 272
+    // homepage + 6 guides = 7 routes × 16 locales = 112
     expect(entries.length).toBeGreaterThanOrEqual(16);
 
     const homepageEntries = entries.filter(

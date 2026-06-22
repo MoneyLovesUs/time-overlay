@@ -100,8 +100,8 @@ describe("localized SEO helpers", () => {
 
   it("emits all localized homepage entries in the sitemap", () => {
     const entries = buildSitemapEntries();
-    // homepage + 10 style presets + 6 guides per locale × 16 locales
-    expect(entries.length).toBe(17 * 16);
+    // homepage + 6 guides per locale × 16 locales
+    expect(entries.length).toBe(7 * 16);
     const homepageRoots = entries.filter((entry) => {
       const path = entry.url.replace(/^https?:\/\/[^/]+/, "");
       return (

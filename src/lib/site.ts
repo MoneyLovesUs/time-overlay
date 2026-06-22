@@ -1,6 +1,5 @@
 import type { Metadata, MetadataRoute } from "next";
 
-import { GENERATOR_THEME_PRESETS } from "./generator/defaults.ts";
 import {
   buildLanguageAlternates,
   buildLocalizedPath,
@@ -75,12 +74,6 @@ type HomepageRouteDefinition = {
   readonly anchors: typeof homepageAnchorModel;
 };
 
-type StylePresetRouteDefinition = {
-  readonly href: `/styles/${string}`;
-  readonly changeFrequency: "monthly";
-  readonly priority: 0.7;
-};
-
 type GuideRouteDefinition = {
   readonly href: `/guides/${string}`;
   readonly changeFrequency: "monthly";
@@ -89,7 +82,6 @@ type GuideRouteDefinition = {
 
 type PublicRouteDefinition =
   | HomepageRouteDefinition
-  | StylePresetRouteDefinition
   | GuideRouteDefinition;
 
 const homepageRoute: HomepageRouteDefinition = {
@@ -98,13 +90,6 @@ const homepageRoute: HomepageRouteDefinition = {
   priority: 1,
   anchors: homepageAnchorModel,
 } as const;
-
-const stylePresetRoutes: readonly StylePresetRouteDefinition[] =
-  GENERATOR_THEME_PRESETS.map((preset) => ({
-    href: `/styles/${preset.id}` as const,
-    changeFrequency: "monthly" as const,
-    priority: 0.7 as const,
-  }));
 
 export const GUIDE_SLUGS = [
   "add-countdown-to-obs",
@@ -123,7 +108,6 @@ const guideRoutes: readonly GuideRouteDefinition[] = GUIDE_SLUGS.map((slug) => (
 
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
   homepageRoute,
-  ...stylePresetRoutes,
   ...guideRoutes,
 ] as const;
 

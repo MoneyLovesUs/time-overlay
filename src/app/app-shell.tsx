@@ -4,16 +4,16 @@ import Script from "next/script";
 
 import {
   defaultLocale,
-  enabledLocales,
   getLocaleDirection,
   isEnabledLocale,
 } from "@/lib/i18n";
 import {
   createRootPageMetadata,
   siteConfig,
-  siteOgImage,
   siteThemeColor,
 } from "@/lib/site";
+import { buildWebApplicationJsonLd } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/site/json-ld";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,24 +112,6 @@ type AppDocumentProps = Readonly<{
   lang: string;
 }>;
 
-const webApplicationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: siteConfig.name,
-  url: siteConfig.url,
-  description: siteConfig.description,
-  applicationCategory: "MultimediaApplication",
-  operatingSystem: "Web",
-  browserRequirements: "Requires JavaScript and a modern browser with Canvas + WebM support.",
-  inLanguage: [...enabledLocales],
-  image: new URL(siteOgImage.url, siteConfig.url).toString(),
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-} as const;
-
 export function AppDocument({ children, lang }: AppDocumentProps) {
   const dir = isEnabledLocale(lang) ? getLocaleDirection(lang) : "ltr";
   return (
@@ -154,10 +136,7 @@ export function AppDocument({ children, lang }: AppDocumentProps) {
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }}
         />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(webApplicationJsonLd) }}
-        />
+        <JsonLd data={buildWebApplicationJsonLd()} />
       </head>
       <body
         suppressHydrationWarning

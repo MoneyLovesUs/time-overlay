@@ -43,6 +43,14 @@ export const siteConfig = {
 
 export const siteThemeColor = "#05060a";
 
+/**
+ * Manually-pinned content year used to stamp freshness-sensitive pages (e.g. the
+ * format comparison). Kept as a constant rather than `new Date()` so static
+ * generation stays deterministic and the year never silently rolls over — the
+ * yearly bump is an intentional content review, enforced by a unit test.
+ */
+export const CONTENT_YEAR = 2026;
+
 export const siteOgImage = {
   url: "/og.png",
   width: 1200,
@@ -71,6 +79,7 @@ type HomepageRouteDefinition = {
   readonly href: "/";
   readonly changeFrequency: "weekly";
   readonly priority: 1;
+  readonly localized: true;
   readonly anchors: typeof homepageAnchorModel;
 };
 
@@ -78,16 +87,31 @@ type GuideRouteDefinition = {
   readonly href: `/guides/${string}`;
   readonly changeFrequency: "monthly";
   readonly priority: 0.6;
+  // Guides ship English-only. Serving the same English body under a localized
+  // prefix while claiming an hreflang alternate is the thin-content / hreflang
+  // mismatch we deliberately removed — so they live at the apex path only.
+  readonly localized: false;
+};
+
+type ComparisonRouteDefinition = {
+  readonly href: `/compare/${string}`;
+  readonly changeFrequency: "monthly";
+  readonly priority: 0.8;
+  // English-first for the same reason as guides; promote to localized once the
+  // page proves it earns AI citations (then translate the prose, not the matrix).
+  readonly localized: false;
 };
 
 type PublicRouteDefinition =
   | HomepageRouteDefinition
-  | GuideRouteDefinition;
+  | GuideRouteDefinition
+  | ComparisonRouteDefinition;
 
 const homepageRoute: HomepageRouteDefinition = {
   href: "/",
   changeFrequency: "weekly",
   priority: 1,
+  localized: true,
   anchors: homepageAnchorModel,
 } as const;
 
@@ -100,15 +124,28 @@ export const GUIDE_SLUGS = [
   "transparent-overlay-for-twitch",
 ] as const;
 
+export const COMPARE_SLUGS = ["transparent-overlay-formats"] as const;
+
 const guideRoutes: readonly GuideRouteDefinition[] = GUIDE_SLUGS.map((slug) => ({
   href: `/guides/${slug}` as const,
   changeFrequency: "monthly" as const,
   priority: 0.6 as const,
+  localized: false as const,
 }));
+
+const comparisonRoutes: readonly ComparisonRouteDefinition[] = COMPARE_SLUGS.map(
+  (slug) => ({
+    href: `/compare/${slug}` as const,
+    changeFrequency: "monthly" as const,
+    priority: 0.8 as const,
+    localized: false as const,
+  }),
+);
 
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
   homepageRoute,
   ...guideRoutes,
+  ...comparisonRoutes,
 ] as const;
 
 type SitemapAlternateKey = EnabledLocale | "x-default";
@@ -145,11 +182,15 @@ export function createPageMetadata({
   description,
   path,
   locale = defaultLocale,
+  localized = true,
 }: {
   title: string;
   description: string;
   path: string;
   locale?: AppLocale;
+  // When false the page is English-only: emit a self canonical but no hreflang
+  // language alternates (guides, comparison). Defaults to true for the homepage.
+  localized?: boolean;
 }): Metadata {
   const canonicalPath = buildLocalizedPath(path, locale);
   const ogImage = {
@@ -169,7 +210,7 @@ export function createPageMetadata({
     icons: buildSiteIconMetadata(),
     alternates: {
       canonical: canonicalPath,
-      languages: buildLanguageAlternates(path),
+      ...(localized ? { languages: buildLanguageAlternates(path) } : {}),
     },
     openGraph: {
       title,
@@ -207,9 +248,24 @@ export async function createRootPageMetadata(
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
-  return enabledLocales.flatMap((locale) =>
-    publicRouteDefinitions.map((route) => {
+  return publicRouteDefinitions.flatMap((route) => {
+    // Localized routes fan out across every locale with hreflang alternates;
+    // English-only routes (guides, comparison) emit a single apex entry.
+    const locales = route.localized ? enabledLocales : [defaultLocale];
+
+    return locales.map((locale) => {
       const localizedRoutePath = buildLocalizedPath(route.href, locale);
+      const entry = {
+        url: new URL(localizedRoutePath, siteConfig.url).toString(),
+        lastModified,
+        changeFrequency: route.changeFrequency,
+        priority: route.priority,
+      };
+
+      if (!route.localized) {
+        return entry;
+      }
+
       const localized = buildCompleteSitemapAlternates(route.href);
       const languageUrls = Object.fromEntries(
         (Object.keys(localized) as SitemapAlternateKey[]).map((key) => [
@@ -219,16 +275,13 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
       );
 
       return {
-        url: new URL(localizedRoutePath, siteConfig.url).toString(),
-        lastModified,
-        changeFrequency: route.changeFrequency,
-        priority: route.priority,
+        ...entry,
         alternates: {
           languages: languageUrls,
         },
       };
-    }),
-  );
+    });
+  });
 }
 
 export function buildRobotsDefinition(): MetadataRoute.Robots {

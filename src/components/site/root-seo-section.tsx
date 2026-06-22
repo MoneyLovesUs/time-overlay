@@ -3,12 +3,8 @@ import Link from "next/link";
 import type { RootPageContent } from "@/content/root";
 import type { EnabledLocale } from "@/lib/i18n";
 import { buildLocalizedPath } from "@/lib/i18n";
-
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [] as Array<Record<string, unknown>>,
-};
+import { buildFaqJsonLd, buildHowToJsonLd } from "@/lib/seo/jsonld";
+import { JsonLd } from "@/components/site/json-ld";
 
 type RootSeoSectionProps = {
   locale: EnabledLocale;
@@ -19,43 +15,20 @@ export function RootSeoSection({ locale, seoSection }: RootSeoSectionProps) {
   const toolHref = buildLocalizedPath("/#tool", locale);
   const exportFormatsHref = buildLocalizedPath("/#export-formats", locale);
   const faqHref = buildLocalizedPath("/#faq", locale);
-  const faqJsonLdData = {
-    ...faqJsonLd,
-    mainEntity: seoSection.faqItems.map((item) => ({
-      "@type": "Question",
-      name: item.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: item.answer,
-      },
-    })),
-  };
-  const howToJsonLdData = {
-    "@context": "https://schema.org",
-    "@type": "HowTo",
+  const faqJsonLdData = buildFaqJsonLd(seoSection.faqItems);
+  const howToJsonLdData = buildHowToJsonLd({
     name: seoSection.workflowHeading,
     description: seoSection.description,
-    step: seoSection.workflowSteps.map((step, index) => ({
-      "@type": "HowToStep",
-      position: index + 1,
-      name: step.title,
-      text: step.body,
-    })),
-  };
+    steps: seoSection.workflowSteps,
+  });
 
   return (
     <section
       id="faq"
       className="relative overflow-hidden border-t border-border/70 bg-[linear-gradient(180deg,rgba(8,9,13,1),rgba(10,11,16,1))]"
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLdData) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLdData) }}
-      />
+      <JsonLd data={faqJsonLdData} />
+      <JsonLd data={howToJsonLdData} />
 
       <div
         aria-hidden="true"

@@ -2,20 +2,39 @@ import Link from "next/link";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import type { GuideContent } from "@/content/guides";
+import { JsonLd } from "@/components/site/json-ld";
+import type { GuideContent, GuideSlug } from "@/content/guides";
 import type { RootPageContent } from "@/content/root/types";
 import { buildLocalizedPath, type EnabledLocale } from "@/lib/i18n";
+import { siteConfig } from "@/lib/site";
+import { buildBreadcrumbJsonLd, buildHowToJsonLd } from "@/lib/seo/jsonld";
 
 type GuidePageProps = {
   guide: GuideContent;
   content: RootPageContent;
   locale: EnabledLocale;
+  slug: GuideSlug;
 };
 
-export function GuidePage({ guide, content, locale }: GuidePageProps) {
+// Guides are English-only, so the single comparison page is a safe cross-link.
+const comparisonPath = "/compare/transparent-overlay-formats";
+
+export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
   const homePath = buildLocalizedPath("/", locale);
   const generatorPath =
     homePath === "/" ? "/#tool" : `${homePath}#tool`;
+
+  const guidePath = buildLocalizedPath(`/guides/${slug}`, locale);
+  const guideUrl = new URL(guidePath, siteConfig.url).toString();
+  const howToJsonLd = buildHowToJsonLd({
+    name: guide.title,
+    description: guide.description,
+    steps: guide.steps,
+  });
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: siteConfig.name, url: new URL("/", siteConfig.url).toString() },
+    { name: guide.title, url: guideUrl },
+  ]);
 
   const headerNavItems = [
     {
@@ -34,6 +53,8 @@ export function GuidePage({ guide, content, locale }: GuidePageProps) {
 
   return (
     <div>
+      <JsonLd data={howToJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <SiteHeader
         locale={locale}
         navItems={headerNavItems}
@@ -88,6 +109,16 @@ export function GuidePage({ guide, content, locale }: GuidePageProps) {
               Time Overlay tips
             </h2>
             <p className="mt-3 leading-7 text-muted-foreground">{guide.closer}</p>
+            <p className="mt-6 text-sm leading-7 text-muted-foreground">
+              Not sure which export format to pick?{" "}
+              <Link
+                href={comparisonPath}
+                className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary"
+              >
+                Compare every transparent overlay format by editor and browser support
+              </Link>
+              .
+            </p>
           </div>
         </section>
       </main>

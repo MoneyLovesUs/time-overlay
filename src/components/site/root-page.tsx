@@ -51,7 +51,7 @@ export function RootPage({ locale, content }: RootPageProps) {
       <LazyGeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
       <RootSeoSection locale={locale} seoSection={content.seoSection} />
       {content.guidesSection ? (
-        <RootGuidesSection locale={locale} guidesSection={content.guidesSection} />
+        <RootGuidesSection guidesSection={content.guidesSection} />
       ) : null}
       <SiteFooter
         navItems={footerNavItems}

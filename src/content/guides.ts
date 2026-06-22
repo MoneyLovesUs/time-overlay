@@ -18,11 +18,11 @@ export type GuideContent = {
 
 export const GUIDES: Record<GuideSlug, GuideContent> = {
   "add-countdown-to-obs": {
-    title: "Add a Time Overlay countdown to OBS Studio",
+    title: "How to add a countdown timer overlay to OBS Studio",
     description:
-      "Drop a transparent Time Overlay countdown into your OBS scene as a Browser Source or Media Source with looping playback.",
+      "Add a transparent countdown timer to an OBS Studio scene: export WebM with alpha as a Media Source, or a PNG sequence as an Image Slideshow Source, both with the background already cut out.",
     intro:
-      "OBS Studio composites transparent media well. Two reliable paths exist: WebM with alpha as a Media Source for streaming overlays, or a PNG sequence routed through an Image Slideshow Source for tight loops. Both preserve transparency from Time Overlay to the OBS canvas.",
+      "To add a countdown timer overlay to OBS Studio, export a transparent overlay from Time Overlay and add it as a source — there is no chroma-key step. Two reliable paths exist: WebM with alpha as a Media Source for streaming overlays, or a PNG sequence routed through an Image Slideshow Source for tight loops. Both preserve transparency from Time Overlay to the OBS canvas.",
     recommendedFormat:
       "WebM (with alpha) for quick streaming overlays. PNG sequence when you want frame-accurate loops or maximum quality.",
     steps: [
@@ -51,11 +51,11 @@ export const GUIDES: Record<GuideSlug, GuideContent> = {
       "On older OBS builds (pre 28.x) where WebM Media Source playback is inconsistent, export a PNG sequence instead and load it through an Image Slideshow Source. The transparency outcome is the same; the CPU profile shifts toward image decoding.",
   },
   "add-countdown-to-premiere": {
-    title: "Add a transparent Time Overlay countdown in Adobe Premiere Pro",
+    title: "How to add a transparent countdown timer in Premiere Pro",
     description:
-      "Import a Time Overlay PNG sequence or WebM (with alpha) onto a Premiere timeline as a transparent overlay above your base footage.",
+      "Add a transparent countdown timer to Adobe Premiere Pro: import a Time Overlay PNG sequence or WebM (with alpha) and drop it on a track above your footage.",
     intro:
-      "Premiere Pro handles transparent overlays cleanly. The most reliable workflow is a PNG sequence imported as an image sequence — quality is lossless and the alpha channel is unambiguous. WebM (with alpha) is the quick path when you want a single file and do not need master-grade compression.",
+      "To add a transparent countdown timer in Premiere Pro, import a Time Overlay export and place it on a track above your footage — the alpha channel composites with no extra setup. The most reliable workflow is a PNG sequence imported as an image sequence: quality is lossless and the alpha channel is unambiguous. WebM (with alpha) is the quick path when you want a single file and do not need master-grade compression.",
     recommendedFormat:
       "PNG sequence for master-grade quality. WebM (with alpha) for fast iteration.",
     steps: [
@@ -84,11 +84,11 @@ export const GUIDES: Record<GuideSlug, GuideContent> = {
       "If the WebM playback feels CPU-heavy on a long timeline, transcode the PNG sequence to ProRes 4444 with the bundled `convert-to-prores` script and use that master clip instead. ProRes is the most editor-friendly alpha codec on Premiere.",
   },
   "add-countdown-to-davinci-resolve": {
-    title: "Add a transparent Time Overlay countdown in DaVinci Resolve",
+    title: "How to add a transparent countdown timer in DaVinci Resolve",
     description:
-      "Import a Time Overlay PNG sequence or WebM (with alpha) onto a DaVinci Resolve timeline with full transparency.",
+      "Add a transparent countdown timer to DaVinci Resolve (Free or Studio): import a Time Overlay PNG sequence or WebM (with alpha) and stack it above your base clip.",
     intro:
-      "DaVinci Resolve (Free and Studio) imports both PNG sequences and VP8-alpha WebM as transparent footage. PNG sequence is the safe master-grade path; WebM is the quick path when you want a single asset to drop in.",
+      "To add a transparent countdown timer in DaVinci Resolve, import a Time Overlay export into the Media Pool and stack it above your base clip — the alpha composites automatically. Resolve (Free and Studio) imports both PNG sequences and VP8-alpha WebM as transparent footage. PNG sequence is the safe master-grade path; WebM is the quick path when you want a single asset to drop in.",
     recommendedFormat:
       "PNG sequence for clean alpha and grading flexibility. WebM (with alpha) for rapid iteration.",
     steps: [
@@ -117,11 +117,11 @@ export const GUIDES: Record<GuideSlug, GuideContent> = {
       "When you need to grade the overlay independently from the base footage, place it on its own video track and use Local Versions in Color page. The PNG sequence path preserves the cleanest alpha edge under aggressive grading.",
   },
   "add-countdown-to-final-cut-pro": {
-    title: "Add a transparent Time Overlay countdown in Final Cut Pro",
+    title: "How to add a transparent countdown timer in Final Cut Pro",
     description:
-      "Drop a Time Overlay PNG sequence into a Final Cut Pro project as a transparent overlay above your primary storyline.",
+      "Add a transparent countdown timer to Final Cut Pro: import a Time Overlay PNG sequence (the dependable path on macOS) and connect it above your primary storyline.",
     intro:
-      "Final Cut Pro handles PNG image sequences as native alpha media. WebM playback inside Final Cut has historically been inconsistent on macOS, so the recommended path on the Mac side is PNG sequence — quality is master-grade and alpha is unambiguous.",
+      "To add a transparent countdown timer in Final Cut Pro, import a Time Overlay PNG sequence and connect it above your primary storyline — Final Cut treats it as native alpha media. WebM playback inside Final Cut has historically been inconsistent on macOS, so the recommended path on the Mac side is PNG sequence: quality is master-grade and alpha is unambiguous.",
     recommendedFormat:
       "PNG sequence is the dependable path on macOS.",
     steps: [
@@ -150,11 +150,11 @@ export const GUIDES: Record<GuideSlug, GuideContent> = {
       "If you want a true ProRes 4444 master with alpha, unzip the Time Overlay PNG sequence export and run the bundled `convert-to-prores.sh` script. Final Cut imports ProRes 4444 natively as transparent media.",
   },
   "png-to-prores": {
-    title: "Convert Time Overlay PNG sequence to ProRes 4444 with alpha",
+    title: "How to convert a PNG sequence to ProRes 4444 with alpha (ffmpeg)",
     description:
-      "Use a one-line ffmpeg command to convert the Time Overlay PNG sequence into Apple ProRes 4444 with the alpha channel intact.",
+      "Convert a Time Overlay PNG sequence to Apple ProRes 4444 with the alpha channel intact using the bundled script or a one-line ffmpeg command.",
     intro:
-      "ProRes 4444 keeps your alpha and color quality in a single file editors prefer. The Time Overlay PNG sequence export already ships with a conversion script that does this for you on macOS, Linux, and Windows.",
+      "To convert a Time Overlay PNG sequence to ProRes 4444 with alpha, run the bundled conversion script or a one-line ffmpeg command — both keep the alpha and color quality in a single file editors prefer. The PNG sequence export already ships with that script for macOS, Linux, and Windows.",
     recommendedFormat: "PNG sequence export, then convert with ffmpeg.",
     steps: [
       {
@@ -182,11 +182,11 @@ export const GUIDES: Record<GuideSlug, GuideContent> = {
       "ProRes 4444 alpha is large but lossless. Use it as a master, then transcode for delivery if file size matters. Premiere, DaVinci, and Final Cut all import this file as transparent media without further setup.",
   },
   "transparent-overlay-for-twitch": {
-    title: "Add a transparent Time Overlay countdown for a Twitch stream",
+    title: "How to add a transparent countdown overlay for Twitch (OBS/Streamlabs)",
     description:
-      "Use Time Overlay to create a transparent countdown for OBS, Streamlabs, or Twitch Studio that does not block your scene.",
+      "Add a transparent countdown timer to a Twitch stream in OBS, Streamlabs, or Twitch Studio: export WebM (with alpha) from Time Overlay and add it as a Media Source.",
     intro:
-      "Twitch overlays need to read on top of busy gameplay or webcam scenes. A WebM (with alpha) export from Time Overlay drops straight into your streaming software as a transparent Media Source. PNG sequence is the alternate path when you want frame-perfect loops or maximum visual quality.",
+      "To add a transparent countdown overlay for Twitch, export WebM (with alpha) from Time Overlay and add it as a Media Source in OBS, Streamlabs, or Twitch Studio — the background is already cut out, so it reads over busy gameplay or webcam scenes. PNG sequence is the alternate path when you want frame-perfect loops or maximum visual quality.",
     recommendedFormat:
       "WebM (with alpha) for streaming software. PNG sequence when quality matters more than file size.",
     steps: [

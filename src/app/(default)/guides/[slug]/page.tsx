@@ -35,6 +35,7 @@ export async function generateMetadata({
     path: `/guides/${slug}`,
     title: `${guide.title} — Time Overlay`,
     description: guide.description,
+    localized: false,
   });
 }
 
@@ -45,5 +46,12 @@ export default async function GuideRoute({ params }: GuideRouteProps) {
   }
 
   const content = await getRootPageContent(defaultLocale);
-  return <GuidePage guide={GUIDES[slug]} content={content} locale={defaultLocale} />;
+  return (
+    <GuidePage
+      guide={GUIDES[slug]}
+      content={content}
+      locale={defaultLocale}
+      slug={slug}
+    />
+  );
 }

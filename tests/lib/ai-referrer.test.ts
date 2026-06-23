@@ -9,12 +9,13 @@ describe("detectAiReferrerSource", () => {
     expect(detectAiReferrerSource("https://www.perplexity.ai/search")).toBe("perplexity");
     expect(detectAiReferrerSource("https://gemini.google.com/app")).toBe("gemini");
     expect(detectAiReferrerSource("https://copilot.microsoft.com/")).toBe("copilot");
-    expect(detectAiReferrerSource("https://www.bing.com/search?q=x")).toBe("bing");
     expect(detectAiReferrerSource("https://claude.ai/chat")).toBe("claude");
   });
 
   it("returns null for non-AI, empty, or malformed referrers", () => {
     expect(detectAiReferrerSource("https://www.google.com/")).toBeNull();
+    // Plain Bing web search is excluded — it is not an AI answer surface.
+    expect(detectAiReferrerSource("https://www.bing.com/search?q=x")).toBeNull();
     expect(detectAiReferrerSource("https://t.co/abc")).toBeNull();
     expect(detectAiReferrerSource("")).toBeNull();
     expect(detectAiReferrerSource(null)).toBeNull();

@@ -195,3 +195,11 @@ export const BROWSER_IDS: readonly BrowserId[] = [
 export function hasBenchmarkData(rows: readonly FormatRow[] = FORMAT_MATRIX): boolean {
   return rows.some((row) => row.benchmark !== null);
 }
+
+/** Browser ids that can actually produce this format (shared by table + Markdown). */
+export function browserIdsThatExport(row: FormatRow): BrowserId[] {
+  return BROWSER_IDS.filter((id) => {
+    const level = row.browsers[id];
+    return level === "works" || level === "native";
+  });
+}

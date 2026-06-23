@@ -2,10 +2,10 @@ import type { ComparePageContent } from "@/content/compare/types";
 import type { GuideContent } from "@/content/guides";
 import type { RootPageContent } from "@/content/root/types";
 import {
-  BROWSER_IDS,
   EDITOR_IDS,
   FORMAT_MATRIX,
-  type BrowserSupport,
+  browserIdsThatExport,
+  type FormatRow,
 } from "@/lib/formats/matrix";
 
 /**
@@ -15,13 +15,10 @@ import {
  */
 
 function browsersThatExport(
-  browsers: Record<string, BrowserSupport>,
+  row: FormatRow,
   labels: ComparePageContent["browserLabels"],
 ): string {
-  const supported = BROWSER_IDS.filter((id) => {
-    const level = browsers[id];
-    return level === "works" || level === "native";
-  }).map((id) => labels[id]);
+  const supported = browserIdsThatExport(row).map((id) => labels[id]);
   return supported.length > 0 ? supported.join(", ") : "—";
 }
 
@@ -56,7 +53,7 @@ export function renderComparisonMarkdown(content: ComparePageContent): string {
       content.formats[row.id].name,
       content.transparencyLabels[row.transparency],
       ...EDITOR_IDS.map((id) => content.supportLabels[row.editors[id]]),
-      browsersThatExport(row.browsers, content.browserLabels),
+      browsersThatExport(row, content.browserLabels),
     ];
     return `| ${cells.join(" | ")} |`;
   });

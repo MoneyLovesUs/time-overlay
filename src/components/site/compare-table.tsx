@@ -1,11 +1,11 @@
 import type { ComparePageContent } from "@/content/compare/types";
 import {
   BENCHMARK_ENV,
-  BROWSER_IDS,
   EDITOR_IDS,
   FORMAT_MATRIX,
+  browserIdsThatExport,
   hasBenchmarkData,
-  type BrowserSupport,
+  type FormatRow,
   type SupportLevel,
 } from "@/lib/formats/matrix";
 
@@ -22,14 +22,10 @@ const supportToneClass: Record<SupportLevel | "n/a", string> = {
 };
 
 function browsersThatExport(
-  browsers: Record<string, BrowserSupport>,
+  row: FormatRow,
   labels: ComparePageContent["browserLabels"],
 ): string {
-  const supported = BROWSER_IDS.filter((id) => {
-    const level = browsers[id];
-    return level === "works" || level === "native";
-  }).map((id) => labels[id]);
-
+  const supported = browserIdsThatExport(row).map((id) => labels[id]);
   return supported.length > 0 ? supported.join(", ") : "—";
 }
 
@@ -91,7 +87,7 @@ export function CompareTable({ content }: CompareTableProps) {
                     );
                   })}
                   <td className="px-3 py-4 text-muted-foreground">
-                    {browsersThatExport(row.browsers, content.browserLabels)}
+                    {browsersThatExport(row, content.browserLabels)}
                   </td>
                   <td className="px-3 py-4 text-muted-foreground">
                     {prose.bestFor}

@@ -12,7 +12,9 @@ const AI_REFERRER_HOSTS: readonly { suffix: string; source: string }[] = [
   { suffix: "perplexity.ai", source: "perplexity" },
   { suffix: "gemini.google.com", source: "gemini" },
   { suffix: "copilot.microsoft.com", source: "copilot" },
-  { suffix: "bing.com", source: "bing" },
+  // Note: bing.com is intentionally excluded — most bing.com referrers are plain
+  // web search, not Copilot/AI answers, and tagging them as AI would inflate the
+  // segment. copilot.microsoft.com captures the AI surface unambiguously.
   { suffix: "claude.ai", source: "claude" },
   { suffix: "you.com", source: "you" },
 ];

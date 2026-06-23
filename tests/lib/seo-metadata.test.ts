@@ -98,10 +98,11 @@ describe("localized SEO helpers", () => {
     expect(jaRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
   });
 
-  it("emits all localized homepage entries in the sitemap", () => {
+  it("emits localized homepage entries plus English-only guides and comparison", () => {
     const entries = buildSitemapEntries();
-    // homepage + 6 guides per locale × 16 locales
-    expect(entries.length).toBe(7 * 16);
+    // homepage × 16 locales + 6 English-only guides + 1 English-only comparison.
+    expect(entries.length).toBe(16 + 6 + 1);
+
     const homepageRoots = entries.filter((entry) => {
       const path = entry.url.replace(/^https?:\/\/[^/]+/, "");
       return (
@@ -110,6 +111,44 @@ describe("localized SEO helpers", () => {
       );
     });
     expect(homepageRoots.length).toBe(16);
+    // Every homepage entry carries hreflang alternates.
+    expect(homepageRoots.every((entry) => entry.alternates?.languages)).toBe(true);
+
+    const guideEntries = entries.filter((entry) =>
+      entry.url.includes("/guides/"),
+    );
+    // Guides are English-only: exactly one apex entry each, no hreflang alternates.
+    expect(guideEntries.length).toBe(6);
+    expect(
+      guideEntries.every(
+        (entry) =>
+          entry.alternates === undefined &&
+          /^https?:\/\/[^/]+\/guides\//.test(entry.url),
+      ),
+    ).toBe(true);
+
+    const compareEntries = entries.filter((entry) =>
+      entry.url.includes("/compare/"),
+    );
+    expect(compareEntries.length).toBe(1);
+    expect(compareEntries[0]?.alternates).toBeUndefined();
+    expect(compareEntries[0]?.url).toBe(
+      "https://timeoverlay.co/compare/transparent-overlay-formats",
+    );
+  });
+
+  it("omits hreflang language alternates for English-only pages", () => {
+    const metadata = createPageMetadata({
+      path: "/compare/transparent-overlay-formats",
+      title: "Compare formats",
+      description: "Compare",
+      localized: false,
+    });
+
+    expect(metadata.alternates?.canonical).toBe(
+      "/compare/transparent-overlay-formats",
+    );
+    expect(metadata.alternates?.languages).toBeUndefined();
   });
 
   it("emits a crawlable robots definition with sitemap and host", () => {

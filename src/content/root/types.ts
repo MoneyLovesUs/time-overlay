@@ -49,6 +49,8 @@ export type RootPageContent = {
       shellLabel: string;
       toolLinkLabel: string;
       faqLinkLabel: string;
+      languagePickerLabel?: string;
+      primaryNavAriaLabel?: string;
     };
     footer: {
       systemRailLabel: string;
@@ -56,6 +58,7 @@ export type RootPageContent = {
       identityTitle: string;
       jumpTitle: string;
       productTitle: string;
+      navAriaLabel?: string;
       jumpLinks: readonly {
         anchorId: string;
         label: string;

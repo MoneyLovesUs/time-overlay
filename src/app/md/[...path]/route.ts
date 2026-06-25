@@ -1,6 +1,6 @@
 import enRootPageContent from "@/content/root/en";
 import { getComparePageContent } from "@/content/compare";
-import { GUIDES, type GuideSlug } from "@/content/guides";
+import { getGuidePageContent, type GuideSlug } from "@/content/guides";
 import { GUIDE_SLUGS, COMPARE_SLUGS } from "@/lib/site";
 import {
   renderComparisonMarkdown,
@@ -39,7 +39,8 @@ function resolveMarkdown(path: readonly string[]): string | null {
   }
 
   if (path.length === 2 && path[0] === "guides" && isGuideSlug(path[1])) {
-    return renderGuideMarkdown(GUIDES[path[1]]);
+    const { guide, chrome } = getGuidePageContent("en", path[1]);
+    return renderGuideMarkdown(guide, chrome);
   }
 
   return null;

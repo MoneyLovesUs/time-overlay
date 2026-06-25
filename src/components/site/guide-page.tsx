@@ -3,7 +3,12 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { JsonLd } from "@/components/site/json-ld";
-import type { GuideContent, GuideSlug } from "@/content/guides";
+import {
+  renderGuideStepLabel,
+  type GuideChromeContent,
+  type GuideContent,
+  type GuideSlug,
+} from "@/content/guides";
 import type { RootPageContent } from "@/content/root/types";
 import { buildLocalizedPath, type EnabledLocale } from "@/lib/i18n";
 import { siteConfig } from "@/lib/site";
@@ -11,15 +16,21 @@ import { buildBreadcrumbJsonLd, buildHowToJsonLd } from "@/lib/seo/jsonld";
 
 type GuidePageProps = {
   guide: GuideContent;
+  guideChrome: GuideChromeContent;
   content: RootPageContent;
   locale: EnabledLocale;
   slug: GuideSlug;
 };
 
-// Guides are English-only, so the single comparison page is a safe cross-link.
 const comparisonPath = "/compare/transparent-overlay-formats";
 
-export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
+export function GuidePage({
+  guide,
+  guideChrome,
+  content,
+  locale,
+  slug,
+}: GuidePageProps) {
   const homePath = buildLocalizedPath("/", locale);
   const generatorPath =
     homePath === "/" ? "/#tool" : `${homePath}#tool`;
@@ -60,12 +71,14 @@ export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
         navItems={headerNavItems}
         shellLabel={content.siteChrome.header.shellLabel}
         siteName={content.siteChrome.siteName}
+        languagePickerLabel={content.siteChrome.header.languagePickerLabel}
+        primaryNavAriaLabel={content.siteChrome.header.primaryNavAriaLabel}
       />
       <main className="bg-background text-foreground">
         <section className="border-b border-border/70 px-6 py-16">
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-5">
             <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-              Time Overlay guide
+              {guideChrome.eyebrow}
             </p>
             <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
               {guide.title}
@@ -74,14 +87,14 @@ export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
               {guide.intro}
             </p>
             <p className="text-sm font-mono uppercase tracking-[0.22em] text-secondary">
-              Recommended Time Overlay export: {guide.recommendedFormat}
+              {guideChrome.recommendedExportPrefix} {guide.recommendedFormat}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 href={generatorPath}
                 className="inline-flex items-center gap-2 border border-primary/60 bg-primary/10 px-4 py-2 font-mono text-[11px] uppercase tracking-[0.28em] text-primary transition-colors hover:bg-primary/20"
               >
-                Open the Time Overlay generator
+                {guideChrome.openGeneratorLabel}
               </Link>
             </div>
           </div>
@@ -92,7 +105,7 @@ export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
             {guide.steps.map((step, index) => (
               <div key={step.title} className="border-l border-tertiary/35 pl-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-tertiary">
-                  Step {String(index + 1).padStart(2, "0")}
+                  {renderGuideStepLabel(guideChrome, index)}
                 </p>
                 <h2 className="mt-2 text-xl font-semibold tracking-tight">
                   {step.title}
@@ -106,18 +119,18 @@ export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
         <section className="px-6 py-12">
           <div className="mx-auto w-full max-w-3xl">
             <h2 className="text-xl font-semibold tracking-tight">
-              Time Overlay tips
+              {guideChrome.tipsHeading}
             </h2>
             <p className="mt-3 leading-7 text-muted-foreground">{guide.closer}</p>
             <p className="mt-6 text-sm leading-7 text-muted-foreground">
-              Not sure which export format to pick?{" "}
+              {guideChrome.compareCtaBefore}
               <Link
-                href={comparisonPath}
+                href={buildLocalizedPath(comparisonPath, locale)}
                 className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary"
               >
-                Compare every transparent overlay format by editor and browser support
+                {guideChrome.compareCtaLabel}
               </Link>
-              .
+              {guideChrome.compareCtaAfter}
             </p>
           </div>
         </section>
@@ -130,6 +143,7 @@ export function GuidePage({ guide, content, locale, slug }: GuidePageProps) {
         publicStatusLabel={content.siteChrome.footer.publicStatusLabel}
         identityTitle={content.siteChrome.footer.identityTitle}
         jumpTitle={content.siteChrome.footer.jumpTitle}
+        navAriaLabel={content.siteChrome.footer.navAriaLabel}
         productTitle={content.siteChrome.footer.productTitle}
         productDescription={content.siteChrome.footer.productDescription}
       />

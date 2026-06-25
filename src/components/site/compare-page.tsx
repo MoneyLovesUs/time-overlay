@@ -7,7 +7,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import type { ComparePageContent } from "@/content/compare/types";
 import type { RootPageContent } from "@/content/root/types";
 import { FORMAT_MATRIX } from "@/lib/formats/matrix";
-import { buildLocalizedPath, defaultLocale } from "@/lib/i18n";
+import { buildLocalizedPath, type EnabledLocale } from "@/lib/i18n";
 import { siteConfig } from "@/lib/site";
 import {
   buildBreadcrumbJsonLd,
@@ -18,20 +18,22 @@ import {
 type ComparePageProps = {
   content: ComparePageContent;
   chrome: RootPageContent;
+  locale: EnabledLocale;
   path: string;
 };
 
-export function ComparePage({ content, chrome, path }: ComparePageProps) {
-  const pageUrl = new URL(path, siteConfig.url).toString();
-  const generatorPath = "/#tool";
-  const guidesPath = buildLocalizedPath("/#guides", defaultLocale);
+export function ComparePage({ content, chrome, locale, path }: ComparePageProps) {
+  const localizedPath = buildLocalizedPath(path, locale);
+  const pageUrl = new URL(localizedPath, siteConfig.url).toString();
+  const generatorPath = buildLocalizedPath("/#tool", locale);
+  const guidesPath = buildLocalizedPath("/#guides", locale);
 
   const headerNavItems = [
-    { href: "/#tool", label: chrome.siteChrome.header.toolLinkLabel },
-    { href: "/#faq", label: chrome.siteChrome.header.faqLinkLabel },
+    { href: buildLocalizedPath("/#tool", locale), label: chrome.siteChrome.header.toolLinkLabel },
+    { href: buildLocalizedPath("/#faq", locale), label: chrome.siteChrome.header.faqLinkLabel },
   ];
   const footerNavItems = chrome.siteChrome.footer.jumpLinks.map((item) => ({
-    href: `/#${item.anchorId}`,
+    href: buildLocalizedPath(`/#${item.anchorId}`, locale),
     label: item.label,
   }));
 
@@ -55,10 +57,12 @@ export function ComparePage({ content, chrome, path }: ComparePageProps) {
       <JsonLd data={faqJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
       <SiteHeader
-        locale={defaultLocale}
+        locale={locale}
         navItems={headerNavItems}
         shellLabel={chrome.siteChrome.header.shellLabel}
         siteName={chrome.siteChrome.siteName}
+        languagePickerLabel={chrome.siteChrome.header.languagePickerLabel}
+        primaryNavAriaLabel={chrome.siteChrome.header.primaryNavAriaLabel}
       />
       <main className="bg-background text-foreground">
         <section className="border-b border-border/70 px-6 py-16">
@@ -111,11 +115,11 @@ export function ComparePage({ content, chrome, path }: ComparePageProps) {
                     {prose.verdict}
                   </p>
                   <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                    <span className="text-foreground">Best for: </span>
+                    <span className="text-foreground">{content.bestForLabel} </span>
                     {prose.bestFor}
                   </p>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                    <span className="text-foreground">Watch out: </span>
+                    <span className="text-foreground">{content.watchOutLabel} </span>
                     {prose.weakness}
                   </p>
                 </article>
@@ -152,6 +156,7 @@ export function ComparePage({ content, chrome, path }: ComparePageProps) {
         publicStatusLabel={chrome.siteChrome.footer.publicStatusLabel}
         identityTitle={chrome.siteChrome.footer.identityTitle}
         jumpTitle={chrome.siteChrome.footer.jumpTitle}
+        navAriaLabel={chrome.siteChrome.footer.navAriaLabel}
         productTitle={chrome.siteChrome.footer.productTitle}
         productDescription={chrome.siteChrome.footer.productDescription}
       />

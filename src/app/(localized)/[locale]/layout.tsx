@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { defaultLocale, isEnabledLocale } from "@/lib/i18n";
 import { createRootPageMetadata } from "@/lib/site";
 import { AppDocument, siteViewport } from "@/app/app-shell";
+import { getRootPageContent } from "@/content/root";
 
 import "../../globals.css";
 
@@ -41,5 +42,11 @@ export default async function LocalizedLayout({ children, params }: LocalizedLay
     notFound();
   }
 
-  return <AppDocument lang={locale}>{children}</AppDocument>;
+  const content = await getRootPageContent(locale);
+
+  return (
+    <AppDocument lang={locale} applicationDescription={content.metadata.description}>
+      {children}
+    </AppDocument>
+  );
 }

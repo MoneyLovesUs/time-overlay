@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import enRootPageContent from "@/content/root/en";
 import esRootPageContent from "@/content/root/es";
 import jaRootPageContent from "@/content/root/ja";
+import zhHansRootPageContent from "@/content/root/zh-hans";
 vi.mock("next/font/google", () => ({
   Geist: () => ({ variable: "font-geist-sans" }),
   Geist_Mono: () => ({ variable: "font-geist-mono" }),
@@ -31,6 +32,7 @@ describe("localized SEO helpers", () => {
       en: "/",
       fr: "/fr",
       ja: "/ja",
+      "zh-hans": "/zh-hans",
       "x-default": "/",
     });
     expect(metadata.icons).toMatchObject({
@@ -96,44 +98,62 @@ describe("localized SEO helpers", () => {
 
     expect(jaRootPageContent.metadata.title.length).toBeGreaterThan(0);
     expect(jaRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
+
+    expect(zhHansRootPageContent.metadata.title).toContain("透明");
+    expect(zhHansRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
   });
 
-  it("emits localized homepage entries plus English-only guides and comparison", () => {
+  it("emits localized homepage entries plus translated guides and comparison", () => {
     const entries = buildSitemapEntries();
-    // homepage × 16 locales + 6 English-only guides + 1 English-only comparison.
-    expect(entries.length).toBe(16 + 6 + 1);
+    // homepage × 17 locales + 6 guides × 2 locales + 1 comparison × 2 locales.
+    expect(entries.length).toBe(17 + 6 * 2 + 2);
 
     const homepageRoots = entries.filter((entry) => {
       const path = entry.url.replace(/^https?:\/\/[^/]+/, "");
       return (
         path === "/" ||
-        /^\/(?:en|es|pt|ru|fr|de|ko|ja|fi|zh-hant|ar|th|cs|hi|nl|sv)$/.test(path)
+        /^\/(?:en|es|pt|ru|fr|de|ko|ja|fi|zh-hans|zh-hant|ar|th|cs|hi|nl|sv)$/.test(path)
       );
     });
-    expect(homepageRoots.length).toBe(16);
+    expect(homepageRoots.length).toBe(17);
     // Every homepage entry carries hreflang alternates.
     expect(homepageRoots.every((entry) => entry.alternates?.languages)).toBe(true);
 
     const guideEntries = entries.filter((entry) =>
       entry.url.includes("/guides/"),
     );
-    // Guides are English-only: exactly one apex entry each, no hreflang alternates.
-    expect(guideEntries.length).toBe(6);
+    expect(guideEntries.length).toBe(12);
     expect(
       guideEntries.every(
         (entry) =>
-          entry.alternates === undefined &&
-          /^https?:\/\/[^/]+\/guides\//.test(entry.url),
+          entry.alternates?.languages?.en &&
+          entry.alternates.languages["zh-hans"] &&
+          entry.alternates.languages["x-default"],
+      ),
+    ).toBe(true);
+    expect(
+      guideEntries.some((entry) =>
+        entry.url.includes("/zh-hans/guides/add-countdown-to-obs"),
       ),
     ).toBe(true);
 
     const compareEntries = entries.filter((entry) =>
       entry.url.includes("/compare/"),
     );
-    expect(compareEntries.length).toBe(1);
-    expect(compareEntries[0]?.alternates).toBeUndefined();
-    expect(compareEntries[0]?.url).toBe(
-      "https://timeoverlay.co/compare/transparent-overlay-formats",
+    expect(compareEntries.length).toBe(2);
+    expect(
+      compareEntries.every(
+        (entry) =>
+          entry.alternates?.languages?.en &&
+          entry.alternates.languages["zh-hans"] &&
+          entry.alternates.languages["x-default"],
+      ),
+    ).toBe(true);
+    expect(compareEntries.map((entry) => entry.url)).toEqual(
+      expect.arrayContaining([
+        "https://timeoverlay.co/compare/transparent-overlay-formats",
+        "https://timeoverlay.co/zh-hans/compare/transparent-overlay-formats",
+      ]),
     );
   });
 

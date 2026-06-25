@@ -1,14 +1,27 @@
 import compareContent from "./en";
+import zhHansCompareContent from "./zh-hans";
 
+import type { EnabledLocale } from "@/lib/i18n";
 import type { ComparePageContent } from "./types";
 
-/**
- * The comparison page is English-only for now (see the route definition in
- * `src/lib/site.ts`). This indirection keeps the call sites stable so a future
- * locale fan-out only has to change here, mirroring `src/content/root`.
- */
-export function getComparePageContent(): ComparePageContent {
-  return compareContent;
+export const compareContentLocales = ["en", "zh-hans"] as const satisfies readonly EnabledLocale[];
+export type CompareContentLocale = (typeof compareContentLocales)[number];
+
+const compareContentByLocale = {
+  en: compareContent,
+  "zh-hans": zhHansCompareContent,
+} satisfies Record<CompareContentLocale, ComparePageContent>;
+
+export function isCompareContentLocale(
+  locale: EnabledLocale,
+): locale is CompareContentLocale {
+  return (compareContentLocales as readonly EnabledLocale[]).includes(locale);
+}
+
+export function getComparePageContent(
+  locale: CompareContentLocale = "en",
+): ComparePageContent {
+  return compareContentByLocale[locale];
 }
 
 export type { ComparePageContent } from "./types";

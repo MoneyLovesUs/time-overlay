@@ -26,6 +26,7 @@ test("locale config matches the approved locale matrix", () => {
     "ko",
     "ja",
     "fi",
+    "zh-hans",
     "zh-hant",
     "ar",
     "th",

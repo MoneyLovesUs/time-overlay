@@ -1,5 +1,5 @@
 import type { ComparePageContent } from "@/content/compare/types";
-import type { GuideContent } from "@/content/guides";
+import type { GuideChromeContent, GuideContent } from "@/content/guides";
 import type { RootPageContent } from "@/content/root/types";
 import {
   EDITOR_IDS,
@@ -22,7 +22,10 @@ function browsersThatExport(
   return supported.length > 0 ? supported.join(", ") : "—";
 }
 
-export function renderGuideMarkdown(guide: GuideContent): string {
+export function renderGuideMarkdown(
+  guide: GuideContent,
+  chrome: GuideChromeContent,
+): string {
   const steps = guide.steps
     .map((step, index) => `### ${index + 1}. ${step.title}\n\n${step.body}`)
     .join("\n\n");
@@ -30,10 +33,10 @@ export function renderGuideMarkdown(guide: GuideContent): string {
   return [
     `# ${guide.title}`,
     guide.intro,
-    `**Recommended export:** ${guide.recommendedFormat}`,
-    `## Steps`,
+    `**${chrome.markdownRecommendedExportLabel}:** ${guide.recommendedFormat}`,
+    `## ${chrome.markdownStepsHeading}`,
     steps,
-    `## Tips`,
+    `## ${chrome.markdownTipsHeading}`,
     guide.closer,
   ].join("\n\n");
 }
@@ -63,8 +66,8 @@ export function renderComparisonMarkdown(content: ComparePageContent): string {
     return [
       `### ${prose.name}`,
       `${prose.verdict}`,
-      `- **Best for:** ${prose.bestFor}`,
-      `- **Watch out:** ${prose.weakness}`,
+    `- **${content.bestForLabel}** ${prose.bestFor}`,
+    `- **${content.watchOutLabel}** ${prose.weakness}`,
     ].join("\n");
   }).join("\n\n");
 
@@ -75,10 +78,10 @@ export function renderComparisonMarkdown(content: ComparePageContent): string {
   return [
     `# ${content.h1}`,
     content.leadAnswer,
-    `## Comparison`,
+    `## ${content.markdownComparisonHeading}`,
     [headerRow, dividerRow, ...bodyRows].join("\n"),
     `_${content.benchmarkPendingNote}_`,
-    `## Format notes`,
+    `## ${content.markdownFormatNotesHeading}`,
     verdicts,
     `## ${content.faqTitle}`,
     faq,

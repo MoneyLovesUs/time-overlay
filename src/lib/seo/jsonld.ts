@@ -1,4 +1,4 @@
-import { enabledLocales } from "@/lib/i18n";
+import { defaultLocale, enabledLocales, type EnabledLocale } from "@/lib/i18n";
 import { siteConfig, siteOgImage } from "@/lib/site";
 
 /**
@@ -13,18 +13,27 @@ export type JsonLdObject = Record<string, unknown>;
 
 const SCHEMA_CONTEXT = "https://schema.org";
 
-export function buildWebApplicationJsonLd(): JsonLdObject {
+export function buildWebApplicationJsonLd({
+  browserRequirements,
+  description = siteConfig.description,
+  locale = defaultLocale,
+}: {
+  browserRequirements?: string;
+  description?: string;
+  locale?: EnabledLocale;
+} = {}): JsonLdObject {
   return {
     "@context": SCHEMA_CONTEXT,
     "@type": "WebApplication",
     name: siteConfig.name,
     url: siteConfig.url,
-    description: siteConfig.description,
+    description,
     applicationCategory: "MultimediaApplication",
     operatingSystem: "Web",
     browserRequirements:
+      browserRequirements ??
       "Requires JavaScript and a modern browser with Canvas + WebM support.",
-    inLanguage: [...enabledLocales],
+    inLanguage: locale === defaultLocale ? [...enabledLocales] : locale,
     image: new URL(siteOgImage.url, siteConfig.url).toString(),
     offers: {
       "@type": "Offer",

@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 
 import { getRootPageContent } from "@/content/root";
 import { GuidePage } from "@/components/site/guide-page";
-import { GUIDES, type GuideSlug } from "@/content/guides";
+import {
+  getGuidePageContent,
+  guideContentLocales,
+  type GuideSlug,
+} from "@/content/guides";
 import { defaultLocale } from "@/lib/i18n";
 import { GUIDE_SLUGS, createPageMetadata } from "@/lib/site";
 
@@ -29,13 +33,13 @@ export async function generateMetadata({
     notFound();
   }
 
-  const guide = GUIDES[slug];
+  const { guide } = getGuidePageContent("en", slug);
   return createPageMetadata({
     locale: defaultLocale,
     path: `/guides/${slug}`,
     title: `${guide.title} — Time Overlay`,
     description: guide.description,
-    localized: false,
+    alternateLocales: guideContentLocales,
   });
 }
 
@@ -46,9 +50,11 @@ export default async function GuideRoute({ params }: GuideRouteProps) {
   }
 
   const content = await getRootPageContent(defaultLocale);
+  const { guide, chrome } = getGuidePageContent("en", slug);
   return (
     <GuidePage
-      guide={GUIDES[slug]}
+      guide={guide}
+      guideChrome={chrome}
       content={content}
       locale={defaultLocale}
       slug={slug}

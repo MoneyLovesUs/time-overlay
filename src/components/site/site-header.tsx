@@ -16,6 +16,8 @@ type SiteHeaderProps = {
   }[];
   shellLabel: string;
   siteName: string;
+  languagePickerLabel?: string;
+  primaryNavAriaLabel?: string;
 };
 
 export function SiteHeader({
@@ -23,6 +25,8 @@ export function SiteHeader({
   navItems,
   shellLabel,
   siteName,
+  languagePickerLabel = "Lang",
+  primaryNavAriaLabel = "Primary",
 }: SiteHeaderProps) {
   const localizedHomeHref = locale === "en" ? "/" : `/${locale}`;
   const currentLocaleLabel = localeLabels[locale];
@@ -50,7 +54,7 @@ export function SiteHeader({
               </div>
 
               <nav
-                aria-label="Primary"
+                aria-label={primaryNavAriaLabel}
                 className="flex flex-wrap items-center gap-x-1 gap-y-2"
               >
                 {navItems.map((item, index) => (
@@ -81,7 +85,7 @@ export function SiteHeader({
 
           <details className="group relative z-50 shrink-0">
             <summary className="cyber-panel flex cursor-pointer list-none items-center gap-2 rounded-none border border-border/80 bg-background/75 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.24em] text-muted-foreground transition-colors hover:border-tertiary/60 hover:text-foreground">
-              <span className="text-primary">Lang</span>
+              <span className="text-primary">{languagePickerLabel}</span>
               <span>{currentLocaleLabel}</span>
               <span
                 aria-hidden="true"

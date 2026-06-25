@@ -1,14 +1,17 @@
 import Link from "next/link";
 
 import type { RootPageContent } from "@/content/root";
+import { buildLocalizedPath, type EnabledLocale } from "@/lib/i18n";
 
 type GuidesSectionData = NonNullable<RootPageContent["guidesSection"]>;
 
 type RootGuidesSectionProps = {
+  locale: EnabledLocale;
   guidesSection: GuidesSectionData;
 };
 
 export function RootGuidesSection({
+  locale,
   guidesSection,
 }: RootGuidesSectionProps) {
   return (
@@ -30,7 +33,7 @@ export function RootGuidesSection({
           {guidesSection.links.map((link) => (
             <li key={link.slug}>
               <Link
-                href={`/guides/${link.slug}`}
+                href={buildLocalizedPath(`/guides/${link.slug}`, locale)}
                 className="cyber-panel-muted cyber-chamfer flex items-center justify-between gap-4 px-5 py-4 text-sm leading-6 text-foreground transition-colors hover:text-primary"
               >
                 <span>{link.label}</span>

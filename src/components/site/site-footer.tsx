@@ -11,6 +11,7 @@ type SiteFooterProps = {
   publicStatusLabel: string;
   identityTitle: string;
   jumpTitle: string;
+  navAriaLabel?: string;
   productTitle: string;
   productDescription: string;
 };
@@ -23,6 +24,7 @@ export function SiteFooter({
   publicStatusLabel,
   identityTitle,
   jumpTitle,
+  navAriaLabel = "Footer",
   productTitle,
   productDescription,
 }: SiteFooterProps) {
@@ -63,7 +65,7 @@ export function SiteFooter({
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
                   {jumpTitle}
                 </p>
-                <nav aria-label="Footer">
+                <nav aria-label={navAriaLabel}>
                   <ul className="flex flex-col gap-2">
                     {navItems.map((item) => (
                       <li key={item.href}>

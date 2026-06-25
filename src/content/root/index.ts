@@ -12,6 +12,7 @@ export const rootContentLoaders = {
   ko: () => import("./ko").then((module) => module.default),
   ja: () => import("./ja").then((module) => module.default),
   fi: () => import("./fi").then((module) => module.default),
+  "zh-hans": () => import("./zh-hans").then((module) => module.default),
   "zh-hant": () => import("./zh-hant").then((module) => module.default),
   ar: () => import("./ar").then((module) => module.default),
   th: () => import("./th").then((module) => module.default),

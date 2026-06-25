@@ -55,9 +55,13 @@ export const siteOgImage = {
   url: "/og.png",
   width: 1200,
   height: 630,
-  alt: "Time Overlay — countdown timer overlays for video and live streams",
   type: "image/png",
 } as const;
+
+const siteOgImageAltByLocale: Partial<Record<AppLocale, string>> = {
+  en: "Time Overlay - countdown timer overlays for video and live streams",
+  "zh-hans": "Time Overlay - 用于视频剪辑和直播的倒计时叠加工具",
+};
 
 export function buildSiteIconMetadata(): NonNullable<Metadata["icons"]> {
   return {
@@ -79,7 +83,7 @@ type HomepageRouteDefinition = {
   readonly href: "/";
   readonly changeFrequency: "weekly";
   readonly priority: 1;
-  readonly localized: true;
+  readonly locales: readonly AppLocale[];
   readonly anchors: typeof homepageAnchorModel;
 };
 
@@ -87,19 +91,14 @@ type GuideRouteDefinition = {
   readonly href: `/guides/${string}`;
   readonly changeFrequency: "monthly";
   readonly priority: 0.6;
-  // Guides ship English-only. Serving the same English body under a localized
-  // prefix while claiming an hreflang alternate is the thin-content / hreflang
-  // mismatch we deliberately removed — so they live at the apex path only.
-  readonly localized: false;
+  readonly locales: readonly AppLocale[];
 };
 
 type ComparisonRouteDefinition = {
   readonly href: `/compare/${string}`;
   readonly changeFrequency: "monthly";
   readonly priority: 0.8;
-  // English-first for the same reason as guides; promote to localized once the
-  // page proves it earns AI citations (then translate the prose, not the matrix).
-  readonly localized: false;
+  readonly locales: readonly AppLocale[];
 };
 
 type PublicRouteDefinition =
@@ -111,7 +110,7 @@ const homepageRoute: HomepageRouteDefinition = {
   href: "/",
   changeFrequency: "weekly",
   priority: 1,
-  localized: true,
+  locales: enabledLocales,
   anchors: homepageAnchorModel,
 } as const;
 
@@ -126,11 +125,13 @@ export const GUIDE_SLUGS = [
 
 export const COMPARE_SLUGS = ["transparent-overlay-formats"] as const;
 
+export const secondaryContentLocales = ["en", "zh-hans"] as const satisfies readonly AppLocale[];
+
 const guideRoutes: readonly GuideRouteDefinition[] = GUIDE_SLUGS.map((slug) => ({
   href: `/guides/${slug}` as const,
   changeFrequency: "monthly" as const,
   priority: 0.6 as const,
-  localized: false as const,
+  locales: secondaryContentLocales,
 }));
 
 const comparisonRoutes: readonly ComparisonRouteDefinition[] = COMPARE_SLUGS.map(
@@ -138,7 +139,7 @@ const comparisonRoutes: readonly ComparisonRouteDefinition[] = COMPARE_SLUGS.map
     href: `/compare/${slug}` as const,
     changeFrequency: "monthly" as const,
     priority: 0.8 as const,
-    localized: false as const,
+    locales: secondaryContentLocales,
   }),
 );
 
@@ -150,11 +151,14 @@ export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
 
 type SitemapAlternateKey = EnabledLocale | "x-default";
 
-function buildCompleteSitemapAlternates(path: string): Record<SitemapAlternateKey, string> {
-  const alternates = buildLanguageAlternates(path, enabledLocales);
-  const complete = {} as Record<SitemapAlternateKey, string>;
+function buildCompleteSitemapAlternates(
+  path: string,
+  locales: readonly AppLocale[],
+): Partial<Record<SitemapAlternateKey, string>> {
+  const alternates = buildLanguageAlternates(path, locales);
+  const complete: Partial<Record<SitemapAlternateKey, string>> = {};
 
-  for (const locale of enabledLocales) {
+  for (const locale of locales) {
     const localizedPath = alternates[locale];
     if (!localizedPath) {
       throw new Error(`Missing localized alternate for locale: ${locale}`);
@@ -171,10 +175,17 @@ function buildCompleteSitemapAlternates(path: string): Record<SitemapAlternateKe
   return complete;
 }
 
-function buildOpenGraphAlternateLocales(locale: AppLocale): string[] {
-  return enabledLocales
+function buildOpenGraphAlternateLocales(
+  locale: AppLocale,
+  locales: readonly AppLocale[] = enabledLocales,
+): string[] {
+  return locales
     .filter((alternate) => alternate !== locale)
     .map((alternate) => localeOgFormats[alternate]);
+}
+
+function getSiteOgImageAlt(locale: AppLocale): string {
+  return siteOgImageAltByLocale[locale] ?? siteOgImageAltByLocale.en ?? siteConfig.name;
 }
 
 export function createPageMetadata({
@@ -183,6 +194,7 @@ export function createPageMetadata({
   path,
   locale = defaultLocale,
   localized = true,
+  alternateLocales,
 }: {
   title: string;
   description: string;
@@ -191,13 +203,18 @@ export function createPageMetadata({
   // When false the page is English-only: emit a self canonical but no hreflang
   // language alternates (guides, comparison). Defaults to true for the homepage.
   localized?: boolean;
+  alternateLocales?: readonly AppLocale[];
 }): Metadata {
   const canonicalPath = buildLocalizedPath(path, locale);
+  const languages = localized
+    ? buildLanguageAlternates(path, alternateLocales ?? enabledLocales)
+    : undefined;
+  const openGraphLocales = alternateLocales ?? enabledLocales;
   const ogImage = {
     url: siteOgImage.url,
     width: siteOgImage.width,
     height: siteOgImage.height,
-    alt: siteOgImage.alt,
+    alt: getSiteOgImageAlt(locale),
     type: siteOgImage.type,
   };
 
@@ -210,7 +227,7 @@ export function createPageMetadata({
     icons: buildSiteIconMetadata(),
     alternates: {
       canonical: canonicalPath,
-      ...(localized ? { languages: buildLanguageAlternates(path) } : {}),
+      ...(languages ? { languages } : {}),
     },
     openGraph: {
       title,
@@ -219,7 +236,7 @@ export function createPageMetadata({
       siteName: siteConfig.name,
       type: "website",
       locale: localeOgFormats[locale],
-      alternateLocale: buildOpenGraphAlternateLocales(locale),
+      alternateLocale: buildOpenGraphAlternateLocales(locale, openGraphLocales),
       images: [ogImage],
     },
     twitter: {
@@ -249,11 +266,7 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
   const lastModified = new Date();
 
   return publicRouteDefinitions.flatMap((route) => {
-    // Localized routes fan out across every locale with hreflang alternates;
-    // English-only routes (guides, comparison) emit a single apex entry.
-    const locales = route.localized ? enabledLocales : [defaultLocale];
-
-    return locales.map((locale) => {
+    return route.locales.map((locale) => {
       const localizedRoutePath = buildLocalizedPath(route.href, locale);
       const entry = {
         url: new URL(localizedRoutePath, siteConfig.url).toString(),
@@ -262,16 +275,19 @@ export function buildSitemapEntries(): MetadataRoute.Sitemap {
         priority: route.priority,
       };
 
-      if (!route.localized) {
+      if (route.locales.length <= 1) {
         return entry;
       }
 
-      const localized = buildCompleteSitemapAlternates(route.href);
+      const localized = buildCompleteSitemapAlternates(route.href, route.locales);
       const languageUrls = Object.fromEntries(
-        (Object.keys(localized) as SitemapAlternateKey[]).map((key) => [
-          key,
-          new URL(localized[key], siteConfig.url).toString(),
-        ]),
+        (Object.keys(localized) as SitemapAlternateKey[]).map((key) => {
+          const path = localized[key];
+          if (!path) {
+            throw new Error(`Missing sitemap alternate for locale: ${key}`);
+          }
+          return [key, new URL(path, siteConfig.url).toString()];
+        }),
       );
 
       return {

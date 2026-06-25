@@ -47,6 +47,11 @@ export type ComparePageContent = {
   /** Opinionated prose per format, keyed by the matrix format id. */
   formats: Record<FormatId, CompareFormatProse>;
   benchmarkPendingNote: string;
+  benchmarkTestedTemplate: string;
+  bestForLabel: string;
+  watchOutLabel: string;
+  markdownComparisonHeading: string;
+  markdownFormatNotesHeading: string;
   ctaGeneratorLabel: string;
   ctaGuidesLabel: string;
   faqTitle: string;

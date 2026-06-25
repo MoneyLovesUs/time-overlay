@@ -43,6 +43,7 @@ describe("localized root routes", () => {
       { locale: "ko" },
       { locale: "ja" },
       { locale: "fi" },
+      { locale: "zh-hans" },
       { locale: "zh-hant" },
       { locale: "ar" },
       { locale: "th" },

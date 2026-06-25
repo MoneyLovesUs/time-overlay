@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { ComparePage } from "@/components/site/compare-page";
-import { getComparePageContent } from "@/content/compare";
+import { compareContentLocales, getComparePageContent } from "@/content/compare";
 import { getRootPageContent } from "@/content/root";
 import { defaultLocale } from "@/lib/i18n";
 import { createPageMetadata } from "@/lib/site";
@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     path: COMPARE_PATH,
     title: content.metadata.title,
     description: content.metadata.description,
-    localized: false,
+    alternateLocales: compareContentLocales,
   });
 }
 
@@ -23,5 +23,12 @@ export default async function CompareRoute() {
   const content = getComparePageContent();
   const chrome = await getRootPageContent(defaultLocale);
 
-  return <ComparePage content={content} chrome={chrome} path={COMPARE_PATH} />;
+  return (
+    <ComparePage
+      content={content}
+      chrome={chrome}
+      locale={defaultLocale}
+      path={COMPARE_PATH}
+    />
+  );
 }

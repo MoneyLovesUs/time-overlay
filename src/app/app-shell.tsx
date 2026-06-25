@@ -61,6 +61,10 @@ const clarityBootstrapScript = `
       }
   })(window, document, "clarity", "script", "${clarityProjectId}");
 `;
+const browserRequirementsByLocale = {
+  en: "Requires JavaScript and a modern browser with Canvas + WebM support.",
+  "zh-hans": "需要启用 JavaScript，并使用支持 Canvas 与 WebM 的现代浏览器。",
+} as const;
 
 function resolveRootDefaultTitle(title: Metadata["title"]): string {
   if (!title) {
@@ -110,10 +114,16 @@ export const siteViewport: Viewport = {
 type AppDocumentProps = Readonly<{
   children: React.ReactNode;
   lang: string;
+  applicationDescription?: string;
 }>;
 
-export function AppDocument({ children, lang }: AppDocumentProps) {
+export function AppDocument({
+  children,
+  lang,
+  applicationDescription,
+}: AppDocumentProps) {
   const dir = isEnabledLocale(lang) ? getLocaleDirection(lang) : "ltr";
+  const locale = isEnabledLocale(lang) ? lang : defaultLocale;
   return (
     <html
       lang={lang}
@@ -136,7 +146,16 @@ export function AppDocument({ children, lang }: AppDocumentProps) {
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }}
         />
-        <JsonLd data={buildWebApplicationJsonLd()} />
+        <JsonLd
+          data={buildWebApplicationJsonLd({
+            browserRequirements:
+              browserRequirementsByLocale[
+                locale as keyof typeof browserRequirementsByLocale
+              ],
+            description: applicationDescription,
+            locale,
+          })}
+        />
       </head>
       <body
         suppressHydrationWarning

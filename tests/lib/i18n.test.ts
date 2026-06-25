@@ -22,6 +22,7 @@ describe("i18n config", () => {
       "ko",
       "ja",
       "fi",
+      "zh-hans",
       "zh-hant",
       "ar",
       "th",
@@ -43,6 +44,7 @@ describe("i18n config", () => {
       ko: "/ko",
       ja: "/ja",
       fi: "/fi",
+      "zh-hans": "/zh-hans",
       "zh-hant": "/zh-hant",
       ar: "/ar",
       th: "/th",
@@ -68,9 +70,9 @@ describe("site helpers", () => {
     expect(entries.length).toBeGreaterThanOrEqual(16);
 
     const homepageEntries = entries.filter(
-      (entry) => entry.url.replace(/^https?:\/\/[^/]+/, "") === "/" || /\/(?:en|es|pt|ru|fr|de|ko|ja|fi|zh-hant|ar|th|cs|hi|nl|sv)$/.test(entry.url),
+      (entry) => entry.url.replace(/^https?:\/\/[^/]+/, "") === "/" || /\/(?:en|es|pt|ru|fr|de|ko|ja|fi|zh-hans|zh-hant|ar|th|cs|hi|nl|sv)$/.test(entry.url),
     );
-    expect(homepageEntries.length).toBe(16);
+    expect(homepageEntries.length).toBe(17);
 
     const languages = homepageEntries[0].alternates?.languages;
     expect(languages).toBeDefined();

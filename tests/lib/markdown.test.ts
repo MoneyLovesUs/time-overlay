@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import enRootPageContent from "@/content/root/en";
 import { getComparePageContent } from "@/content/compare";
-import { GUIDES } from "@/content/guides";
+import { getGuidePageContent } from "@/content/guides";
 import { buildLlmsTxt } from "@/lib/markdown/llms";
 import {
   renderComparisonMarkdown,
@@ -12,12 +12,25 @@ import {
 
 describe("markdown mirrors", () => {
   it("renders a guide as headed Markdown with numbered steps", () => {
-    const guide = GUIDES["add-countdown-to-obs"];
-    const md = renderGuideMarkdown(guide);
+    const { guide, chrome } = getGuidePageContent("en", "add-countdown-to-obs");
+    const md = renderGuideMarkdown(guide, chrome);
     expect(md).toContain(`# ${guide.title}`);
     expect(md).toContain("## Steps");
     expect(md).toContain(`### 1. ${guide.steps[0].title}`);
     expect(md).toContain("## Tips");
+  });
+
+  it("renders Chinese markdown mirrors from Chinese content", () => {
+    const { guide, chrome } = getGuidePageContent("zh-hans", "add-countdown-to-obs");
+    const md = renderGuideMarkdown(guide, chrome);
+    const compare = renderComparisonMarkdown(getComparePageContent("zh-hans"));
+    const txt = buildLlmsTxt("zh-hans");
+
+    expect(md).toContain("## 步骤");
+    expect(md).toContain("推荐导出");
+    expect(compare).toContain("## 对比");
+    expect(txt).toContain("https://timeoverlay.co/zh-hans/guides/add-countdown-to-obs");
+    expect(txt).toContain("https://timeoverlay.co/zh-hans/md/home");
   });
 
   it("renders the comparison as a Markdown table covering every format", () => {

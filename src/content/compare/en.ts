@@ -94,6 +94,11 @@ const compareContent = {
   },
   benchmarkPendingNote:
     "File-size and export-time benchmarks are measured per release and published here once recorded.",
+  benchmarkTestedTemplate: "Tested · {config}",
+  bestForLabel: "Best for:",
+  watchOutLabel: "Watch out:",
+  markdownComparisonHeading: "Comparison",
+  markdownFormatNotesHeading: "Format notes",
   ctaGeneratorLabel: "Open the Time Overlay generator",
   ctaGuidesLabel: "See the editor guides",
   faqTitle: "Format FAQ",

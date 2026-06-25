@@ -101,7 +101,7 @@ export function CompareTable({ content }: CompareTableProps) {
 
       <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
         {showBenchmark
-          ? `Tested · ${BENCHMARK_ENV.config}`
+          ? content.benchmarkTestedTemplate.replace("{config}", BENCHMARK_ENV.config)
           : content.benchmarkPendingNote}
       </p>
     </div>

@@ -47,11 +47,13 @@ export function RootPage({ locale, content }: RootPageProps) {
         navItems={headerNavItems}
         shellLabel={content.siteChrome.header.shellLabel}
         siteName={content.siteChrome.siteName}
+        languagePickerLabel={content.siteChrome.header.languagePickerLabel}
+        primaryNavAriaLabel={content.siteChrome.header.primaryNavAriaLabel}
       />
       <LazyGeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
       <RootSeoSection locale={locale} seoSection={content.seoSection} />
       {content.guidesSection ? (
-        <RootGuidesSection guidesSection={content.guidesSection} />
+        <RootGuidesSection locale={locale} guidesSection={content.guidesSection} />
       ) : null}
       <SiteFooter
         navItems={footerNavItems}
@@ -61,6 +63,7 @@ export function RootPage({ locale, content }: RootPageProps) {
         publicStatusLabel={content.siteChrome.footer.publicStatusLabel}
         identityTitle={content.siteChrome.footer.identityTitle}
         jumpTitle={content.siteChrome.footer.jumpTitle}
+        navAriaLabel={content.siteChrome.footer.navAriaLabel}
         productTitle={content.siteChrome.footer.productTitle}
         productDescription={content.siteChrome.footer.productDescription}
       />

@@ -2,9 +2,10 @@ import type { RootPageContent } from "@/content/root/types";
 
 const enRootPageContent = {
   metadata: {
-    title: "Timer Overlay Generator — Free Transparent Countdown | Time Overlay",
+    title:
+      "Countdown Timer Overlay Generator — Transparent Timer | Time Overlay",
     description:
-      "Time Overlay is a free timer overlay generator. Build a transparent countdown in-browser and export PNG or WebM with alpha for CapCut, Premiere, OBS, DaVinci.",
+      "Time Overlay builds a transparent timer overlay or countdown timer overlay in-browser. Export PNG or WebM with alpha for CapCut, Premiere, DaVinci, OBS.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -15,7 +16,7 @@ const enRootPageContent = {
   siteChrome: {
     siteName: "Time Overlay",
     siteDescription:
-      "Time Overlay is the free countdown timer overlay tool for creators who need clean, readable countdowns in recordings and live streams.",
+      "Time Overlay is a free countdown timer overlay tool for creators who need clean, readable transparent timers in recordings, edits, and live streams.",
     header: {
       shellLabel: "Public Shell",
       toolLinkLabel: "Tool",
@@ -207,24 +208,24 @@ const enRootPageContent = {
   seoSection: {
     notesEyebrow: "Tool Notes",
     heading:
-      "One timer overlay tool, plus the context you need to use it well.",
+      "A real countdown timer overlay tool with transparent exports.",
     description:
-      "This is a local-first timer overlay generator for readable countdown assets. Use the controls above to set duration, style, position, and export format, then read on for the questions that matter when you choose a timer tool for a real edit.",
-    exportFormatsTitle: "Export formats",
+      "Time Overlay is a local-first transparent timer overlay generator for readable countdown assets. Use the controls above to set duration, style, position, and export format, then read on for the practical choices that matter in a real edit.",
+    exportFormatsTitle: "Time Overlay transparent timer overlay export formats",
     exportFormatsPngText:
-      "PNG sequence is the most dependable timer overlay export when you need transparent frames or editor-friendly image assets.",
+      "PNG sequence is the most dependable countdown timer overlay export when you need transparent frames or editor-friendly image assets.",
     exportFormatsWebmText:
       "WebM (with alpha) is the single-file transparent timer overlay video. The VP8 output drops into Premiere, DaVinci, CapCut, OBS, and Streamlabs as a video layer with the background already cut out.",
     workflowEyebrow: "How it works",
-    workflowHeading: "How the timer overlay export works",
+    workflowHeading: "How the countdown timer overlay export works",
     workflowSteps: [
       {
-        title: "Set the timer overlay duration and layout",
+        title: "Set the countdown timer overlay duration and layout",
         body:
           "Start in the generator above. Pick the total duration, choose a clean countdown layout, and place the overlay where it stays readable over gameplay, product footage, or talking-head edits.",
       },
       {
-        title: "Pick a timer overlay style for your footage",
+        title: "Pick a transparent timer overlay style for your footage",
         body:
           "Adjust typography, contrast, scale, and placement so the overlay feels intentional instead of pasted on. The strongest timer overlays use bold numerals, stable spacing, and enough breathing room from the frame edge.",
       },
@@ -239,7 +240,7 @@ const enRootPageContent = {
     usageNotes: [
       "Open the generator, set the timer length, and preview the overlay before exporting anything.",
       "Use the PNG sequence for a transparent timer overlay in CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve, or any workflow that prefers image assets.",
-      "Use the WebM (with alpha) export when you want a single transparent overlay timer video for OBS, Streamlabs, or a quick social edit.",
+      "Use the WebM (with alpha) export when you want a single transparent countdown timer overlay video for OBS, Streamlabs, or a quick social edit.",
       "Keep the overlay short, high-contrast, and away from captions or face framing so it survives mobile viewing.",
     ],
     usageCta: {
@@ -253,8 +254,8 @@ const enRootPageContent = {
     aboutEyebrow: "About",
     aboutHeading: "About Time Overlay",
     aboutPoints: [
-      "Time Overlay is a local-first timer overlay generator built for creators who need countdown graphics without uploading footage to a remote render service.",
-      "The page is intentionally compact: one working tool surface, one export explanation block, and one help area that answers the questions people search for before they trust a timer overlay tool.",
+      "Time Overlay is a local-first countdown timer overlay generator built for creators who need transparent countdown graphics without uploading footage to a remote render service.",
+      "The Time Overlay page is intentionally compact: one working tool surface, one export explanation block, and one help area that answers the questions people search for before they trust a timer overlay tool.",
       "That makes it useful both as a real production utility and as a landing page for related searches such as timer overlay, overlay timer, transparent timer overlay, on-screen timer, and countdown timer overlay for video editing.",
     ],
     aboutCta: {
@@ -280,7 +281,7 @@ const enRootPageContent = {
         question:
           "What is the difference between a timer overlay and a countdown overlay?",
         answer:
-          "They usually mean the same thing: a timer overlay that counts down from a set duration to zero on top of your video. This tool builds a countdown timer overlay, so set the total seconds, pick a display format like MM:SS, and export it for your editor.",
+          "They usually mean the same thing: a timer overlay that counts down from a set duration to zero on top of your video. This tool builds a transparent countdown timer overlay, so set the total seconds, pick a display format like MM:SS, and export it for your editor.",
       },
       {
         question: "Can I export a Time Overlay with transparency?",

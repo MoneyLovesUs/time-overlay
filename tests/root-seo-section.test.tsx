@@ -15,7 +15,7 @@ test("root seo section exposes crawlable homepage support sections", () => {
     }),
   );
 
-  assert.match(markup, /How the timer overlay export works/i);
+  assert.match(markup, /How the countdown timer overlay export works/i);
   assert.match(markup, /How to use Time Overlay/i);
   assert.match(markup, /About Time Overlay/i);
   assert.match(markup, /id="how-it-works"/);

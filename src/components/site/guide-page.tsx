@@ -12,7 +12,11 @@ import {
 import type { RootPageContent } from "@/content/root/types";
 import { buildLocalizedPath, type EnabledLocale } from "@/lib/i18n";
 import { siteConfig } from "@/lib/site";
-import { buildBreadcrumbJsonLd, buildHowToJsonLd } from "@/lib/seo/jsonld";
+import {
+  buildBreadcrumbJsonLd,
+  buildFaqJsonLd,
+  buildHowToJsonLd,
+} from "@/lib/seo/jsonld";
 
 type GuidePageProps = {
   guide: GuideContent;
@@ -42,6 +46,8 @@ export function GuidePage({
     description: guide.description,
     steps: guide.steps,
   });
+  const faqItems = guide.faqItems ?? [];
+  const faqJsonLd = faqItems.length > 0 ? buildFaqJsonLd(faqItems) : null;
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
     { name: siteConfig.name, url: new URL("/", siteConfig.url).toString() },
     { name: guide.title, url: guideUrl },
@@ -65,6 +71,7 @@ export function GuidePage({
   return (
     <div>
       <JsonLd data={howToJsonLd} />
+      {faqJsonLd ? <JsonLd data={faqJsonLd} /> : null}
       <JsonLd data={breadcrumbJsonLd} />
       <SiteHeader
         locale={locale}
@@ -115,6 +122,28 @@ export function GuidePage({
             ))}
           </div>
         </section>
+
+        {faqItems.length > 0 ? (
+          <section className="border-b border-border/70 px-6 py-12">
+            <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+              <h2 className="text-xl font-semibold tracking-tight">
+                {guide.faqTitle ?? "Common questions"}
+              </h2>
+              <div className="grid gap-5">
+                {faqItems.map((item) => (
+                  <article key={item.question} className="border-l border-tertiary/35 pl-5">
+                    <h3 className="text-base font-semibold tracking-tight">
+                      {item.question}
+                    </h3>
+                    <p className="mt-2 leading-7 text-muted-foreground">
+                      {item.answer}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="px-6 py-12">
           <div className="mx-auto w-full max-w-3xl">

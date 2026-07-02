@@ -29,6 +29,16 @@ export function renderGuideMarkdown(
   const steps = guide.steps
     .map((step, index) => `### ${index + 1}. ${step.title}\n\n${step.body}`)
     .join("\n\n");
+  const faqItems = guide.faqItems ?? [];
+  const faq =
+    faqItems.length > 0
+      ? [
+          `## ${guide.faqTitle ?? "Common questions"}`,
+          faqItems
+            .map((item) => `### ${item.question}\n\n${item.answer}`)
+            .join("\n\n"),
+        ]
+      : [];
 
   return [
     `# ${guide.title}`,
@@ -36,6 +46,7 @@ export function renderGuideMarkdown(
     `**${chrome.markdownRecommendedExportLabel}:** ${guide.recommendedFormat}`,
     `## ${chrome.markdownStepsHeading}`,
     steps,
+    ...faq,
     `## ${chrome.markdownTipsHeading}`,
     guide.closer,
   ].join("\n\n");

@@ -8,6 +8,11 @@ export type GuideStep = {
   body: string;
 };
 
+export type GuideFaqItem = {
+  question: string;
+  answer: string;
+};
+
 export type GuideContent = {
   title: string;
   description: string;
@@ -15,6 +20,8 @@ export type GuideContent = {
   recommendedFormat: string;
   steps: readonly GuideStep[];
   closer: string;
+  faqTitle?: string;
+  faqItems?: readonly GuideFaqItem[];
 };
 
 export type GuideChromeContent = {
@@ -64,37 +71,70 @@ const enGuideChrome: GuideChromeContent = {
 
 const enGuides: Record<GuideSlug, GuideContent> = {
   "add-countdown-to-obs": {
-    title: "How to add a countdown timer overlay to OBS Studio",
+    title: "OBS Timer Overlay: Add a Transparent Countdown Timer to OBS",
     description:
-      "Add a transparent countdown timer to an OBS Studio scene: export WebM with alpha as a Media Source, or a PNG sequence as an Image Slideshow Source, both with the background already cut out.",
+      "Add a transparent countdown timer overlay to OBS Studio with WebM alpha as a Media Source, plus a PNG sequence fallback for precise loops.",
     intro:
-      "To add a countdown timer overlay to OBS Studio, export a transparent overlay from Time Overlay and add it as a source - there is no chroma-key step. Two reliable paths exist: WebM with alpha as a Media Source for streaming overlays, or a PNG sequence routed through an Image Slideshow Source for tight loops. Both preserve transparency from Time Overlay to the OBS canvas.",
+      "To add a timer overlay to OBS, export a transparent countdown from Time Overlay and add the file as a source. Use WebM with alpha as a Media Source for the simplest OBS timer overlay, or use a PNG sequence as an Image Slideshow Source when you want frame-accurate loops. Both routes keep the background already cut out, so you do not need chroma key or a green screen.",
     recommendedFormat:
-      "WebM (with alpha) for quick streaming overlays. PNG sequence when you want frame-accurate loops or maximum quality.",
+      "WebM (with alpha) for most OBS scenes. PNG sequence when you want frame-accurate loops or maximum quality.",
     steps: [
       {
-        title: "Configure the timer",
+        title: "Set the countdown duration and OBS canvas size",
         body:
-          "Open the Time Overlay generator, pick a duration that matches your scene break, choose a placement that does not clash with your webcam, and set the canvas to the resolution OBS is recording at.",
+          "Open the Time Overlay generator, pick a duration that matches your starting soon, break, or challenge scene, then set the canvas to the same resolution OBS is recording or streaming at.",
       },
       {
-        title: "Export WebM with alpha",
+        title: "Place the timer where it will not block the stream",
         body:
-          "Choose 'WebM (with alpha)' from the export panel. The output is a VP8-encoded WebM with a transparent background. OBS reads it directly as a Media Source.",
+          "Choose a corner or lower-third placement that avoids your webcam, chat box, captions, and game UI. Simple digits with strong contrast are easier to read after stream compression.",
       },
       {
-        title: "Add to your OBS scene",
+        title: "Export WebM with alpha for OBS",
         body:
-          "In OBS, add a Media Source, browse to the downloaded .webm, and enable 'Loop'. Resize the source so the timer reads at the right size on your canvas without covering your camera.",
+          "Choose 'WebM (with alpha)' from the export panel. The output is a transparent VP8 WebM file that OBS can read directly as a Media Source with the background already removed.",
       },
       {
-        title: "Test with a local recording",
+        title: "Add the timer overlay as a Media Source",
         body:
-          "Hit Start Recording in OBS for 10 seconds. Open the recording in VLC or a video editor and confirm the background remains transparent over your base scene.",
+          "In OBS, add a Media Source, browse to the downloaded .webm, and enable Loop if the timer should repeat. Resize the source on the OBS canvas until it reads clearly without covering the main action.",
+      },
+      {
+        title: "Use PNG sequence if WebM playback is unstable",
+        body:
+          "If your OBS setup stutters on WebM playback, export a PNG sequence instead and load it through an Image Slideshow Source. This keeps the same transparency but shifts the work from video decoding to image playback.",
+      },
+      {
+        title: "Record a short test before going live",
+        body:
+          "Start a local OBS recording for 10 to 20 seconds. Confirm the timer composites cleanly over the scene, stays readable at stream bitrate, and restarts at the moment you expect.",
       },
     ],
     closer:
-      "On older OBS builds (pre 28.x) where WebM Media Source playback is inconsistent, export a PNG sequence instead and load it through an Image Slideshow Source. The transparency outcome is the same; the CPU profile shifts toward image decoding.",
+      "For most creators, the honest choice is WebM first and PNG sequence second. WebM is easier because it is one transparent video file. PNG sequence is better when you need exact frame control, want to avoid codec issues, or plan to reuse the countdown as a high-quality transparent asset outside OBS.",
+    faqTitle: "OBS timer overlay questions",
+    faqItems: [
+      {
+        question: "What is the best timer overlay format for OBS?",
+        answer:
+          "WebM with alpha is the best first choice for OBS because it is a single transparent video file that works as a Media Source. Use a PNG sequence when WebM playback stutters, when you need frame-accurate loops, or when maximum visual quality matters more than convenience.",
+      },
+      {
+        question: "How do I make a timer overlay transparent in OBS?",
+        answer:
+          "Export the timer from Time Overlay with a transparent background, then add the WebM file as a Media Source or the PNG sequence as an Image Slideshow Source. The alpha channel is already in the export, so OBS does not need chroma key, luma key, or a green-screen color.",
+      },
+      {
+        question: "Should an OBS countdown timer be a browser source or a media source?",
+        answer:
+          "Use a browser source when you need a live, remote-controlled timer that changes during the stream. Use a media source when you want a designed transparent countdown asset that is predictable, local, and easy to reuse across scenes.",
+      },
+      {
+        question: "Can OBS loop a transparent countdown timer overlay?",
+        answer:
+          "Yes. Add the exported WebM as a Media Source and enable Loop if the countdown should repeat. For scene-based countdowns, also test when the source starts so the first visible frame lines up with your stream transition.",
+      },
+    ],
   },
   "add-countdown-to-premiere": {
     title: "How to add a transparent countdown timer in Premiere Pro",

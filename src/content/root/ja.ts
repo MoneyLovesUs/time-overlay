@@ -37,6 +37,28 @@ const jaRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "テンプレートライブラリ",
+      description:
+        "実績のあるレイアウトから始められます。長さと書き出し設定は維持されます。",
+      browseLabel: "48件すべてを見る",
+      searchPlaceholder: "テンプレートや用途を検索",
+      categoryLabels: {
+        all: "すべて",
+        editing: "編集",
+        streaming: "配信",
+        social: "ソーシャル",
+        events: "イベント",
+        fitness: "フィットネス",
+        cinematic: "シネマティック",
+        minimal: "ミニマル",
+      },
+      selectedLabel: "選択中",
+      editedLabel: "編集済み",
+      resultTemplate: "{count}件のテンプレート",
+      noResults: "この条件に一致するテンプレートはありません。",
+      closeLabel: "テンプレートライブラリを閉じる",
+    },
     themePresetPicker: {
       title: "テーマプリセット",
       description:

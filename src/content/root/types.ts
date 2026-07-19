@@ -67,6 +67,28 @@ export type RootPageContent = {
     };
   };
   generatorUi: {
+    templateGallery: {
+      title: string;
+      description: string;
+      browseLabel: string;
+      searchPlaceholder: string;
+      categoryLabels: Record<
+        | "all"
+        | "editing"
+        | "streaming"
+        | "social"
+        | "events"
+        | "fitness"
+        | "cinematic"
+        | "minimal",
+        string
+      >;
+      selectedLabel: string;
+      editedLabel: string;
+      resultTemplate: string;
+      noResults: string;
+      closeLabel: string;
+    };
     themePresetPicker: {
       title: string;
       description: string;

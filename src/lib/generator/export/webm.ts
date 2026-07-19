@@ -136,7 +136,12 @@ export async function exportWebmLocally(
       safeAreaInset: 32,
     });
 
-    renderStyledFrame(context, frameState, settings.themePresetId);
+    renderStyledFrame(
+      context,
+      frameState,
+      settings.themePresetId,
+      settings.templateId,
+    );
 
     if (
       frameIndex === 0 ||

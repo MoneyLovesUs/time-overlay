@@ -36,6 +36,28 @@ const arRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "مكتبة القوالب",
+      description:
+        "ابدأ بتخطيط مجرّب. ستبقى المدة وخيارات التصدير كما هي.",
+      browseLabel: "تصفح جميع القوالب الـ 48",
+      searchPlaceholder: "ابحث في القوالب أو حالات الاستخدام",
+      categoryLabels: {
+        all: "الكل",
+        editing: "المونتاج",
+        streaming: "البث",
+        social: "التواصل",
+        events: "الفعاليات",
+        fitness: "اللياقة",
+        cinematic: "سينمائي",
+        minimal: "بسيط",
+      },
+      selectedLabel: "محدد",
+      editedLabel: "معدل",
+      resultTemplate: "{count} قالبًا",
+      noResults: "لا توجد قوالب تطابق هذا الفلتر.",
+      closeLabel: "إغلاق مكتبة القوالب",
+    },
     themePresetPicker: {
       title: "النسق المسبق",
       description: "اختر مظهرًا ابتدائيًا، ثم عدّل عناصر التحكم فقط عند الحاجة.",

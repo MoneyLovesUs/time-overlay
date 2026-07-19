@@ -108,7 +108,12 @@ function drawFrameToContext({
     safeAreaInset: 32,
   });
 
-  renderStyledFrame(context, frameState, settings.themePresetId);
+  renderStyledFrame(
+    context,
+    frameState,
+    settings.themePresetId,
+    settings.templateId,
+  );
 }
 
 type PngSequenceRequest = Extract<ExportWorkerRequest, { kind: "export-png-sequence" }>;

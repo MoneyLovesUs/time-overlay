@@ -36,6 +36,28 @@ const hiRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "टेम्पलेट लाइब्रेरी",
+      description:
+        "एक आजमाए हुए लेआउट से शुरू करें। आपकी अवधि और निर्यात विकल्प बने रहेंगे।",
+      browseLabel: "सभी 48 देखें",
+      searchPlaceholder: "टेम्पलेट या उपयोग खोजें",
+      categoryLabels: {
+        all: "सभी",
+        editing: "एडिटिंग",
+        streaming: "स्ट्रीमिंग",
+        social: "सोशल",
+        events: "इवेंट",
+        fitness: "फिटनेस",
+        cinematic: "सिनेमैटिक",
+        minimal: "मिनिमल",
+      },
+      selectedLabel: "चुना गया",
+      editedLabel: "संपादित",
+      resultTemplate: "{count} टेम्पलेट",
+      noResults: "इस फ़िल्टर से कोई टेम्पलेट मेल नहीं खाता।",
+      closeLabel: "टेम्पलेट लाइब्रेरी बंद करें",
+    },
     themePresetPicker: {
       title: "थीम प्रीसेट",
       description: "पहले एक शुरुआती लुक चुनें, फिर ज़रूरत हो तो कंट्रोल समायोजित करें।",

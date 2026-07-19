@@ -38,6 +38,28 @@ const fiRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Mallikirjasto",
+      description:
+        "Aloita hyväksi todetusta asettelusta. Kesto ja vientivalinnat säilyvät.",
+      browseLabel: "Selaa kaikkia 48:aa",
+      searchPlaceholder: "Hae malleja tai käyttötarkoituksia",
+      categoryLabels: {
+        all: "Kaikki",
+        editing: "Editointi",
+        streaming: "Suoratoisto",
+        social: "Sosiaalinen",
+        events: "Tapahtumat",
+        fitness: "Treeni",
+        cinematic: "Elokuvallinen",
+        minimal: "Minimalistinen",
+      },
+      selectedLabel: "Valittu",
+      editedLabel: "Muokattu",
+      resultTemplate: "{count} mallia",
+      noResults: "Tätä suodatinta vastaavia malleja ei löytynyt.",
+      closeLabel: "Sulje mallikirjasto",
+    },
     themePresetPicker: {
       title: "Teemaesiasetus",
       description:

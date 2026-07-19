@@ -38,6 +38,28 @@ const esRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Biblioteca de plantillas",
+      description:
+        "Empieza con un diseño probado. La duración y las opciones de exportación se conservan.",
+      browseLabel: "Ver las 48",
+      searchPlaceholder: "Buscar plantillas o casos de uso",
+      categoryLabels: {
+        all: "Todo",
+        editing: "Edición",
+        streaming: "Streaming",
+        social: "Social",
+        events: "Eventos",
+        fitness: "Fitness",
+        cinematic: "Cinemático",
+        minimal: "Minimalista",
+      },
+      selectedLabel: "Seleccionada",
+      editedLabel: "Editada",
+      resultTemplate: "{count} plantillas",
+      noResults: "Ninguna plantilla coincide con este filtro.",
+      closeLabel: "Cerrar la biblioteca de plantillas",
+    },
     themePresetPicker: {
       title: "Preajuste de tema",
       description:

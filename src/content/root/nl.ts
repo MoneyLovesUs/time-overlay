@@ -36,6 +36,28 @@ const nlRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Sjabloonbibliotheek",
+      description:
+        "Begin met een beproefde lay-out. Je duur en exportkeuzes blijven behouden.",
+      browseLabel: "Bekijk alle 48",
+      searchPlaceholder: "Zoek sjablonen of toepassingen",
+      categoryLabels: {
+        all: "Alles",
+        editing: "Bewerking",
+        streaming: "Streaming",
+        social: "Sociaal",
+        events: "Evenementen",
+        fitness: "Fitness",
+        cinematic: "Filmisch",
+        minimal: "Minimalistisch",
+      },
+      selectedLabel: "Geselecteerd",
+      editedLabel: "Bewerkt",
+      resultTemplate: "{count} sjablonen",
+      noResults: "Geen sjablonen komen overeen met dit filter.",
+      closeLabel: "Sjabloonbibliotheek sluiten",
+    },
     themePresetPicker: {
       title: "Thema-preset",
       description: "Kies eerst een startlook en pas daarna alleen de bediening aan als dat nodig is.",

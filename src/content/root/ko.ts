@@ -38,6 +38,28 @@ const koRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "템플릿 라이브러리",
+      description:
+        "검증된 레이아웃으로 시작하세요. 재생 시간과 내보내기 설정은 유지됩니다.",
+      browseLabel: "48개 모두 보기",
+      searchPlaceholder: "템플릿 또는 용도 검색",
+      categoryLabels: {
+        all: "전체",
+        editing: "편집",
+        streaming: "스트리밍",
+        social: "소셜",
+        events: "이벤트",
+        fitness: "피트니스",
+        cinematic: "시네마틱",
+        minimal: "미니멀",
+      },
+      selectedLabel: "선택됨",
+      editedLabel: "편집됨",
+      resultTemplate: "템플릿 {count}개",
+      noResults: "이 필터와 일치하는 템플릿이 없습니다.",
+      closeLabel: "템플릿 라이브러리 닫기",
+    },
     themePresetPicker: {
       title: "테마 프리셋",
       description:

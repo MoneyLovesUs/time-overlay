@@ -36,6 +36,27 @@ const zhHantRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "範本庫",
+      description: "從成熟版型開始，切換範本時保留時長與匯出選項。",
+      browseLabel: "瀏覽全部 48 款",
+      searchPlaceholder: "搜尋範本或使用情境",
+      categoryLabels: {
+        all: "全部",
+        editing: "剪輯",
+        streaming: "直播",
+        social: "社群",
+        events: "活動",
+        fitness: "健身",
+        cinematic: "電影感",
+        minimal: "極簡",
+      },
+      selectedLabel: "已選取",
+      editedLabel: "已修改",
+      resultTemplate: "{count} 款範本",
+      noResults: "沒有符合目前篩選條件的範本。",
+      closeLabel: "關閉範本庫",
+    },
     themePresetPicker: {
       title: "主題預設",
       description: "先選一個起始風格，只有在需要時再微調控制項。",

@@ -28,6 +28,7 @@ type ScriptLikeProps = {
   };
   id?: string;
   src?: string;
+  strategy?: string;
 };
 
 function collectScriptLikeProps(node: React.ReactNode): ScriptLikeProps[] {
@@ -50,18 +51,22 @@ function collectScriptLikeProps(node: React.ReactNode): ScriptLikeProps[] {
   return scriptProps;
 }
 
-test("root layout injects an idle-loaded Microsoft Clarity bootstrap script", async () => {
-  const markup = renderToStaticMarkup(
-    await RootLayout({
-      children: React.createElement("main", null, "content"),
-    }),
+test("app document schedules an idle-loaded Microsoft Clarity bootstrap after hydration", () => {
+  const document = AppDocument({
+    children: React.createElement("main", null, "content"),
+    lang: "en",
+  });
+  const clarityScript = collectScriptLikeProps(document).find(
+    ({ id }) => id === "microsoft-clarity",
   );
+  const bootstrap = clarityScript?.dangerouslySetInnerHTML?.__html ?? "";
 
-  assert.match(markup, /microsoft-clarity/i);
-  assert.match(markup, /wbgnxnkr0m/);
-  assert.match(markup, /c\[a\]=c\[a\]\|\|function/);
-  assert.match(markup, /requestIdleCallback/);
-  assert.match(markup, /https:\/\/www\.clarity\.ms\/tag/);
+  assert.ok(clarityScript);
+  assert.equal(clarityScript.strategy, "afterInteractive");
+  assert.match(bootstrap, /wbgnxnkr0m/);
+  assert.match(bootstrap, /c\[a\]=c\[a\]\|\|function/);
+  assert.match(bootstrap, /requestIdleCallback/);
+  assert.match(bootstrap, /https:\/\/www\.clarity\.ms\/tag/);
 });
 
 test("root layout injects the Ahrefs analytics script with the site data key", async () => {

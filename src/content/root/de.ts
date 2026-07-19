@@ -38,6 +38,28 @@ const deRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Vorlagenbibliothek",
+      description:
+        "Starte mit einem bewährten Layout. Dauer und Exportauswahl bleiben erhalten.",
+      browseLabel: "Alle 48 durchsuchen",
+      searchPlaceholder: "Vorlagen oder Einsatzzwecke suchen",
+      categoryLabels: {
+        all: "Alle",
+        editing: "Bearbeitung",
+        streaming: "Streaming",
+        social: "Social Media",
+        events: "Events",
+        fitness: "Fitness",
+        cinematic: "Kino",
+        minimal: "Minimal",
+      },
+      selectedLabel: "Ausgewählt",
+      editedLabel: "Bearbeitet",
+      resultTemplate: "{count} Vorlagen",
+      noResults: "Keine Vorlagen entsprechen diesem Filter.",
+      closeLabel: "Vorlagenbibliothek schließen",
+    },
     themePresetPicker: {
       title: "Theme-Preset",
       description:

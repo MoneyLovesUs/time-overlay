@@ -56,6 +56,21 @@ describe("root locale content", () => {
       expect(content.generatorHero.eyebrow.trim().length).toBeGreaterThan(0);
       expect(content.generatorHero.heading.trim().length).toBeGreaterThan(0);
       expect(content.generatorHero.intro.trim().length).toBeGreaterThan(0);
+      expect(content.generatorUi.templateGallery.title.trim().length).toBeGreaterThan(0);
+      expect(content.generatorUi.templateGallery.browseLabel).toContain("48");
+      expect(content.generatorUi.templateGallery.searchPlaceholder.trim().length).toBeGreaterThan(
+        0,
+      );
+      expect(
+        Object.values(content.generatorUi.templateGallery.categoryLabels),
+      ).toHaveLength(8);
+      for (const label of Object.values(
+        content.generatorUi.templateGallery.categoryLabels,
+      )) {
+        expect(label.trim().length).toBeGreaterThan(0);
+      }
+      expect(content.generatorUi.templateGallery.resultTemplate).toContain("{count}");
+      expect(content.generatorUi.templateGallery.closeLabel.trim().length).toBeGreaterThan(0);
 
       expect(content.seoSection.faqItems.length).toBeGreaterThan(0);
       expect(content.seoSection.faqItems[0]?.question.trim().length).toBeGreaterThan(0);
@@ -63,6 +78,12 @@ describe("root locale content", () => {
 
       if (locale !== "en") {
         expect(content.metadata.title).not.toBe(englishContent?.metadata.title);
+        expect(content.generatorUi.templateGallery.browseLabel).not.toBe(
+          englishContent?.generatorUi.templateGallery.browseLabel,
+        );
+        expect(content.generatorUi.templateGallery.categoryLabels.all).not.toBe(
+          englishContent?.generatorUi.templateGallery.categoryLabels.all,
+        );
         expect(content.seoSection.faqItems[0]?.question).not.toBe(
           englishContent?.seoSection.faqItems[0]?.question,
         );

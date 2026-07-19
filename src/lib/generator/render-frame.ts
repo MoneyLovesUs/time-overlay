@@ -1,5 +1,9 @@
 import { getTimerBoxPosition } from "@/lib/generator/layout";
 import { getStylePresetDecorators } from "@/lib/generator/style-presets/decorators";
+import {
+  drawTemplateBackdrop,
+  drawTemplateOverlay,
+} from "@/lib/generator/template-decorators";
 import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
 import type {
   GeneratorSettings,
@@ -54,6 +58,7 @@ export type RenderFrameState = {
     width: number;
     height: number;
   };
+  textBox: TextBoxSize;
 };
 
 export function resolveCanvasFontFamily(
@@ -179,6 +184,7 @@ export function createRenderFrameState({
     position,
     style,
     frame,
+    textBox: scaledTextBox,
   };
 }
 
@@ -232,6 +238,7 @@ export function renderStyledFrame(
   context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
   frameState: RenderFrameState,
   presetId: RenderThemePresetId,
+  templateId?: GeneratorSettings["templateId"],
 ) {
   const { frame } = frameState;
   const decoratorContext = {
@@ -246,7 +253,9 @@ export function renderStyledFrame(
     context.fillRect(0, 0, frame.width, frame.height);
   }
 
-  if (drawBackdrop) {
+  if (templateId) {
+    drawTemplateBackdrop(context, frameState, templateId);
+  } else if (drawBackdrop) {
     drawBackdrop(context, decoratorContext);
   }
 
@@ -271,7 +280,9 @@ export function renderStyledFrame(
   context.fillText(text, position.x, position.y);
   context.restore();
 
-  if (drawOverlay) {
+  if (templateId) {
+    drawTemplateOverlay(context, frameState, templateId);
+  } else if (drawOverlay) {
     drawOverlay(context, decoratorContext);
   }
 }

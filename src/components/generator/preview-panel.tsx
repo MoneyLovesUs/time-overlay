@@ -36,6 +36,28 @@ export function PreviewPanel({
   const startedAtRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const previewFrameStyle = useMemo(() => {
+    const aspectRatio = `${settings.canvas.width} / ${settings.canvas.height}`;
+
+    if (settings.canvas.height > settings.canvas.width) {
+      return {
+        aspectRatio,
+        height: "clamp(20rem, 52vw, 34rem)",
+      };
+    }
+
+    if (settings.canvas.height === settings.canvas.width) {
+      return {
+        aspectRatio,
+        width: "min(100%, 34rem)",
+      };
+    }
+
+    return {
+      aspectRatio,
+      width: "100%",
+    };
+  }, [settings.canvas.height, settings.canvas.width]);
   const displayText = useMemo(
     () =>
       formatCountdownTime(
@@ -140,7 +162,12 @@ export function PreviewPanel({
       safeAreaInset: 32,
     });
 
-    renderStyledFrame(context, frameState, settings.themePresetId);
+    renderStyledFrame(
+      context,
+      frameState,
+      settings.themePresetId,
+      settings.templateId,
+    );
   }, [displayText, elapsedSeconds, settings]);
 
   const handlePlay = () => {
@@ -170,8 +197,8 @@ export function PreviewPanel({
       </div>
 
       <div className="space-y-4 px-5 py-5">
-        <div className="relative overflow-hidden border border-border/80 bg-[linear-gradient(180deg,rgba(8,11,16,0.96),rgba(9,10,14,0.98))]">
-          <div className="relative aspect-video">
+        <div className="relative flex min-h-72 items-center justify-center overflow-hidden border border-border/80 bg-[linear-gradient(180deg,rgba(8,11,16,0.96),rgba(9,10,14,0.98))] p-3 sm:p-4">
+          <div className="relative max-w-full" style={previewFrameStyle}>
             <canvas
               ref={canvasRef}
               onClick={() => (isPlaying ? handlePause() : handlePlay())}

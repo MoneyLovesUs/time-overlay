@@ -171,8 +171,9 @@ export function AppDocument({
         </div>
 
         <div className="relative flex min-h-full flex-1 flex-col">{children}</div>
-        <script
+        <Script
           id="microsoft-clarity"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: clarityBootstrapScript }}
         />
       </body>

@@ -6,6 +6,11 @@ import type {
   PlacementAnchor,
   ThemePreset,
 } from "@/lib/generator/types";
+import {
+  DEFAULT_GENERATOR_TEMPLATE_ID,
+  getDefaultTemplateForPreset,
+  getGeneratorTemplateById,
+} from "@/lib/generator/templates";
 
 export const GENERATOR_DURATION_LIMIT_SECONDS = 300;
 
@@ -308,6 +313,7 @@ export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettings = {
     variant: "none",
   },
   themePresetId: "cyber",
+  templateId: DEFAULT_GENERATOR_TEMPLATE_ID,
 };
 
 export const DEFAULT_EXPORT_PROGRESS_STATE: ExportProgressState = {
@@ -342,6 +348,7 @@ export function normalizeGeneratorSettings(
 ): GeneratorSettings {
   const canvasPreset = getCanvasPresetById(settings.canvas.resolutionPresetId);
   const themePreset = getThemePresetById(settings.themePresetId);
+  const template = getGeneratorTemplateById(settings.templateId);
   const allowedFormat = GENERATOR_SUPPORTED_FORMATS.includes(settings.export.format)
     ? settings.export.format
     : DEFAULT_GENERATOR_SETTINGS.export.format;
@@ -362,6 +369,7 @@ export function normalizeGeneratorSettings(
   return {
     ...settings,
     themePresetId: themePreset.id,
+    templateId: template.id,
     timer: {
       ...settings.timer,
       durationSeconds: clamp(
@@ -416,11 +424,23 @@ type DeepPartial<T> = T extends object
 export function createGeneratorSettings(
   overrides: DeepPartial<GeneratorSettings> = {},
 ): GeneratorSettings {
+  const hasExplicitTemplate = overrides.templateId !== undefined;
+  const hasExplicitTheme = overrides.themePresetId !== undefined;
+  const template = hasExplicitTemplate
+    ? getGeneratorTemplateById(overrides.templateId)
+    : hasExplicitTheme
+      ? getDefaultTemplateForPreset(overrides.themePresetId ?? "")
+      : getGeneratorTemplateById(DEFAULT_GENERATOR_TEMPLATE_ID);
+  const templateSettings =
+    hasExplicitTheme && !hasExplicitTemplate ? {} : template.settings;
   const themePreset = getThemePresetById(
-    overrides.themePresetId ?? DEFAULT_GENERATOR_SETTINGS.themePresetId,
+    overrides.themePresetId ??
+      template.themePresetId ??
+      DEFAULT_GENERATOR_SETTINGS.themePresetId,
   );
   const canvasPreset = getCanvasPresetById(
     overrides.canvas?.resolutionPresetId ??
+      templateSettings.canvas?.resolutionPresetId ??
       DEFAULT_GENERATOR_SETTINGS.canvas.resolutionPresetId,
   );
 
@@ -429,11 +449,13 @@ export function createGeneratorSettings(
     ...overrides,
     timer: {
       ...DEFAULT_GENERATOR_SETTINGS.timer,
+      ...templateSettings.timer,
       ...overrides.timer,
     },
     canvas: {
       ...DEFAULT_GENERATOR_SETTINGS.canvas,
       ...themePreset.canvas,
+      ...templateSettings.canvas,
       ...overrides.canvas,
       resolutionPresetId: canvasPreset.id,
       width: canvasPreset.width,
@@ -442,11 +464,13 @@ export function createGeneratorSettings(
     textStyle: {
       ...DEFAULT_GENERATOR_SETTINGS.textStyle,
       ...themePreset.textStyle,
+      ...templateSettings.textStyle,
       ...overrides.textStyle,
     },
     placement: {
       ...DEFAULT_GENERATOR_SETTINGS.placement,
       ...themePreset.placement,
+      ...templateSettings.placement,
       ...overrides.placement,
     },
     export: {
@@ -455,8 +479,39 @@ export function createGeneratorSettings(
     },
     audio: {
       ...DEFAULT_GENERATOR_SETTINGS.audio,
+      ...templateSettings.audio,
       ...overrides.audio,
     },
     themePresetId: themePreset.id,
+    templateId: template.id,
+  });
+}
+
+export function applyGeneratorTemplate(
+  current: GeneratorSettings,
+  templateId: GeneratorSettings["templateId"],
+): GeneratorSettings {
+  const template = getGeneratorTemplateById(templateId);
+  const templateSettings = createGeneratorSettings({ templateId: template.id });
+
+  return normalizeGeneratorSettings({
+    ...current,
+    timer: {
+      ...templateSettings.timer,
+      durationSeconds: current.timer.durationSeconds,
+    },
+    canvas: {
+      ...templateSettings.canvas,
+      showSafeArea: current.canvas.showSafeArea,
+    },
+    textStyle: {
+      ...templateSettings.textStyle,
+      customFontFamily: current.textStyle.customFontFamily,
+    },
+    placement: templateSettings.placement,
+    export: current.export,
+    audio: template.settings.audio ? templateSettings.audio : current.audio,
+    themePresetId: templateSettings.themePresetId,
+    templateId: template.id,
   });
 }

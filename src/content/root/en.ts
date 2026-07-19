@@ -38,6 +38,28 @@ const enRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Template library",
+      description:
+        "Start with a proven layout. Your duration and export choices stay put.",
+      browseLabel: "Browse all 48",
+      searchPlaceholder: "Search templates or use cases",
+      categoryLabels: {
+        all: "All",
+        editing: "Editing",
+        streaming: "Streaming",
+        social: "Social",
+        events: "Events",
+        fitness: "Fitness",
+        cinematic: "Cinematic",
+        minimal: "Minimal",
+      },
+      selectedLabel: "Selected",
+      editedLabel: "Edited",
+      resultTemplate: "{count} templates",
+      noResults: "No templates match this filter.",
+      closeLabel: "Close template library",
+    },
     themePresetPicker: {
       title: "Theme preset",
       description: "Pick a starting look, then adjust controls only if needed.",

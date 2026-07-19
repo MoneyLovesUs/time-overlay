@@ -36,6 +36,28 @@ const csRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Knihovna šablon",
+      description:
+        "Začněte ověřeným rozvržením. Délka a volby exportu zůstanou zachovány.",
+      browseLabel: "Procházet všech 48",
+      searchPlaceholder: "Hledat šablony nebo použití",
+      categoryLabels: {
+        all: "Vše",
+        editing: "Úpravy",
+        streaming: "Streamování",
+        social: "Sociální sítě",
+        events: "Události",
+        fitness: "Fitness",
+        cinematic: "Filmové",
+        minimal: "Minimalistické",
+      },
+      selectedLabel: "Vybráno",
+      editedLabel: "Upraveno",
+      resultTemplate: "{count} šablon",
+      noResults: "Tomuto filtru neodpovídají žádné šablony.",
+      closeLabel: "Zavřít knihovnu šablon",
+    },
     themePresetPicker: {
       title: "Předvolba motivu",
       description: "Vyberte výchozí vzhled a ovládací prvky dolaďte jen tehdy, když je to potřeba.",

@@ -20,6 +20,9 @@ export type AnalyticsEventName =
   | "export_failed"
   | "export_abandoned"
   | "export_unsupported"
+  | "template_gallery_opened"
+  | "template_filter_changed"
+  | "template_selected"
   | "preset_selected";
 
 export function trackEvent(

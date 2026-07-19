@@ -38,6 +38,28 @@ const ruRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Библиотека шаблонов",
+      description:
+        "Начните с проверенного макета. Длительность и параметры экспорта сохранятся.",
+      browseLabel: "Смотреть все 48",
+      searchPlaceholder: "Поиск шаблонов или сценариев",
+      categoryLabels: {
+        all: "Все",
+        editing: "Монтаж",
+        streaming: "Стриминг",
+        social: "Соцсети",
+        events: "События",
+        fitness: "Фитнес",
+        cinematic: "Кино",
+        minimal: "Минимализм",
+      },
+      selectedLabel: "Выбран",
+      editedLabel: "Изменён",
+      resultTemplate: "Шаблоны: {count}",
+      noResults: "Нет шаблонов, соответствующих этому фильтру.",
+      closeLabel: "Закрыть библиотеку шаблонов",
+    },
     themePresetPicker: {
       title: "Пресет темы",
       description:

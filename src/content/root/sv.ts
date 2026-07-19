@@ -36,6 +36,28 @@ const svRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Mallbibliotek",
+      description:
+        "Börja med en beprövad layout. Längd och exportval behålls.",
+      browseLabel: "Visa alla 48",
+      searchPlaceholder: "Sök mallar eller användningsområden",
+      categoryLabels: {
+        all: "Alla",
+        editing: "Redigering",
+        streaming: "Streaming",
+        social: "Socialt",
+        events: "Evenemang",
+        fitness: "Träning",
+        cinematic: "Filmisk",
+        minimal: "Minimalistisk",
+      },
+      selectedLabel: "Vald",
+      editedLabel: "Redigerad",
+      resultTemplate: "{count} mallar",
+      noResults: "Inga mallar matchar det här filtret.",
+      closeLabel: "Stäng mallbiblioteket",
+    },
     themePresetPicker: {
       title: "Temaförval",
       description: "Välj först ett utgångsläge och justera sedan kontrollerna bara om det behövs.",

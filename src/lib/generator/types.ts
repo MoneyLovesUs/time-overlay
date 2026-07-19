@@ -38,6 +38,94 @@ export type StylePresetId =
 
 export type RenderThemePresetId = StylePresetId;
 
+export type TemplateId =
+  | "clean-corner"
+  | "broadcast-lower-third"
+  | "center-mono"
+  | "high-contrast-classic"
+  | "quiet-tutorial"
+  | "webinar-slate"
+  | "obs-starting-soon"
+  | "obs-break-timer"
+  | "twitch-neon"
+  | "premiere-safe-text"
+  | "davinci-clean"
+  | "capcut-portrait"
+  | "reels-bold-center"
+  | "square-social"
+  | "simple-workout"
+  | "classroom-timer"
+  | "event-lobby"
+  | "transparent-minimal"
+  | "cinematic-warm-glow"
+  | "film-leader"
+  | "launch-countdown"
+  | "glass-center-pill"
+  | "retro-80s"
+  | "arcade-neon"
+  | "crt-scanline"
+  | "sports-scoreboard"
+  | "hiit-round-timer"
+  | "pomodoro-creator"
+  | "podcast-break"
+  | "livestream-intermission"
+  | "youtube-premiere"
+  | "webinar-dark-pro"
+  | "gaming-hud"
+  | "creator-brandable"
+  | "lower-corner-glow"
+  | "vertical-stream"
+  | "prores-master-look"
+  | "alpha-smoke-reveal"
+  | "kinetic-digits"
+  | "audio-tick-sync"
+  | "split-shadow-pop"
+  | "soft-neumorphic"
+  | "minimal-caption-safe"
+  | "tactical-hud"
+  | "music-visual-timer"
+  | "countdown-ring"
+  | "luxury-event"
+  | "custom-font-showcase";
+
+export type TemplateTier = "free" | "growth" | "signature";
+
+export type TemplateCategory =
+  | "editing"
+  | "streaming"
+  | "social"
+  | "events"
+  | "fitness"
+  | "cinematic"
+  | "minimal";
+
+export type TemplateOrientation =
+  | "landscape"
+  | "portrait"
+  | "square"
+  | "all";
+
+export type TemplateMotif =
+  | "none"
+  | "corner-plate"
+  | "lower-third"
+  | "center-plate"
+  | "slate"
+  | "stream-frame"
+  | "neon-lines"
+  | "editor-safe"
+  | "portrait-frame"
+  | "social-burst"
+  | "scoreboard"
+  | "film"
+  | "glass"
+  | "hud"
+  | "ring"
+  | "scanline"
+  | "neumorphic"
+  | "waveform"
+  | "smoke";
+
 export type ExportStage =
   | "idle"
   | "validating"
@@ -120,6 +208,7 @@ export type GeneratorSettings = {
   export: ExportSettings;
   audio: AudioSettings;
   themePresetId: RenderThemePresetId;
+  templateId: TemplateId;
 };
 
 export type FrameSurface = {
@@ -145,6 +234,34 @@ export type ThemePreset = {
   canvas?: Partial<Pick<CanvasSettings, "backgroundMode" | "backgroundColor">>;
   drawBackdrop?: StylePresetDecorator;
   drawOverlay?: StylePresetDecorator;
+};
+
+export type TemplateSettingsOverrides = {
+  timer?: Partial<TimerContentSettings>;
+  canvas?: Partial<CanvasSettings>;
+  textStyle?: Partial<TextStyleSettings>;
+  placement?: Partial<PlacementSettings>;
+  audio?: Partial<AudioSettings>;
+};
+
+export type GeneratorTemplate = {
+  id: TemplateId;
+  name: string;
+  tier: TemplateTier;
+  category: TemplateCategory;
+  useCase: string;
+  orientation: TemplateOrientation;
+  recommendedFormat: GeneratorFormat;
+  themePresetId: RenderThemePresetId;
+  sampleTime: string;
+  visual: {
+    motif: TemplateMotif;
+    accent: string;
+    secondaryAccent: string;
+    surfaceColor: string;
+    kicker?: string;
+  };
+  settings: TemplateSettingsOverrides;
 };
 
 export type ExportProgressState = {

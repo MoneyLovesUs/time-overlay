@@ -38,6 +38,28 @@ const ptRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "Biblioteca de modelos",
+      description:
+        "Comece com um layout testado. A duração e as opções de exportação são preservadas.",
+      browseLabel: "Ver todos os 48",
+      searchPlaceholder: "Buscar modelos ou usos",
+      categoryLabels: {
+        all: "Todos",
+        editing: "Edição",
+        streaming: "Streaming",
+        social: "Social",
+        events: "Eventos",
+        fitness: "Fitness",
+        cinematic: "Cinemático",
+        minimal: "Minimalista",
+      },
+      selectedLabel: "Selecionado",
+      editedLabel: "Editado",
+      resultTemplate: "{count} modelos",
+      noResults: "Nenhum modelo corresponde a este filtro.",
+      closeLabel: "Fechar a biblioteca de modelos",
+    },
     themePresetPicker: {
       title: "Preset de tema",
       description:

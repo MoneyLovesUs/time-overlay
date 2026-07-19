@@ -36,6 +36,28 @@ const thRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "คลังเทมเพลต",
+      description:
+        "เริ่มจากเลย์เอาต์ที่ผ่านการใช้งานจริง ระยะเวลาและตัวเลือกการส่งออกจะยังคงเดิม",
+      browseLabel: "ดูทั้งหมด 48 แบบ",
+      searchPlaceholder: "ค้นหาเทมเพลตหรือรูปแบบการใช้งาน",
+      categoryLabels: {
+        all: "ทั้งหมด",
+        editing: "ตัดต่อ",
+        streaming: "สตรีมมิง",
+        social: "โซเชียล",
+        events: "อีเวนต์",
+        fitness: "ฟิตเนส",
+        cinematic: "ภาพยนตร์",
+        minimal: "มินิมอล",
+      },
+      selectedLabel: "เลือกแล้ว",
+      editedLabel: "แก้ไขแล้ว",
+      resultTemplate: "{count} เทมเพลต",
+      noResults: "ไม่มีเทมเพลตที่ตรงกับตัวกรองนี้",
+      closeLabel: "ปิดคลังเทมเพลต",
+    },
     themePresetPicker: {
       title: "ธีมพรีเซ็ต",
       description: "เลือกสไตล์เริ่มต้น แล้วค่อยปรับค่าควบคุมเมื่อจำเป็น",

@@ -39,6 +39,27 @@ const zhHansRootPageContent = {
     },
   },
   generatorUi: {
+    templateGallery: {
+      title: "模板库",
+      description: "从成熟版式开始，切换模板时保留时长和导出选项。",
+      browseLabel: "浏览全部 48 款",
+      searchPlaceholder: "搜索模板或使用场景",
+      categoryLabels: {
+        all: "全部",
+        editing: "剪辑",
+        streaming: "直播",
+        social: "社交",
+        events: "活动",
+        fitness: "健身",
+        cinematic: "电影感",
+        minimal: "极简",
+      },
+      selectedLabel: "已选择",
+      editedLabel: "已修改",
+      resultTemplate: "{count} 款模板",
+      noResults: "没有符合当前筛选条件的模板。",
+      closeLabel: "关闭模板库",
+    },
     themePresetPicker: {
       title: "主题预设",
       description: "先选一个起始风格，需要时再微调控制项。",

@@ -13,15 +13,20 @@ import {
 import { ControlPanel } from "@/components/generator/control-panel";
 import { ExportPanel } from "@/components/generator/export-panel";
 import { PreviewPanel } from "@/components/generator/preview-panel";
-import { ThemePresetPicker } from "@/components/generator/theme-preset-picker";
+import { TemplateGallery } from "@/components/generator/template-gallery";
 import type { RootPageContent } from "@/content/root/types";
 import {
   DEFAULT_EXPORT_PROGRESS_STATE,
   DEFAULT_GENERATOR_SETTINGS,
   GENERATOR_CANVAS_PRESETS,
-  GENERATOR_THEME_PRESETS,
+  applyGeneratorTemplate,
   normalizeGeneratorSettings,
 } from "@/lib/generator/defaults";
+import {
+  GENERATOR_TEMPLATES,
+  getDefaultTemplateForPreset,
+  getGeneratorTemplateById,
+} from "@/lib/generator/templates";
 import {
   createLazyExportRuntime,
   type LazyExportRuntime,
@@ -50,8 +55,8 @@ import type {
   GeneratorFormat,
   GeneratorSettings,
   PlacementAnchor,
-  RenderThemePresetId,
   ResolutionPresetId,
+  TemplateId,
   TimerDisplayFormat,
 } from "@/lib/generator/types";
 import type { ExportWorkerMessage } from "@/lib/generator/export/job";
@@ -73,6 +78,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [uploadedFont, setUploadedFont] = useState<UploadedFont | null>(null);
   const [etaMs, setEtaMs] = useState<number | null>(null);
   const [previewBitmap, setPreviewBitmap] = useState<ImageBitmap | null>(null);
+  const [isTemplateCustomized, setIsTemplateCustomized] = useState(false);
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
@@ -126,6 +132,24 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       hasWorkerSupport: support.hasWorkerSupport ?? "unknown",
     };
   }, [support]);
+  const activeTemplate = useMemo(
+    () => getGeneratorTemplateById(settings.templateId),
+    [settings.templateId],
+  );
+  const templateGalleryCopy = ui.templateGallery;
+  const templateAnalytics = useMemo<
+    Record<string, string | number | boolean>
+  >(
+    () => ({
+      templateId: activeTemplate.id,
+      templateCategory: activeTemplate.category,
+      templateTier: activeTemplate.tier,
+      templateOrientation: activeTemplate.orientation,
+      templateRecommendedFormat: activeTemplate.recommendedFormat,
+      templateCustomized: isTemplateCustomized,
+    }),
+    [activeTemplate, isTemplateCustomized],
+  );
   const isMobileDevice = analyticsEnvironment.deviceType !== "desktop";
 
   const localizeProgressMessage = (
@@ -145,7 +169,13 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     return progress;
   };
 
-  const updateSettings = (updater: (current: GeneratorSettings) => GeneratorSettings) => {
+  const updateSettings = (
+    updater: (current: GeneratorSettings) => GeneratorSettings,
+    markTemplateCustomized = false,
+  ) => {
+    if (markTemplateCustomized) {
+      setIsTemplateCustomized(true);
+    }
     startTransition(() => {
       setSettings((current) => normalizeGeneratorSettings(updater(current)));
     });
@@ -165,19 +195,26 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return;
     }
     const params = new URLSearchParams(window.location.search);
+    const templateParam = params.get("template");
+    if (templateParam) {
+      const template = GENERATOR_TEMPLATES.find(
+        (item) => item.id === templateParam,
+      );
+      if (template) {
+        setSettings((current) => applyGeneratorTemplate(current, template.id));
+        setIsTemplateCustomized(false);
+        return;
+      }
+    }
+
     const presetParam = params.get("preset");
     if (!presetParam) {
       return;
     }
-    const preset = GENERATOR_THEME_PRESETS.find((item) => item.id === presetParam);
-    if (preset) {
-      updateSettings((current) => ({
-        ...current,
-        themePresetId: preset.id,
-        textStyle: { ...current.textStyle, ...preset.textStyle },
-        placement: { ...current.placement, ...preset.placement },
-        canvas: { ...current.canvas, ...preset.canvas },
-      }));
+    const template = getDefaultTemplateForPreset(presetParam);
+    if (template.themePresetId === presetParam) {
+      setSettings((current) => applyGeneratorTemplate(current, template.id));
+      setIsTemplateCustomized(false);
     }
   }, []);
 
@@ -197,53 +234,68 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleDisplayFormatChange = (displayFormat: TimerDisplayFormat) => {
-    updateSettings((current) => ({
-      ...current,
-      timer: {
-        ...current.timer,
-        displayFormat,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        timer: {
+          ...current.timer,
+          displayFormat,
+        },
+      }),
+      true,
+    );
   };
 
   const handleResolutionPresetChange = (resolutionPresetId: ResolutionPresetId) => {
-    updateSettings((current) => ({
-      ...current,
-      canvas: {
-        ...current.canvas,
-        resolutionPresetId,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        canvas: {
+          ...current.canvas,
+          resolutionPresetId,
+        },
+      }),
+      true,
+    );
   };
 
   const handleBackgroundModeChange = (backgroundMode: BackgroundMode) => {
-    updateSettings((current) => ({
-      ...current,
-      canvas: {
-        ...current.canvas,
-        backgroundMode,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        canvas: {
+          ...current.canvas,
+          backgroundMode,
+        },
+      }),
+      true,
+    );
   };
 
   const handleFontFamilyChange = (fontFamily: FontFamilyPreset) => {
-    updateSettings((current) => ({
-      ...current,
-      textStyle: {
-        ...current.textStyle,
-        fontFamily,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        textStyle: {
+          ...current.textStyle,
+          fontFamily,
+        },
+      }),
+      true,
+    );
   };
 
   const handleAnchorChange = (anchor: PlacementAnchor) => {
-    updateSettings((current) => ({
-      ...current,
-      placement: {
-        ...current.placement,
-        anchor,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        placement: {
+          ...current.placement,
+          anchor,
+        },
+      }),
+      true,
+    );
   };
 
   const handleFormatChange = (format: GeneratorFormat) => {
@@ -267,13 +319,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleAudioVariantChange = (variant: AudioCueVariant) => {
-    updateSettings((current) => ({
-      ...current,
-      audio: {
-        ...current.audio,
-        variant,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        audio: {
+          ...current.audio,
+          variant,
+        },
+      }),
+      true,
+    );
   };
 
   const handleQualityChange = (quality: ExportQualityPreset) => {
@@ -286,41 +341,36 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }));
   };
 
-  const handleThemePresetChange = (presetId: RenderThemePresetId) => {
-    const preset = GENERATOR_THEME_PRESETS.find((item) => item.id === presetId);
+  const handleTemplateChange = (templateId: TemplateId) => {
+    const template = getGeneratorTemplateById(templateId);
 
-    if (!preset) {
-      return;
-    }
+    trackEvent("template_selected", {
+      templateId: template.id,
+      templateCategory: template.category,
+      templateTier: template.tier,
+      templateOrientation: template.orientation,
+      recommendedFormat: template.recommendedFormat,
+      previousTemplateId: settings.templateId,
+      previousTemplateCustomized: isTemplateCustomized,
+    });
 
-    trackEvent("preset_selected", { presetId });
-
-    updateSettings((current) => ({
-      ...current,
-      themePresetId: preset.id,
-      textStyle: {
-        ...current.textStyle,
-        ...preset.textStyle,
-      },
-      placement: {
-        ...current.placement,
-        ...preset.placement,
-      },
-      canvas: {
-        ...current.canvas,
-        ...preset.canvas,
-      },
-    }));
+    startTransition(() => {
+      setSettings((current) => applyGeneratorTemplate(current, template.id));
+      setIsTemplateCustomized(false);
+    });
   };
 
   const handleTextColorChange = (textColor: string) => {
-    updateSettings((current) => ({
-      ...current,
-      textStyle: {
-        ...current.textStyle,
-        textColor,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        textStyle: {
+          ...current.textStyle,
+          textColor,
+        },
+      }),
+      true,
+    );
   };
 
   const handleFontUpload = async (file: File) => {
@@ -328,13 +378,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       const font = await readFontFile(file);
       await loadFontIntoDocument(font);
       setUploadedFont(font);
-      updateSettings((current) => ({
-        ...current,
-        textStyle: {
-          ...current.textStyle,
-          customFontFamily: font.family,
-        },
-      }));
+      updateSettings(
+        (current) => ({
+          ...current,
+          textStyle: {
+            ...current.textStyle,
+            customFontFamily: font.family,
+          },
+        }),
+        true,
+      );
     } catch (error) {
       window.alert(
         error instanceof Error
@@ -346,13 +399,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   const handleClearUploadedFont = () => {
     setUploadedFont(null);
-    updateSettings((current) => ({
-      ...current,
-      textStyle: {
-        ...current.textStyle,
-        customFontFamily: undefined,
-      },
-    }));
+    updateSettings(
+      (current) => ({
+        ...current,
+        textStyle: {
+          ...current.textStyle,
+          customFontFamily: undefined,
+        },
+      }),
+      true,
+    );
   };
 
   const handleToggleSafeArea = () => {
@@ -405,6 +461,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           format: settings.export.format,
           fileName: event.data.payload.fileName,
           durationMs: elapsedExportMs(),
+          ...templateAnalytics,
           ...analyticsEnvironment,
         });
         return;
@@ -442,12 +499,14 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         errorCode: code ?? "unknown",
         errorMessage: event.data.payload.message,
         durationMs: elapsedExportMs(),
+        ...templateAnalytics,
         ...analyticsEnvironment,
       });
     },
     [
       settings.export.format,
       ui.exportPanel,
+      templateAnalytics,
       analyticsEnvironment,
       support,
       setPreview,
@@ -488,6 +547,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         completedFrames: progress.completedFrames,
         totalFrames: progress.totalFrames,
         durationMs: elapsedExportMs(),
+        ...templateAnalytics,
         ...analyticsEnvironment,
       });
     };
@@ -497,7 +557,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       window.removeEventListener("pagehide", reportAbandon);
       window.removeEventListener("beforeunload", reportAbandon);
     };
-  }, [isExporting, settings.export.format, analyticsEnvironment]);
+  }, [
+    isExporting,
+    settings.export.format,
+    templateAnalytics,
+    analyticsEnvironment,
+  ]);
 
   // When capability detection puts the selected format into a hard-error state,
   // the Export button is disabled and the user produces no funnel events at all.
@@ -515,9 +580,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     trackEvent("export_unsupported", {
       format: settings.export.format,
       reason: exportAdvisory.code,
+      ...templateAnalytics,
       ...analyticsEnvironment,
     });
-  }, [exportAdvisory.severity, exportAdvisory.code, settings.export.format, analyticsEnvironment]);
+  }, [
+    exportAdvisory.severity,
+    exportAdvisory.code,
+    settings.export.format,
+    templateAnalytics,
+    analyticsEnvironment,
+  ]);
 
   const handleExport = async () => {
     // The Export button is disabled in this state, but guard anyway so a stray
@@ -538,6 +610,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       fps: settings.export.fps,
       durationSeconds: settings.timer.durationSeconds,
       resolution: settings.canvas.resolutionPresetId,
+      ...templateAnalytics,
       ...analyticsEnvironment,
     });
 
@@ -582,6 +655,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           format: settings.export.format,
           fileName: result.fileName,
           durationMs: elapsedExportMs(),
+          ...templateAnalytics,
           ...analyticsEnvironment,
         });
       } catch (error) {
@@ -604,6 +678,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           errorCode: "webmFailedUnexpectedly",
           errorMessage: error instanceof Error ? error.message : undefined,
           durationMs: elapsedExportMs(),
+          ...templateAnalytics,
           ...analyticsEnvironment,
         });
       }
@@ -659,6 +734,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         errorCode: "exportWorkerUnavailable",
         errorMessage: error instanceof Error ? error.message : undefined,
         durationMs: elapsedExportMs(),
+        ...templateAnalytics,
         ...analyticsEnvironment,
       });
     }
@@ -691,15 +767,32 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             </div>
           </div>
 
-          <ThemePresetPicker
-            presets={GENERATOR_THEME_PRESETS}
-            activePresetId={settings.themePresetId}
-            onSelectPreset={handleThemePresetChange}
-            ui={ui.themePresetPicker}
+          <TemplateGallery
+            templates={GENERATOR_TEMPLATES}
+            activeTemplateId={settings.templateId}
+            isCustomized={isTemplateCustomized}
+            copy={templateGalleryCopy}
+            onSelectTemplate={handleTemplateChange}
+            onGalleryOpened={() =>
+              trackEvent("template_gallery_opened", {
+                activeTemplateId: settings.templateId,
+                templateCustomized: isTemplateCustomized,
+              })
+            }
+            onFilterChanged={(filter) =>
+              trackEvent("template_filter_changed", { filter })
+            }
           />
 
           <div className="grid gap-5 xl:grid-cols-[20rem_minmax(0,1fr)_18rem]">
-            <div className="order-2 xl:order-none [&>*]:h-full">
+            <div className="xl:col-start-2 xl:row-start-1 [&>*]:h-full">
+              <PreviewPanel
+                settings={deferredSettings}
+                ui={ui.previewPanel}
+                onToggleSafeArea={handleToggleSafeArea}
+              />
+            </div>
+            <div className="xl:col-start-1 xl:row-start-1 [&>*]:h-full">
               <ControlPanel
                 settings={settings}
                 canvasPresets={GENERATOR_CANVAS_PRESETS}
@@ -717,14 +810,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 onAudioVariantChange={handleAudioVariantChange}
               />
             </div>
-            <div className="order-1 xl:order-none [&>*]:h-full">
-              <PreviewPanel
-                settings={deferredSettings}
-                ui={ui.previewPanel}
-                onToggleSafeArea={handleToggleSafeArea}
-              />
-            </div>
-            <div className="order-3 xl:order-none [&>*]:h-full">
+            <div className="xl:col-start-3 xl:row-start-1 [&>*]:h-full">
               <ExportPanel
                 advisory={exportAdvisory}
                 exportProgress={exportProgress}

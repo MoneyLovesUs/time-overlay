@@ -1,4 +1,4 @@
-import { Download, FileStack, Film, MonitorSmartphone, Sparkles } from "lucide-react";
+import { Download, FileStack, Film, MonitorSmartphone, Sparkles, X } from "lucide-react";
 
 import { ExportProgressView } from "@/components/generator/export-progress-view";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ type ExportPanelProps = {
   exportProgress: ExportProgressState;
   isExporting: boolean;
   onExport: () => void;
+  onCancel?: () => void;
   onFormatChange: (format: GeneratorFormat) => void;
   onFpsChange: (fps: number) => void;
   onQualityChange: (quality: ExportQualityPreset) => void;
@@ -28,7 +29,16 @@ type ExportPanelProps = {
 };
 
 const DEFAULT_DESKTOP_NOTE =
-  "Heads up: exporting works best on a desktop browser. On mobile, stick to PNG sequence or open this page on your computer.";
+  "On phones and tablets, use 720p for up to 60 seconds or keep 1080p near 30 seconds, and keep this page visible while exporting. Use desktop for 4K or longer jobs.";
+
+const DEFAULT_MOBILE_EXPORT_LIMIT_ERROR =
+  "This job is too large for a reliable phone or tablet export. Use 720p for up to 60 seconds, keep 1080p near 30 seconds, and move 4K or longer work to desktop.";
+
+const DEFAULT_WEBM_REALTIME_WARNING =
+  "WebM records in real time. This export will take at least as long as the timer, and you must keep this tab in the foreground until the download starts.";
+
+const DEFAULT_WEBM_AUDIO_UNAVAILABLE_ERROR =
+  "This browser cannot record transparent WebM with audio. Turn Audio Cues off and retry.";
 
 const fieldClassName =
   "mt-2 h-10 w-full rounded-none border border-border/80 bg-background/65 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-tertiary";
@@ -90,6 +100,7 @@ export function ExportPanel({
   exportProgress,
   isExporting,
   onExport,
+  onCancel,
   onFormatChange,
   onFpsChange,
   onQualityChange,
@@ -110,10 +121,19 @@ export function ExportPanel({
       ? ui.advisoryMessages.workerSupportError
       : advisory.code === "webmUnavailableError"
         ? ui.advisoryMessages.webmUnavailableError
+        : advisory.code === "webmAudioUnavailableError"
+          ? (ui.advisoryMessages.webmAudioUnavailableError ??
+            DEFAULT_WEBM_AUDIO_UNAVAILABLE_ERROR)
         : advisory.code === "vp9AlphaUnavailableError"
           ? ui.advisoryMessages.vp9AlphaUnavailableError
           : advisory.code === "hevcAlphaUnavailableError"
             ? ui.advisoryMessages.hevcAlphaUnavailableError
+            : advisory.code === "mobileExportLimitError"
+              ? (ui.advisoryMessages.mobileExportLimitError ??
+                DEFAULT_MOBILE_EXPORT_LIMIT_ERROR)
+              : advisory.code === "webmRealtimeWarning"
+                ? (ui.advisoryMessages.webmRealtimeWarning ??
+                  DEFAULT_WEBM_REALTIME_WARNING)
             : advisory.code === "heavyExportWarning"
               ? ui.advisoryMessages.heavyExportWarning
               : advisory.code === "pngSequenceInfo"
@@ -227,14 +247,28 @@ export function ExportPanel({
           </div>
         ) : null}
 
-        <Button
-          className="h-11 w-full justify-between rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
-          disabled={isExporting || advisory.severity === "error"}
-          onClick={onExport}
-        >
-          <span>{isExporting ? ui.exportButtonBusy : ui.exportButtonIdle}</span>
-          <Download className="size-4" />
-        </Button>
+        {isExporting ? (
+          <Button
+            className="h-11 w-full justify-between rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
+            disabled={!onCancel}
+            onClick={onCancel}
+            type="button"
+            variant="outline"
+          >
+            <span>{ui.cancelButton ?? "Cancel export"}</span>
+            <X className="size-4" />
+          </Button>
+        ) : (
+          <Button
+            className="h-11 w-full justify-between rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
+            disabled={advisory.severity === "error"}
+            onClick={onExport}
+            type="button"
+          >
+            <span>{ui.exportButtonIdle}</span>
+            <Download className="size-4" />
+          </Button>
+        )}
 
         <ExportProgressView
           exportProgress={exportProgress}

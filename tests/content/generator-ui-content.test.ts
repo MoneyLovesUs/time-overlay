@@ -54,4 +54,58 @@ describe("localized generator ui", () => {
       "PNG Sequence es la entrega local-first más fiable para editores, especialmente cuando la transparencia importa.",
     );
   });
+
+  it("falls back to clear mobile limits and a cancel action for locales without new copy", () => {
+    const settings = createGeneratorSettings({
+      timer: { durationSeconds: 61 },
+    });
+    const advisory = getExportAdvisory(
+      settings,
+      getInitialLocalExportSupport(),
+      "mobile",
+    );
+    const limitedMarkup = renderToStaticMarkup(
+      React.createElement(ExportPanel, {
+        settings,
+        advisory,
+        exportProgress: DEFAULT_EXPORT_PROGRESS_STATE,
+        isExporting: false,
+        isMobile: true,
+        onExport: () => {},
+        onFormatChange: () => {},
+        onFpsChange: () => {},
+        onQualityChange: () => {},
+        support: getInitialLocalExportSupport(),
+        ui: esRootPageContent.generatorUi.exportPanel,
+      }),
+    );
+
+    expect(limitedMarkup).toContain(
+      "This job is too large for a reliable phone or tablet export.",
+    );
+    expect(limitedMarkup).toContain(
+      "On phones and tablets, use 720p for up to 60 seconds",
+    );
+
+    const exportingMarkup = renderToStaticMarkup(
+      React.createElement(ExportPanel, {
+        settings: createGeneratorSettings(),
+        advisory: getExportAdvisory(
+          createGeneratorSettings(),
+          getInitialLocalExportSupport(),
+        ),
+        exportProgress: DEFAULT_EXPORT_PROGRESS_STATE,
+        isExporting: true,
+        onCancel: () => {},
+        onExport: () => {},
+        onFormatChange: () => {},
+        onFpsChange: () => {},
+        onQualityChange: () => {},
+        support: getInitialLocalExportSupport(),
+        ui: esRootPageContent.generatorUi.exportPanel,
+      }),
+    );
+
+    expect(exportingMarkup).toContain("Cancel export");
+  });
 });

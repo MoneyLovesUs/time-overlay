@@ -146,14 +146,18 @@ export type RootPageContent = {
       launchNoteFallback: string;
       exportButtonIdle: string;
       exportButtonBusy: string;
+      cancelButton?: string;
       exportStatusTitle: string;
       exportStatusIdle: string;
       qualityOptions: Record<ExportQualityPreset, string>;
       advisoryMessages: {
         workerSupportError: string;
         webmUnavailableError: string;
+        webmAudioUnavailableError?: string;
         vp9AlphaUnavailableError: string;
         hevcAlphaUnavailableError: string;
+        mobileExportLimitError?: string;
+        webmRealtimeWarning?: string;
         heavyExportWarning: string;
         pngSequenceInfo: string;
         vp9AlphaInfo: string;

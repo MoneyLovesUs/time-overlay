@@ -164,9 +164,10 @@ const enRootPageContent = {
       qualityLabel: "Quality",
       launchNoteTitle: "Launch note",
       launchNoteFallback:
-        "Export remains local-first in the MVP. If a format is unsupported in the current browser, the UI will steer users toward PNG sequence.",
+        "Export remains local-first. Device-aware limits keep large jobs off memory-constrained browsers and point 4K or long exports to desktop.",
       exportButtonIdle: "Export asset",
       exportButtonBusy: "Exporting...",
+      cancelButton: "Cancel export",
       exportStatusTitle: "Export status",
       exportStatusIdle: "Idle. Choose a format and start a local export.",
       qualityOptions: {
@@ -175,15 +176,21 @@ const enRootPageContent = {
       },
       advisoryMessages: {
         workerSupportError:
-          "This browser cannot spin up a background worker, so local video export is disabled. Use PNG sequence on a modern desktop browser instead.",
+          "This browser cannot start the background worker required for PNG and offline video exports. Retry in a modern browser; real-time WebM may still be available.",
         webmUnavailableError:
-          "WebM export is not available in this browser (Safari before 17 has limited support). PNG sequence is the recommended path here.",
+          "WebM export is not available in this browser. Safari added WebM recording in 18.4, but this exporter also needs canvas capture, which may still be unavailable on iPhone and iPad.",
+        webmAudioUnavailableError:
+          "This browser cannot record transparent WebM with an Opus audio track. Turn Audio Cues off and retry, or use a supported desktop browser.",
         vp9AlphaUnavailableError:
           "WebM VP9 + alpha is not available in this browser. Try Chrome, Edge, or Firefox 130+ for transparent video export.",
         hevcAlphaUnavailableError:
           "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
+        mobileExportLimitError:
+          "This job is too large for a reliable phone or tablet export. Use 720p for up to 60 seconds, keep 1080p near 30 seconds, and move 4K or longer work to desktop.",
+        webmRealtimeWarning:
+          "WebM records in real time. This export will take at least as long as the timer, and you must keep this tab in the foreground until the download starts.",
         heavyExportWarning:
-          "This export is likely to be heavy on memory and CPU. Consider 720p, 30 seconds, or PNG sequence if your browser starts to struggle.",
+          "This desktop export is likely to be heavy on memory and CPU. Consider 720p or a shorter duration if your browser starts to struggle.",
         pngSequenceInfo:
           "PNG sequence is the most reliable local-first handoff for editors, especially when transparency matters.",
         vp9AlphaInfo:
@@ -215,7 +222,7 @@ const enRootPageContent = {
           "Transparent exports drop straight onto your footage — no green screen needed.",
         ],
         desktopNote:
-          "Heads up: exporting works best on a desktop browser. On mobile, stick to PNG sequence or open this page on your computer.",
+          "On phones and tablets, use 720p for up to 60 seconds or keep 1080p near 30 seconds, and keep this page visible while exporting. Use desktop for 4K or longer jobs.",
         fallbackSuggestionTemplate: "Tip: try {format} instead.",
         stageLabels: {
           validating: "Preparing export",

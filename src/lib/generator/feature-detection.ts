@@ -1,9 +1,15 @@
 import type { GeneratorSettings } from "@/lib/generator/types";
+import type { ClientDeviceType } from "@/lib/analytics/environment";
+import {
+  ALPHA_WEBM_VIDEO_MIME_TYPES,
+  getPreferredAlphaWebmMimeType as selectAlphaWebmMimeType,
+} from "@/lib/generator/export/webm-mime";
 
 export type LocalExportSupport = {
   hasWorkerSupport: boolean | null;
   supportsPngSequence: boolean;
   supportsWebm: boolean | null;
+  supportsWebmAudio: boolean | null;
   supportsVp9Alpha: boolean | null;
   supportsHevcAlpha: boolean | null;
 };
@@ -13,8 +19,11 @@ export type ExportAdvisory = {
   code:
     | "workerSupportError"
     | "webmUnavailableError"
+    | "webmAudioUnavailableError"
     | "vp9AlphaUnavailableError"
     | "hevcAlphaUnavailableError"
+    | "mobileExportLimitError"
+    | "webmRealtimeWarning"
     | "heavyExportWarning"
     | "pngSequenceInfo"
     | "vp9AlphaInfo"
@@ -33,10 +42,7 @@ export const WEBM_MIME_TYPES = [
  * VP8 is preferred when we need alpha because Chromium's MediaRecorder pipeline
  * preserves the canvas alpha channel for VP8 but currently strips it for VP9.
  */
-export const ALPHA_WEBM_MIME_TYPES = [
-  "video/webm;codecs=vp8",
-  "video/webm",
-] as const;
+export const ALPHA_WEBM_MIME_TYPES = ALPHA_WEBM_VIDEO_MIME_TYPES;
 
 const VP9_ALPHA_CODEC = "vp09.00.10.08";
 const HEVC_ALPHA_CODEC = "hvc1.2.4.L120.B0";
@@ -46,19 +52,14 @@ export function getInitialLocalExportSupport(): LocalExportSupport {
     hasWorkerSupport: null,
     supportsPngSequence: true,
     supportsWebm: null,
+    supportsWebmAudio: null,
     supportsVp9Alpha: null,
     supportsHevcAlpha: null,
   };
 }
 
 function detectMediaRecorderWebm() {
-  if (typeof MediaRecorder === "undefined") {
-    return false;
-  }
-
-  return WEBM_MIME_TYPES.some((mimeType) =>
-    MediaRecorder.isTypeSupported(mimeType),
-  );
+  return selectAlphaWebmMimeType(false) !== null;
 }
 
 /**
@@ -103,7 +104,7 @@ async function detectAlphaCodec(codec: string) {
 export function getLocalExportSupport(): LocalExportSupport {
   const hasWorkerSupport = typeof Worker !== "undefined";
   const supportsPngSequence =
-    typeof Blob !== "undefined" && typeof URL !== "undefined";
+    hasWorkerSupport && typeof Blob !== "undefined" && typeof URL !== "undefined";
   // Both a usable WebM mime type AND captureStream are required; either missing
   // means the WebM path cannot complete in this browser.
   const supportsWebm = detectMediaRecorderWebm() && detectCanvasCaptureStream();
@@ -112,6 +113,11 @@ export function getLocalExportSupport(): LocalExportSupport {
     hasWorkerSupport,
     supportsPngSequence,
     supportsWebm,
+    supportsWebmAudio:
+      supportsWebm &&
+      typeof AudioContext !== "undefined" &&
+      typeof OfflineAudioContext !== "undefined" &&
+      selectAlphaWebmMimeType(true) !== null,
     supportsVp9Alpha: null,
     supportsHevcAlpha: null,
   };
@@ -140,20 +146,24 @@ export function getPreferredWebmMimeType() {
 }
 
 export function getPreferredAlphaWebmMimeType() {
-  if (typeof MediaRecorder === "undefined") {
-    return null;
-  }
-
-  return ALPHA_WEBM_MIME_TYPES.find((mimeType) =>
-    MediaRecorder.isTypeSupported(mimeType),
-  ) ?? null;
+  return selectAlphaWebmMimeType(false);
 }
 
 export function getExportAdvisory(
   settings: GeneratorSettings,
   support: LocalExportSupport,
+  deviceType: ClientDeviceType = "desktop",
 ): ExportAdvisory {
   const disabledFormats: GeneratorSettings["export"]["format"][] = [];
+
+  if (support.hasWorkerSupport === false) {
+    disabledFormats.push(
+      "png-sequence",
+      "webm-vp9-alpha",
+      "mov-hevc-alpha",
+      "gif",
+    );
+  }
 
   if (support.supportsWebm === false) {
     disabledFormats.push("webm");
@@ -165,9 +175,12 @@ export function getExportAdvisory(
     disabledFormats.push("mov-hevc-alpha");
   }
 
-  if (support.hasWorkerSupport === false) {
+  if (
+    support.hasWorkerSupport === false &&
+    settings.export.format !== "webm"
+  ) {
     return {
-      disabledFormats: ["webm", "webm-vp9-alpha", "mov-hevc-alpha", "gif"],
+      disabledFormats,
       code: "workerSupportError",
       severity: "error",
     };
@@ -177,6 +190,18 @@ export function getExportAdvisory(
     return {
       disabledFormats,
       code: "webmUnavailableError",
+      severity: "error",
+    };
+  }
+
+  if (
+    settings.export.format === "webm" &&
+    settings.audio.variant !== "none" &&
+    support.supportsWebmAudio === false
+  ) {
+    return {
+      disabledFormats,
+      code: "webmAudioUnavailableError",
       severity: "error",
     };
   }
@@ -203,10 +228,40 @@ export function getExportAdvisory(
     };
   }
 
-  const megapixels = (settings.canvas.width * settings.canvas.height) / 1_000_000;
+  const canvasPixels = settings.canvas.width * settings.canvas.height;
   const projectedFrames = settings.timer.durationSeconds * settings.export.fps;
+  const pixelFrames = canvasPixels * projectedFrames;
+  const isMobileDevice = deviceType === "mobile" || deviceType === "tablet";
 
-  if (megapixels >= 4 || (megapixels >= 2 && projectedFrames >= 1500)) {
+  if (
+    isMobileDevice &&
+    (settings.timer.durationSeconds > 60 ||
+      canvasPixels > 1920 * 1080 ||
+      pixelFrames > 1_900_000_000)
+  ) {
+    return {
+      disabledFormats,
+      code: "mobileExportLimitError",
+      severity: "error",
+    };
+  }
+
+  if (
+    deviceType === "desktop" &&
+    settings.export.format === "webm" &&
+    settings.timer.durationSeconds > 60
+  ) {
+    return {
+      disabledFormats,
+      code: "webmRealtimeWarning",
+      severity: "warning",
+    };
+  }
+
+  if (
+    deviceType === "desktop" &&
+    (pixelFrames >= 4_000_000_000 || canvasPixels >= 4_000_000)
+  ) {
     return {
       disabledFormats,
       code: "heavyExportWarning",

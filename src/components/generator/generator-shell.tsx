@@ -31,6 +31,7 @@ import {
   createLazyExportRuntime,
   type LazyExportRuntime,
 } from "@/lib/generator/export/runtime";
+import { validateExportArtifact } from "@/lib/generator/export/artifact";
 import { downloadBlob } from "@/lib/generator/export/png-sequence";
 import { estimateRemainingMs } from "@/lib/generator/export/progress";
 import {
@@ -44,7 +45,10 @@ import {
   readFontFile,
   type UploadedFont,
 } from "@/lib/generator/font-loader";
-import { trackEvent } from "@/lib/analytics/events";
+import {
+  trackEvent,
+  type AnalyticsEventPayload,
+} from "@/lib/analytics/events";
 import { detectClientEnvironment } from "@/lib/analytics/environment";
 import type {
   AudioCueVariant,
@@ -65,6 +69,37 @@ type GeneratorShellProps = {
   hero: RootPageContent["generatorHero"];
   ui: RootPageContent["generatorUi"];
 };
+
+type CompletedExportArtifact = {
+  blob: Blob;
+  fileName: string;
+  mimeType: string;
+};
+
+const WORKER_WATCHDOG_MS = 60_000;
+const WORKER_PACKAGING_WATCHDOG_MS = 120_000;
+
+function getExportErrorCode(error: unknown, fallback: string): string {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string"
+  ) {
+    return error.code;
+  }
+  if (
+    error instanceof Error &&
+    /chunk|dynamically imported module|failed to fetch/i.test(error.message)
+  ) {
+    return "webmChunkLoadFailed";
+  }
+  return fallback;
+}
+
+function createCodedError(code: string, message: string) {
+  return Object.assign(new Error(message), { code });
+}
 
 export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [settings, setSettings] = useState<GeneratorSettings>(() => ({
@@ -87,6 +122,15 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const exportProgressRef = useRef<ExportProgressState>(exportProgress);
   const abandonFiredRef = useRef(false);
   const previewBitmapRef = useRef<ImageBitmap | null>(null);
+  const activeExportIdRef = useRef(0);
+  const activeExportSettingsRef = useRef<GeneratorSettings | null>(null);
+  const activeExportTelemetryRef = useRef<AnalyticsEventPayload>({});
+  const activeExportKindRef = useRef<"finalizing" | "webm" | "worker" | null>(
+    null,
+  );
+  const isExportingRef = useRef(false);
+  const webmAbortControllerRef = useRef<AbortController | null>(null);
+  const workerWatchdogRef = useRef<number | null>(null);
 
   // Swap in a fresh preview snapshot and release the previous bitmap. ImageBitmap
   // holds GPU/canvas memory until close() is called, so leaking one per ~250ms of
@@ -112,26 +156,28 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
       template,
     );
+  const clientEnvironment = useMemo(() => detectClientEnvironment(), []);
+  const isMobileDevice = clientEnvironment.deviceType !== "desktop";
   const exportAdvisory = useMemo(
-    () => getExportAdvisory(settings, support),
-    [settings, support],
+    () => getExportAdvisory(settings, support, clientEnvironment.deviceType),
+    [settings, support, clientEnvironment.deviceType],
   );
   // Stable context attached to every export funnel event. Without browser/device
   // and capability flags, export_failed is a black box — we cannot tell a Safari
   // codec gap from a low-memory crash, or a mobile drop-off from a desktop one.
   const analyticsEnvironment = useMemo<Record<string, string | number | boolean>>(() => {
-    const env = detectClientEnvironment();
     return {
-      browser: env.browser,
-      browserVersion: env.browserVersion,
-      os: env.os,
-      deviceType: env.deviceType,
+      browser: clientEnvironment.browser,
+      browserVersion: clientEnvironment.browserVersion,
+      os: clientEnvironment.os,
+      deviceType: clientEnvironment.deviceType,
       supportsWebm: support.supportsWebm ?? "unknown",
+      supportsWebmAudio: support.supportsWebmAudio ?? "unknown",
       supportsVp9Alpha: support.supportsVp9Alpha ?? "unknown",
       supportsHevcAlpha: support.supportsHevcAlpha ?? "unknown",
       hasWorkerSupport: support.hasWorkerSupport ?? "unknown",
     };
-  }, [support]);
+  }, [support, clientEnvironment]);
   const activeTemplate = useMemo(
     () => getGeneratorTemplateById(settings.templateId),
     [settings.templateId],
@@ -150,8 +196,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }),
     [activeTemplate, isTemplateCustomized],
   );
-  const isMobileDevice = analyticsEnvironment.deviceType !== "desktop";
-
   const localizeProgressMessage = (
     progress: ExportProgressState,
   ): ExportProgressState => {
@@ -421,11 +465,222 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }));
   };
 
+  const clearWorkerWatchdog = useCallback(() => {
+    if (workerWatchdogRef.current !== null) {
+      window.clearTimeout(workerWatchdogRef.current);
+      workerWatchdogRef.current = null;
+    }
+  }, []);
+
+  const finishExportFailure = useCallback(
+    (
+      exportId: number,
+      code: string,
+      message: string,
+      terminateWorker = false,
+    ) => {
+      if (
+        activeExportIdRef.current !== exportId ||
+        !isExportingRef.current
+      ) {
+        return;
+      }
+
+      const elapsedMs = elapsedExportMs();
+      const telemetry = activeExportTelemetryRef.current;
+      const progress = exportProgressRef.current;
+
+      clearWorkerWatchdog();
+      if (terminateWorker) {
+        exportRuntimeRef.current?.terminateExportWorker();
+      }
+      webmAbortControllerRef.current = null;
+      activeExportKindRef.current = null;
+      activeExportSettingsRef.current = null;
+      isExportingRef.current = false;
+      abandonFiredRef.current = true;
+      setIsExporting(false);
+      setPreview(null);
+      setEtaMs(null);
+      setExportProgress({
+        stage: "error",
+        completedFrames: progress.completedFrames,
+        totalFrames: progress.totalFrames,
+        message,
+      });
+
+      if (code === "exportCancelled") {
+        trackEvent("export_cancelled", {
+          ...telemetry,
+          stage: progress.stage,
+          completedFrames: progress.completedFrames,
+          totalFrames: progress.totalFrames,
+          durationMs: elapsedMs,
+        });
+      } else {
+        trackEvent("export_failed", {
+          ...telemetry,
+          errorCode: code,
+          errorMessage: message,
+          stage: progress.stage,
+          completedFrames: progress.completedFrames,
+          totalFrames: progress.totalFrames,
+          durationMs: elapsedMs,
+        });
+      }
+      exportStartedAtRef.current = null;
+    },
+    [clearWorkerWatchdog, setPreview],
+  );
+
+  const finalizeCompletedExport = useCallback(
+    async (exportId: number, artifact: CompletedExportArtifact) => {
+      if (
+        activeExportIdRef.current !== exportId ||
+        !isExportingRef.current
+      ) {
+        return;
+      }
+
+      clearWorkerWatchdog();
+      if (activeExportKindRef.current === "worker") {
+        // Release OffscreenCanvas, encoder, and ZIP memory before validating the
+        // artifact or asking the browser to download it.
+        exportRuntimeRef.current?.terminateExportWorker();
+      }
+      activeExportKindRef.current = "finalizing";
+      setEtaMs(null);
+      const validatingProgress: ExportProgressState = {
+        stage: "packaging",
+        completedFrames: exportTotalsRef.current,
+        totalFrames: exportTotalsRef.current,
+        message: "Validating generated file",
+      };
+      exportProgressRef.current = validatingProgress;
+      setExportProgress(validatingProgress);
+
+      try {
+        await validateExportArtifact(
+          artifact.blob,
+          artifact.mimeType,
+          artifact.fileName,
+        );
+      } catch (error) {
+        finishExportFailure(
+          exportId,
+          getExportErrorCode(error, "outputValidationFailed"),
+          error instanceof Error
+            ? error.message
+            : "The generated file could not be validated. Please retry.",
+        );
+        return;
+      }
+
+      if (
+        activeExportIdRef.current !== exportId ||
+        !isExportingRef.current
+      ) {
+        return;
+      }
+
+      const durationMs = elapsedExportMs();
+      const outputTelemetry: AnalyticsEventPayload = {
+        ...activeExportTelemetryRef.current,
+        fileName: artifact.fileName,
+        mimeType: artifact.mimeType,
+        blobSize: artifact.blob.size,
+        durationMs,
+      };
+      trackEvent("export_generated", outputTelemetry);
+
+      try {
+        downloadBlob(artifact.blob, artifact.fileName);
+      } catch (error) {
+        finishExportFailure(
+          exportId,
+          "downloadRequestFailed",
+          error instanceof Error
+            ? error.message
+            : "The browser could not start the download. Please retry.",
+        );
+        return;
+      }
+
+      trackEvent("export_download_requested", outputTelemetry);
+      trackEvent("export_completed", outputTelemetry);
+      isExportingRef.current = false;
+      activeExportKindRef.current = null;
+      activeExportSettingsRef.current = null;
+      activeExportTelemetryRef.current = {};
+      webmAbortControllerRef.current = null;
+      abandonFiredRef.current = true;
+      exportStartedAtRef.current = null;
+      setIsExporting(false);
+      setPreview(null);
+      setEtaMs(null);
+      setExportProgress({
+        stage: "complete",
+        completedFrames: exportTotalsRef.current,
+        totalFrames: exportTotalsRef.current,
+        message: formatTemplate(
+          ui.exportPanel.runtimeMessages.exportReadyTemplate,
+          { fileName: artifact.fileName },
+        ),
+      });
+    },
+    [clearWorkerWatchdog, finishExportFailure, setPreview, ui.exportPanel],
+  );
+
+  const armWorkerWatchdog = useCallback(
+    (exportId: number, timeoutMs = WORKER_WATCHDOG_MS) => {
+      clearWorkerWatchdog();
+      const check = () => {
+        if (
+          activeExportIdRef.current !== exportId ||
+          !isExportingRef.current ||
+          activeExportKindRef.current !== "worker"
+        ) {
+          return;
+        }
+        if (document.visibilityState === "hidden") {
+          workerWatchdogRef.current = window.setTimeout(check, 15_000);
+          return;
+        }
+        finishExportFailure(
+          exportId,
+          "exportWorkerStalled",
+          "The export stopped responding. It has been reset; reduce the duration or resolution and retry.",
+          true,
+        );
+      };
+      workerWatchdogRef.current = window.setTimeout(check, timeoutMs);
+    },
+    [clearWorkerWatchdog, finishExportFailure],
+  );
+
   const handleExportWorkerMessage = useCallback(
-    (event: MessageEvent<ExportWorkerMessage>) => {
+    (event: MessageEvent<ExportWorkerMessage>, exportId: number) => {
+      if (
+        activeExportIdRef.current !== exportId ||
+        !isExportingRef.current
+      ) {
+        if (event.data.kind === "preview") {
+          event.data.payload.bitmap.close();
+        }
+        return;
+      }
+
       if (event.data.kind === "progress") {
         const payload = event.data.payload;
-        setExportProgress(localizeProgressMessage(payload));
+        armWorkerWatchdog(
+          exportId,
+          payload.stage === "packaging"
+            ? WORKER_PACKAGING_WATCHDOG_MS
+            : WORKER_WATCHDOG_MS,
+        );
+        const localizedProgress = localizeProgressMessage(payload);
+        exportProgressRef.current = localizedProgress;
+        setExportProgress(localizedProgress);
         setEtaMs(
           estimateRemainingMs(
             elapsedExportMs() ?? 0,
@@ -437,49 +692,29 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       }
 
       if (event.data.kind === "preview") {
+        armWorkerWatchdog(exportId);
         setPreview(event.data.payload.bitmap);
         return;
       }
 
       if (event.data.kind === "complete") {
-        setIsExporting(false);
-        setPreview(null);
-        setEtaMs(null);
-        setExportProgress({
-          stage: "complete",
-          completedFrames: exportTotalsRef.current,
-          totalFrames: exportTotalsRef.current,
-          message: formatTemplate(
-            ui.exportPanel.runtimeMessages.exportReadyTemplate,
-            { fileName: event.data.payload.fileName },
-          ),
-        });
-        // Trigger the download first, then record completion, so the funnel's
-        // success event lines up with the moment the file actually leaves.
-        downloadBlob(event.data.payload.blob, event.data.payload.fileName);
-        trackEvent("export_completed", {
-          format: settings.export.format,
-          fileName: event.data.payload.fileName,
-          durationMs: elapsedExportMs(),
-          ...templateAnalytics,
-          ...analyticsEnvironment,
-        });
+        void finalizeCompletedExport(exportId, event.data.payload);
         return;
       }
 
-      setIsExporting(false);
-      setPreview(null);
-      setEtaMs(null);
       const code = event.data.payload.code;
       const fallback =
         code === "alphaVideoFailedUnexpectedly"
           ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
           : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
       const baseMessage = event.data.payload.message ?? fallback;
+      const activeSettings = activeExportSettingsRef.current;
       const suggestedLabel =
-        settings.export.format !== "png-sequence" && support.supportsPngSequence
+        activeSettings?.export.format !== "png-sequence" &&
+        support.supportsPngSequence
           ? ui.exportPanel.pngSequenceLabel
-          : settings.export.format === "png-sequence" && support.supportsWebm
+          : activeSettings?.export.format === "png-sequence" &&
+              support.supportsWebm
             ? ui.exportPanel.webmLabel
             : null;
       const suggestionTemplate =
@@ -488,39 +723,35 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       const suggestion = suggestedLabel
         ? suggestionTemplate.replace("{format}", suggestedLabel)
         : null;
-      setExportProgress({
-        stage: "error",
-        completedFrames: 0,
-        totalFrames: 0,
-        message: suggestion ? `${baseMessage} ${suggestion}` : baseMessage,
-      });
-      trackEvent("export_failed", {
-        format: settings.export.format,
-        errorCode: code ?? "unknown",
-        errorMessage: event.data.payload.message,
-        durationMs: elapsedExportMs(),
-        ...templateAnalytics,
-        ...analyticsEnvironment,
-      });
+      finishExportFailure(
+        exportId,
+        code ?? "unknown",
+        suggestion ? `${baseMessage} ${suggestion}` : baseMessage,
+        true,
+      );
     },
     [
-      settings.export.format,
-      ui.exportPanel,
-      templateAnalytics,
-      analyticsEnvironment,
-      support,
+      armWorkerWatchdog,
+      finalizeCompletedExport,
+      finishExportFailure,
       setPreview,
+      support,
+      ui.exportPanel,
     ],
   );
 
   useEffect(() => {
     return () => {
+      webmAbortControllerRef.current?.abort(
+        createCodedError("exportCancelled", "Export cancelled."),
+      );
+      clearWorkerWatchdog();
       exportRuntimeRef.current?.terminateExportWorker();
       exportRuntimeRef.current = null;
       previewBitmapRef.current?.close();
       previewBitmapRef.current = null;
     };
-  }, []);
+  }, [clearWorkerWatchdog]);
 
   // Mirror the latest progress into a ref so the abandonment listener can read
   // it without re-subscribing on every progress tick.
@@ -542,13 +773,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       abandonFiredRef.current = true;
       const progress = exportProgressRef.current;
       trackEvent("export_abandoned", {
-        format: settings.export.format,
+        ...activeExportTelemetryRef.current,
         stage: progress.stage,
         completedFrames: progress.completedFrames,
         totalFrames: progress.totalFrames,
         durationMs: elapsedExportMs(),
-        ...templateAnalytics,
-        ...analyticsEnvironment,
       });
     };
     window.addEventListener("pagehide", reportAbandon);
@@ -557,12 +786,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       window.removeEventListener("pagehide", reportAbandon);
       window.removeEventListener("beforeunload", reportAbandon);
     };
-  }, [
-    isExporting,
-    settings.export.format,
-    templateAnalytics,
-    analyticsEnvironment,
-  ]);
+  }, [isExporting]);
 
   // When capability detection puts the selected format into a hard-error state,
   // the Export button is disabled and the user produces no funnel events at all.
@@ -591,44 +815,100 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     analyticsEnvironment,
   ]);
 
+  const handleCancelExport = useCallback(() => {
+    if (!isExportingRef.current) {
+      return;
+    }
+    const exportId = activeExportIdRef.current;
+    const cancellation = createCodedError(
+      "exportCancelled",
+      "Export cancelled.",
+    );
+    webmAbortControllerRef.current?.abort(cancellation);
+    finishExportFailure(
+      exportId,
+      "exportCancelled",
+      cancellation.message,
+      activeExportKindRef.current === "worker",
+    );
+  }, [finishExportFailure]);
+
   const handleExport = async () => {
-    // The Export button is disabled in this state, but guard anyway so a stray
-    // call can never run into a guaranteed throw (and skew the failure rate).
-    if (exportAdvisory.severity === "error") {
+    // A synchronous ref closes the tiny gap before React commits disabled=true,
+    // so a double click cannot start two jobs against the same worker.
+    if (isExportingRef.current || exportAdvisory.severity === "error") {
       return;
     }
 
-    const totalFrames = Math.round(settings.timer.durationSeconds * settings.export.fps);
-    exportTotalsRef.current = totalFrames;
-    exportStartedAtRef.current = performance.now();
-    abandonFiredRef.current = false;
-    setPreview(null);
-    setEtaMs(null);
-
-    trackEvent("export_started", {
-      format: settings.export.format,
-      fps: settings.export.fps,
-      durationSeconds: settings.timer.durationSeconds,
-      resolution: settings.canvas.resolutionPresetId,
+    const exportId = activeExportIdRef.current + 1;
+    activeExportIdRef.current = exportId;
+    const exportSettings = settings;
+    const totalFrames = Math.max(
+      1,
+      Math.round(
+        exportSettings.timer.durationSeconds * exportSettings.export.fps,
+      ),
+    );
+    const pixelFrames =
+      exportSettings.canvas.width *
+      exportSettings.canvas.height *
+      totalFrames;
+    const telemetry: AnalyticsEventPayload = {
+      format: exportSettings.export.format,
+      fps: exportSettings.export.fps,
+      durationSeconds: exportSettings.timer.durationSeconds,
+      resolution: exportSettings.canvas.resolutionPresetId,
+      width: exportSettings.canvas.width,
+      height: exportSettings.canvas.height,
+      pixelFrames,
+      quality: exportSettings.export.quality,
+      audioVariant: exportSettings.audio.variant,
       ...templateAnalytics,
       ...analyticsEnvironment,
-    });
+    };
 
+    exportTotalsRef.current = totalFrames;
+    exportStartedAtRef.current = performance.now();
+    activeExportSettingsRef.current = exportSettings;
+    activeExportTelemetryRef.current = telemetry;
+    abandonFiredRef.current = false;
+    isExportingRef.current = true;
+    setPreview(null);
+    setEtaMs(null);
     setIsExporting(true);
+    trackEvent("export_started", telemetry);
 
-    if (settings.export.format === "webm") {
-      setExportProgress({
+    if (exportSettings.export.format === "webm") {
+      activeExportKindRef.current = "webm";
+      const initialProgress: ExportProgressState = {
         stage: "validating",
         completedFrames: 0,
         totalFrames,
         message: ui.exportPanel.runtimeMessages.preparingWebm,
-      });
+      };
+      exportProgressRef.current = initialProgress;
+      setExportProgress(initialProgress);
+      const controller = new AbortController();
+      webmAbortControllerRef.current = controller;
 
       try {
-        const { exportWebmLocally } = await getExportRuntime().loadWebmExporter();
-        const result = await exportWebmLocally(settings, {
+        const { exportWebmLocally } =
+          await getExportRuntime().loadWebmExporter();
+        if (controller.signal.aborted) {
+          throw controller.signal.reason;
+        }
+        const result = await exportWebmLocally(exportSettings, {
+          signal: controller.signal,
           onProgress: (progress) => {
-            setExportProgress(localizeProgressMessage(progress));
+            if (
+              activeExportIdRef.current !== exportId ||
+              !isExportingRef.current
+            ) {
+              return;
+            }
+            const localizedProgress = localizeProgressMessage(progress);
+            exportProgressRef.current = localizedProgress;
+            setExportProgress(localizedProgress);
             setEtaMs(
               estimateRemainingMs(
                 elapsedExportMs() ?? 0,
@@ -638,105 +918,92 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             );
           },
         });
-
-        setIsExporting(false);
-        setEtaMs(null);
-        setExportProgress({
-          stage: "complete",
-          completedFrames: totalFrames,
-          totalFrames,
-          message: formatTemplate(
-            ui.exportPanel.runtimeMessages.exportReadyTemplate,
-            { fileName: result.fileName },
-          ),
-        });
-        downloadBlob(result.blob, result.fileName);
-        trackEvent("export_completed", {
-          format: settings.export.format,
-          fileName: result.fileName,
-          durationMs: elapsedExportMs(),
-          ...templateAnalytics,
-          ...analyticsEnvironment,
-        });
+        await finalizeCompletedExport(exportId, result);
       } catch (error) {
-        setIsExporting(false);
-        setEtaMs(null);
-        setExportProgress({
-          stage: "error",
-          completedFrames: 0,
-          totalFrames: 0,
-          message:
-            error instanceof Error
-              ? error.message
-              : ui.exportPanel.runtimeMessages.webmFailedUnexpectedly,
-        });
-        // WebM runs on the main thread, so its failures never reach the worker
-        // message handler. Reporting them here is what makes Safari/mobile codec
-        // gaps visible instead of silently vanishing from the funnel.
-        trackEvent("export_failed", {
-          format: settings.export.format,
-          errorCode: "webmFailedUnexpectedly",
-          errorMessage: error instanceof Error ? error.message : undefined,
-          durationMs: elapsedExportMs(),
-          ...templateAnalytics,
-          ...analyticsEnvironment,
-        });
+        const code = getExportErrorCode(error, "webmFailedUnexpectedly");
+        finishExportFailure(
+          exportId,
+          code,
+          error instanceof Error
+            ? error.message
+            : ui.exportPanel.runtimeMessages.webmFailedUnexpectedly,
+        );
       }
       return;
     }
 
+    activeExportKindRef.current = "worker";
     const preparingMessage =
-      settings.export.format === "png-sequence"
+      exportSettings.export.format === "png-sequence"
         ? ui.exportPanel.runtimeMessages.preparingPngSequence
         : ui.exportPanel.runtimeMessages.preparingAlphaVideo;
-
-    setExportProgress({
+    const initialProgress: ExportProgressState = {
       stage: "validating",
       completedFrames: 0,
       totalFrames,
       message: preparingMessage,
-    });
+    };
+    exportProgressRef.current = initialProgress;
+    setExportProgress(initialProgress);
 
     try {
       const exportWorker = getExportRuntime().getExportWorker();
-      exportWorker.onmessage = handleExportWorkerMessage;
-      if (settings.export.format === "png-sequence") {
+      exportWorker.onmessage = (event) =>
+        handleExportWorkerMessage(event, exportId);
+      exportWorker.onerror = (event) => {
+        event.preventDefault();
+        finishExportFailure(
+          exportId,
+          "exportWorkerCrashed",
+          event.message ||
+            "The export worker crashed. It has been reset; reduce the job size and retry.",
+          true,
+        );
+      };
+      exportWorker.onmessageerror = () => {
+        finishExportFailure(
+          exportId,
+          "exportWorkerMessageUnreadable",
+          "The browser could not read the export result. The worker has been reset; please retry.",
+          true,
+        );
+      };
+      armWorkerWatchdog(exportId);
+
+      const enablePreview = !isMobileDevice && pixelFrames < 4_000_000_000;
+      if (exportSettings.export.format === "png-sequence") {
         exportWorker.postMessage({
           kind: "export-png-sequence",
           payload: {
-            settings,
+            settings: exportSettings,
             uploadedFont: uploadedFont ?? undefined,
+            enablePreview,
           },
         });
         return;
       }
       const alphaTarget =
-        settings.export.format === "webm-vp9-alpha" ? "webm-vp9" : "mov-hevc";
+        exportSettings.export.format === "webm-vp9-alpha"
+          ? "webm-vp9"
+          : "mov-hevc";
       exportWorker.postMessage({
         kind: "export-alpha-video",
         payload: {
-          settings,
+          settings: exportSettings,
           target: alphaTarget,
           uploadedFont: uploadedFont ?? undefined,
+          enablePreview,
         },
       });
     } catch (error) {
-      setIsExporting(false);
-      setEtaMs(null);
-      setExportProgress({
-        stage: "error",
-        completedFrames: 0,
-        totalFrames: 0,
-        message: ui.exportPanel.runtimeMessages.exportWorkerUnavailable,
-      });
-      trackEvent("export_failed", {
-        format: settings.export.format,
-        errorCode: "exportWorkerUnavailable",
-        errorMessage: error instanceof Error ? error.message : undefined,
-        durationMs: elapsedExportMs(),
-        ...templateAnalytics,
-        ...analyticsEnvironment,
-      });
+      finishExportFailure(
+        exportId,
+        "exportWorkerUnavailable",
+        error instanceof Error
+          ? error.message
+          : ui.exportPanel.runtimeMessages.exportWorkerUnavailable,
+        true,
+      );
     }
   };
 
@@ -816,6 +1083,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 exportProgress={exportProgress}
                 isExporting={isExporting}
                 onExport={handleExport}
+                onCancel={handleCancelExport}
                 settings={settings}
                 ui={ui.exportPanel}
                 onFormatChange={handleFormatChange}

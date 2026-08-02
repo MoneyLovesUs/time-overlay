@@ -16,8 +16,11 @@ export type AnalyticsEventPayload = Record<
 
 export type AnalyticsEventName =
   | "export_started"
+  | "export_generated"
+  | "export_download_requested"
   | "export_completed"
   | "export_failed"
+  | "export_cancelled"
   | "export_abandoned"
   | "export_unsupported"
   | "template_gallery_opened"

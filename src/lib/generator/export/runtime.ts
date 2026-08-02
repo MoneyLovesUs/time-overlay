@@ -1,6 +1,13 @@
 import type { exportWebmLocally } from "@/lib/generator/export/webm";
 
-type ExportWorker = Pick<Worker, "terminate" | "postMessage" | "onmessage">;
+type ExportWorker = Pick<
+  Worker,
+  | "terminate"
+  | "postMessage"
+  | "onmessage"
+  | "onerror"
+  | "onmessageerror"
+>;
 type WebmExporterModule = {
   exportWebmLocally: typeof exportWebmLocally;
 };
@@ -40,7 +47,13 @@ export function createLazyExportRuntime(
       return exportWorker;
     },
     loadWebmExporter() {
-      webmExporterPromise ??= dependencies.loadWebmExporter();
+      webmExporterPromise ??= dependencies.loadWebmExporter().catch((error) => {
+        // A deployment can replace the dynamic chunk while an old page is
+        // open. Do not cache that rejected import forever: the next click gets
+        // a fresh network request and can recover without a full page reload.
+        webmExporterPromise = null;
+        throw error;
+      });
       return webmExporterPromise;
     },
     terminateExportWorker() {

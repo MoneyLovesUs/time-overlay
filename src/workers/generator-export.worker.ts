@@ -120,7 +120,7 @@ type PngSequenceRequest = Extract<ExportWorkerRequest, { kind: "export-png-seque
 type AlphaVideoRequest = Extract<ExportWorkerRequest, { kind: "export-alpha-video" }>;
 
 async function handlePngSequence(request: PngSequenceRequest) {
-  const { settings, uploadedFont } = request.payload;
+  const { settings, uploadedFont, enablePreview = true } = request.payload;
 
   if (uploadedFont) {
     await loadFontIntoWorker(uploadedFont);
@@ -138,34 +138,34 @@ async function handlePngSequence(request: PngSequenceRequest) {
     throw new Error("Could not create an offscreen canvas context.");
   }
 
-  const chunks: Uint8Array[] = [];
-  let totalSize = 0;
+  const chunks: BlobPart[] = [];
   let lastProgressAt = 0;
   let lastPreviewAt = 0;
 
-  const zip = new Zip((err, chunk, final) => {
-    if (err) {
-      throw err;
-    }
-    chunks.push(chunk);
-    totalSize += chunk.byteLength;
-    if (final) {
-      const merged = new Uint8Array(totalSize);
-      let offset = 0;
-      for (const segment of chunks) {
-        merged.set(segment, offset);
-        offset += segment.byteLength;
+  let zip!: Zip;
+  let archiveError: unknown = null;
+  const archivePromise = new Promise<Blob>((resolve, reject) => {
+    zip = new Zip((error, chunk, final) => {
+      if (error) {
+        archiveError = error;
+        reject(error);
+        return;
       }
-      postMessageToHost({
-        kind: "complete",
-        payload: {
-          blob: new Blob([merged.buffer], { type: "application/zip" }),
-          fileName: plan.outputFileName,
-          mimeType: "application/zip",
-        },
-      });
-    }
+      // fflate emits ordinary ArrayBuffer-backed chunks in browsers. Narrowing
+      // the generic buffer type here avoids an unnecessary copy solely for the
+      // wider SharedArrayBuffer possibility in TypeScript's Uint8Array type.
+      chunks.push(chunk as Uint8Array<ArrayBuffer>);
+      if (final) {
+        // Blob accepts the existing ZIP chunks directly. The old path first
+        // allocated another full-size Uint8Array and copied the entire archive,
+        // causing a deterministic peak-memory spike on Safari/mobile.
+        resolve(new Blob(chunks, { type: "application/zip" }));
+      }
+    });
   });
+  // Attach a rejection handler immediately: fflate can report an error while a
+  // frame is being pushed, before control reaches the final await below.
+  void archivePromise.catch(() => {});
 
   for (let frameIndex = 0; frameIndex < plan.totalFrames; frameIndex += 1) {
     drawFrameToContext({
@@ -182,6 +182,9 @@ async function handlePngSequence(request: PngSequenceRequest) {
     const entry = new ZipPassThrough(plan.getFrameFileName(frameIndex));
     zip.add(entry);
     entry.push(frameBytes, true);
+    if (archiveError) {
+      throw archiveError;
+    }
 
     const now = performance.now();
     const isBoundaryFrame =
@@ -200,7 +203,10 @@ async function handlePngSequence(request: PngSequenceRequest) {
       });
     }
 
-    if (isBoundaryFrame || now - lastPreviewAt >= PREVIEW_INTERVAL_MS) {
+    if (
+      enablePreview &&
+      (isBoundaryFrame || now - lastPreviewAt >= PREVIEW_INTERVAL_MS)
+    ) {
       lastPreviewAt = now;
       await emitPreview(canvas, frameIndex + 1);
     }
@@ -227,10 +233,22 @@ async function handlePngSequence(request: PngSequenceRequest) {
   });
 
   zip.end();
+  const archive = await archivePromise;
+  if (archive.size === 0) {
+    throw new Error("The PNG archive is empty.");
+  }
+  postMessageToHost({
+    kind: "complete",
+    payload: {
+      blob: archive,
+      fileName: plan.outputFileName,
+      mimeType: "application/zip",
+    },
+  });
 }
 
 async function handleAlphaVideo(request: AlphaVideoRequest) {
-  const { settings, target, uploadedFont } = request.payload;
+  const { settings, target, uploadedFont, enablePreview = true } = request.payload;
 
   if (uploadedFont) {
     await loadFontIntoWorker(uploadedFont);
@@ -278,7 +296,11 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
         payload: progress,
       });
       const now = performance.now();
-      if (previewCanvas && now - lastPreviewAt >= PREVIEW_INTERVAL_MS) {
+      if (
+        enablePreview &&
+        previewCanvas &&
+        now - lastPreviewAt >= PREVIEW_INTERVAL_MS
+      ) {
         lastPreviewAt = now;
         void emitPreview(previewCanvas, progress.completedFrames);
       }

@@ -27,6 +27,7 @@ export type ExportWorkerRequest =
       payload: {
         settings: GeneratorSettings;
         uploadedFont?: UploadedFont;
+        enablePreview?: boolean;
       };
     }
   | {
@@ -35,6 +36,7 @@ export type ExportWorkerRequest =
         settings: GeneratorSettings;
         target: "webm-vp9" | "mov-hevc";
         uploadedFont?: UploadedFont;
+        enablePreview?: boolean;
       };
     };
 

@@ -145,9 +145,10 @@ const hiRootPageContent = {
       pngSequenceDescription: "एडिटर्स और पारदर्शी हैंडऑफ़ के लिए सबसे विश्वसनीय विकल्प।",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "OBS और Streamlabs के लिए पारदर्शी VP8 वीडियो। इसे हटाए हुए बैकग्राउंड के साथ Media Source के रूप में जोड़ें।",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "OBS और जाँचे गए VP9 alpha वर्कफ़्लो के लिए छोटा पारदर्शी वीडियो; इम्पोर्ट सपोर्ट हर एडिटर में अलग हो सकता है।",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -178,8 +179,10 @@ const hiRootPageContent = {
           "यह निर्यात मेमोरी और CPU पर भारी पड़ सकता है। यदि ब्राउज़र संघर्ष करे तो 720p, 30 सेकंड या PNG Sequence पर विचार करें।",
         pngSequenceInfo:
           "PNG Sequence, खासकर जब पारदर्शिता महत्वपूर्ण हो, एडिटर्स को local-first हैंडऑफ़ देने का सबसे भरोसेमंद तरीका है।",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha, OBS और जाँचे गए VP9 alpha वर्कफ़्लो के लिए कॉम्पैक्ट पारदर्शी फ़ॉर्मैट है।",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha, संगत Mac पर Final Cut Pro के लिए सुझाया गया सीधा एक्सपोर्ट फ़ॉर्मैट है।",
       },
       runtimeMessages: {
         exportReadyTemplate: "निर्यात तैयार: {fileName}",
@@ -197,7 +200,7 @@ const hiRootPageContent = {
     notesEyebrow: "टूल नोट्स",
     heading: "एक टूल पेज, और उसे अच्छी तरह उपयोग करने के लिए जितना ज़रूरी हो उतना ही संदर्भ।",
     description:
-      "Time Overlay को local-first overlay timer generator के रूप में बनाया गया है। ऊपर दिए गए कंट्रोल्स से अवधि, स्टाइल, स्थिति और निर्यात फॉर्मैट चुनें, और नीचे का भाग उन सवालों के लिए रखें जो SEO और वास्तविक workflow फ़ैसलों में सचमुच मायने रखते हैं।",
+      "Time Overlay एक local-first जनरेटर है। ऊपर अवधि, स्टाइल, स्थान और फ़ॉर्मैट चुनें; नीचे जानें कि पारदर्शिता कैसे बचानी है और प्रोडक्शन में फ़ाइल इस्तेमाल करने से पहले क्या जाँचना चाहिए।",
     exportFormatsTitle: "निर्यात फॉर्मैट",
     exportFormatsPngText:
       "जब आपको पारदर्शी overlay या editor-friendly assets चाहिए हों, तब PNG Sequence सबसे विश्वसनीय लोकल निर्यात है।",
@@ -241,8 +244,8 @@ const hiRootPageContent = {
     aboutHeading: "Time Overlay के बारे में",
     aboutPoints: [
       "Time Overlay एक local-first overlay timer generator है जो उन क्रिएटर्स के लिए बनाया गया है जिन्हें दूरस्थ render सेवा पर फुटेज अपलोड किए बिना countdown graphics चाहिए।",
-      "यह पेज जानबूझकर संक्षिप्त रखा गया है: एक वास्तविक working tool surface, एक स्पष्ट export explanation block, और एक SEO support area जो उन workflow सवालों का जवाब देता है जिन्हें लोग किसी timer tool पर भरोसा करने से पहले खोजते हैं।",
-      "इससे homepage एक वास्तविक production utility भी बनती है और साथ ही overlay timer, countdown timer overlay, transparent countdown overlay और timer overlay for video editing जैसे प्रश्नों के लिए crawlable landing page भी।",
+      "जनरेटर कंट्रोल, एक्सपोर्ट सलाह और समस्या निवारण को एक जगह रखता है, ताकि आप एसेट बना सकें और उसे दूसरे ऐप में सही ढंग से ले जा सकें।",
+      "गाइड दस्तावेज़ों में बताए सपोर्ट और व्यावहारिक सलाह को अलग रखते हैं, जाँचे गए स्रोत और आखिरी समीक्षा की तारीख दिखाते हैं, ताकि संगतता दोबारा परखी जा सके।",
     ],
     aboutCta: {
       beforeLink: "अगर आप पहले व्यावहारिक सवाल सुलझाना चाहते हैं, तो जाएँ ",

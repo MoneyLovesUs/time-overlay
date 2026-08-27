@@ -21,6 +21,28 @@ pnpm lint
 pnpm test -- --run
 ```
 
+## Public publication configuration
+
+Trust pages and AdSense ownership signals read public, non-secret values from
+the build environment:
+
+```bash
+NEXT_PUBLIC_SITE_OPERATOR_NAME="Public operator or studio name"
+NEXT_PUBLIC_SITE_AUTHOR_NAME="Public author or editorial team name"
+NEXT_PUBLIC_SITE_CONTACT_EMAIL="public@example.com"
+NEXT_PUBLIC_SITE_JURISDICTION="Country, state, or other governing jurisdiction"
+NEXT_PUBLIC_GOOGLE_ADSENSE_ACCOUNT="ca-pub-1234567890123456"
+```
+
+The AdSense account value is validated before use. When configured, the site
+adds the `google-adsense-account` meta tag and serves the corresponding Google
+authorized-seller record from `/ads.txt`. When absent or malformed, `/ads.txt`
+returns `404` instead of publishing a placeholder account.
+
+The production build intentionally does not load the AdSense ad-serving script
+yet. Add that only after the site is approved and the required consent/CSP path
+has been selected and tested.
+
 ## Project Structure
 
 ```text
@@ -76,5 +98,6 @@ src/
 - `components.json` is the source of truth for `shadcn/ui` configuration.
 - `src/app/globals.css` is the shared place for global Tailwind and theme tokens.
 - `/` is the tool-first homepage and the primary SEO surface.
-- `/` is the only public route surface. Generator UX and SEO context both live on the root page.
+- `/` is the tool-first homepage. Reviewed guides, a format comparison, and
+  About, Privacy, Contact, and Terms pages provide the supporting public routes.
 - The MVP export strategy is client-side and local-first: prioritize `PNG sequence` and `WebM`, and avoid paid server rendering on Vercel.

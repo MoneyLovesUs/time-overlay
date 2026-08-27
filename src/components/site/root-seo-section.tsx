@@ -3,7 +3,8 @@ import Link from "next/link";
 import type { RootPageContent } from "@/content/root";
 import type { EnabledLocale } from "@/lib/i18n";
 import { buildLocalizedPath } from "@/lib/i18n";
-import { buildFaqJsonLd, buildHowToJsonLd } from "@/lib/seo/jsonld";
+import { buildSecondaryContentPath } from "@/lib/site-navigation";
+import { buildFaqJsonLd } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/site/json-ld";
 
 type RootSeoSectionProps = {
@@ -14,13 +15,11 @@ type RootSeoSectionProps = {
 export function RootSeoSection({ locale, seoSection }: RootSeoSectionProps) {
   const toolHref = buildLocalizedPath("/#tool", locale);
   const exportFormatsHref = buildLocalizedPath("/#export-formats", locale);
-  const faqHref = buildLocalizedPath("/#faq", locale);
+  const aboutHref =
+    locale === "en" || locale === "zh-hans"
+      ? buildSecondaryContentPath("/about", locale)
+      : buildLocalizedPath("/#faq", locale);
   const faqJsonLdData = buildFaqJsonLd(seoSection.faqItems);
-  const howToJsonLdData = buildHowToJsonLd({
-    name: seoSection.workflowHeading,
-    description: seoSection.description,
-    steps: seoSection.workflowSteps,
-  });
 
   return (
     <section
@@ -28,7 +27,6 @@ export function RootSeoSection({ locale, seoSection }: RootSeoSectionProps) {
       className="relative overflow-hidden border-t border-border/70 bg-[linear-gradient(180deg,rgba(8,9,13,1),rgba(10,11,16,1))]"
     >
       <JsonLd data={faqJsonLdData} />
-      <JsonLd data={howToJsonLdData} />
 
       <div
         aria-hidden="true"
@@ -142,7 +140,7 @@ export function RootSeoSection({ locale, seoSection }: RootSeoSectionProps) {
             </div>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">
               {seoSection.aboutCta.beforeLink}
-              <Link href={faqHref} className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary">
+              <Link href={aboutHref} className="text-foreground underline decoration-border underline-offset-4 transition-colors hover:text-primary">
                 {seoSection.aboutCta.linkLabel}
               </Link>
               {seoSection.aboutCta.afterLink}

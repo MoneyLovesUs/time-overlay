@@ -5,7 +5,11 @@ import {
   buildFaqJsonLd,
   buildHowToJsonLd,
   buildItemListJsonLd,
+  buildOrganizationJsonLd,
+  buildArticleJsonLd,
   buildWebApplicationJsonLd,
+  buildWebPageJsonLd,
+  buildWebSiteJsonLd,
 } from "@/lib/seo/jsonld";
 
 describe("jsonld builders", () => {
@@ -14,6 +18,50 @@ describe("jsonld builders", () => {
     expect(node["@type"]).toBe("WebApplication");
     expect(node.offers).toMatchObject({ price: "0", priceCurrency: "USD" });
     expect(Array.isArray(node.inLanguage)).toBe(true);
+  });
+
+  it("connects organization, website, article, and trust-page entities", () => {
+    const organization = buildOrganizationJsonLd({
+      operatorName: "Example Studio",
+      contactEmail: "hello@example.com",
+    });
+    const website = buildWebSiteJsonLd();
+    const article = buildArticleJsonLd({
+      headline: "Guide",
+      description: "A reviewed guide",
+      url: "https://timeoverlay.co/guides/example",
+      datePublished: "2026-07-03",
+      dateModified: "2026-08-28",
+      authorName: "Editor",
+    });
+    const page = buildWebPageJsonLd({
+      name: "Privacy",
+      description: "Policy",
+      url: "https://timeoverlay.co/privacy",
+      pageType: "WebPage",
+      dateModified: "2026-08-28",
+    });
+
+    expect(organization).toMatchObject({
+      "@type": "Organization",
+      name: "Example Studio",
+      contactPoint: { email: "hello@example.com" },
+    });
+    expect(website).toMatchObject({
+      "@type": "WebSite",
+      publisher: { "@id": "https://timeoverlay.co/#organization" },
+    });
+    expect(article).toMatchObject({
+      "@type": "TechArticle",
+      datePublished: "2026-07-03",
+      dateModified: "2026-08-28",
+      author: { name: "Editor" },
+    });
+    expect(page).toMatchObject({
+      "@type": "WebPage",
+      dateModified: "2026-08-28",
+      isPartOf: { "@id": "https://timeoverlay.co/#website" },
+    });
   });
 
   it("maps FAQ items to Question/Answer pairs", () => {

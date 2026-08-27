@@ -149,9 +149,10 @@ const deRootPageContent = {
         "Am zuverlässigsten für Schnittprogramme und transparente Übergabe.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "Transparentes VP8-Video für OBS und Streamlabs. Als Medienquelle hinzufügen; der Hintergrund ist bereits entfernt.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "Kompakteres transparentes Video für OBS und geprüfte VP9-Alpha-Workflows; die Editor-Unterstützung ist unterschiedlich.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -183,8 +184,10 @@ const deRootPageContent = {
           "Dieser Export wird voraussichtlich viel Speicher und CPU beanspruchen. Erwäge 720p, 30 Sekunden oder PNG Sequence, wenn der Browser ins Straucheln gerät.",
         pngSequenceInfo:
           "PNG Sequence ist der zuverlässigste Local-First-Handoff für Editoren, besonders wenn Transparenz wichtig ist.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + Alpha ist ein kompaktes Transparenzformat für OBS und bereits geprüfte VP9-Alpha-Workflows.",
+      hevcAlphaInfo:
+        "MOV HEVC + Alpha ist auf einem kompatiblen Mac die empfohlene Direktausgabe für Final Cut Pro.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Export bereit: {fileName}",
@@ -205,7 +208,7 @@ const deRootPageContent = {
     heading:
       "Eine Toolseite plus genau der Kontext, den man für den Einsatz braucht.",
     description:
-      "Time Overlay ist als Local-First-Overlay-Timer-Generator konzipiert. Stelle oben Dauer, Stil, Position und Exportformat ein; dieser untere Bereich beantwortet die wenigen Fragen, die für SEO und reale Workflow-Entscheidungen wichtig bleiben.",
+      "Time Overlay ist ein Local-First-Generator. Stellen Sie oben Dauer, Stil, Position und Format ein; unten erfahren Sie, wie Transparenz erhalten bleibt und was vor dem Produktionseinsatz geprüft werden sollte.",
     exportFormatsTitle: "Exportformate",
     exportFormatsPngText:
       "PNG Sequence ist der verlässlichste lokale Export, wenn transparente Overlays oder editorfreundliche Assets gefragt sind.",
@@ -250,8 +253,8 @@ const deRootPageContent = {
     aboutHeading: "Über Time Overlay",
     aboutPoints: [
       "Time Overlay ist ein Local-First-Overlay-Timer-Generator für Creator, die Countdown-Grafiken brauchen, ohne Material an einen entfernten Render-Service hochzuladen.",
-      "Die Seite ist bewusst kompakt gehalten: eine echte Tool-Oberfläche, ein klarer Exportformat-Block und ein SEO-Bereich, der die Workflow-Fragen beantwortet, nach denen Menschen suchen, bevor sie einem Timer-Tool vertrauen.",
-      "Dadurch funktioniert die Homepage sowohl als praktisches Produktionswerkzeug als auch als indexierbare Landingpage für Suchanfragen wie overlay timer, countdown timer overlay, transparent countdown overlay oder timer overlay for video editing.",
+      "Der Generator verbindet Bedienelemente, Exporthinweise und Fehlerbehebung, damit Sie das Asset erstellen und korrekt an eine andere Anwendung übergeben können.",
+      "Die Anleitungen trennen dokumentierte Unterstützung von praktischen Empfehlungen, nennen geprüfte Quellen und zeigen das letzte Prüfdatum, damit sich Kompatibilitätsangaben später nachvollziehen lassen.",
     ],
     aboutCta: {
       beforeLink:
@@ -271,7 +274,7 @@ const deRootPageContent = {
         question:
           "Kann ich einen transparenten Overlay-Timer für OBS oder Twitch erstellen?",
         answer:
-          "Ja. Exportiere das Format WebM (mit Alpha) und füge es als Videoebene in OBS, Streamlabs oder Twitch Studio hinzu. Der Hintergrund ist bereits freigestellt, sodass der Countdown ohne zusätzlichen Chroma-Key sauber über deiner Szene liegt.",
+          "Ja. Exportieren Sie WebM mit Alpha und fügen Sie es in OBS oder Streamlabs als Medienquelle hinzu. Der Hintergrund ist bereits entfernt. Twitch unterstützt Twitch Studio seit dem 30. Mai 2024 nicht mehr.",
       },
       {
         question:

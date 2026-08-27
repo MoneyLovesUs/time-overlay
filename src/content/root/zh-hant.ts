@@ -144,9 +144,10 @@ const zhHantRootPageContent = {
       pngSequenceDescription: "對剪輯軟體與透明素材交接最穩定。",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "適用於 OBS 和 Streamlabs 的透明 VP8 影片，可直接加入為已移除背景的媒體來源。",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "適用於 OBS 與已驗證 VP9 alpha 流程的小容量透明影片；不同剪輯軟體的匯入支援並不一致。",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -177,8 +178,10 @@ const zhHantRootPageContent = {
           "這次匯出可能會吃掉較多記憶體與 CPU。如果瀏覽器開始吃力，請考慮 720p、30 秒或 PNG Sequence。",
         pngSequenceInfo:
           "PNG Sequence 是給剪輯軟體最可靠的 local-first 交接方式，特別是在透明度很重要時。",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha 適合 OBS 與已驗證的 VP9 alpha 流程，能以較小檔案保留透明效果。",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha 是相容 Mac 上 Final Cut Pro 建議的直接匯出格式。",
       },
       runtimeMessages: {
         exportReadyTemplate: "匯出完成：{fileName}",
@@ -196,7 +199,7 @@ const zhHantRootPageContent = {
     notesEyebrow: "工具說明",
     heading: "一個工具頁面，加上真正用得上的最少必要說明。",
     description:
-      "Time Overlay 是一個 local-first 的 overlay timer 產生器。你可以在上方設定時長、樣式、位置與匯出格式，下方則保留給 SEO 與實際工作流程中真正重要的問題。",
+      "Time Overlay 是本機優先的倒數計時產生器。你可以在上方設定時長、樣式、位置與格式，再從下方了解如何保留透明效果，以及正式製作前該驗證哪些項目。",
     exportFormatsTitle: "匯出格式",
     exportFormatsPngText:
       "如果你需要透明 overlay 或方便剪輯的素材，PNG Sequence 是最可靠的本機匯出方式。",
@@ -240,8 +243,8 @@ const zhHantRootPageContent = {
     aboutHeading: "關於 Time Overlay",
     aboutPoints: [
       "Time Overlay 是為了那些想製作倒數圖形、但不想把影片上傳到遠端渲染服務的創作者而打造的 local-first overlay timer 產生器。",
-      "這個頁面刻意維持精簡：一個真的可用的工具區、一個清楚的匯出格式說明，以及一個回答工作流程問題的 SEO 支援區。",
-      "因此這個首頁既可以作為真實製作工具，也可以成為對應 overlay timer、countdown timer overlay、transparent countdown overlay、timer overlay for video editing 等搜尋詞的著陸頁。",
+      "產生器把操作、匯出建議與問題排查放在一起，讓你不只完成素材，也能正確交給其他應用程式。",
+      "指南會區分官方文件支援與實務建議，列出查核來源與最後檢視日期，方便日後重新確認相容性。",
     ],
     aboutCta: {
       beforeLink: "如果你想先處理實務上的疑問，請直接查看",

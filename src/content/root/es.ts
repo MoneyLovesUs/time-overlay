@@ -149,9 +149,10 @@ const esRootPageContent = {
         "La opción más confiable para editores y entregas con transparencia.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "Vídeo VP8 transparente para OBS y Streamlabs. Añádalo como fuente multimedia con el fondo ya eliminado.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "Vídeo transparente más compacto para OBS y flujos compatibles con VP9 alpha; el soporte de importación varía según el editor.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -183,8 +184,10 @@ const esRootPageContent = {
           "Esta exportación probablemente exigirá bastante memoria y CPU. Considera 720p, 30 segundos o PNG Sequence si tu navegador empieza a resentirse.",
         pngSequenceInfo:
           "PNG Sequence es la entrega local-first más fiable para editores, especialmente cuando la transparencia importa.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha es un formato transparente compacto para OBS y flujos donde VP9 alpha ya se haya verificado.",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha es la opción directa recomendada para Final Cut Pro en un Mac compatible.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Exportación lista: {fileName}",
@@ -205,7 +208,7 @@ const esRootPageContent = {
     heading:
       "Una sola página de herramienta, con el contexto mínimo para usarla bien.",
     description:
-      "Time Overlay está diseñado como un generador de temporizador overlay local-first. Usa los controles de arriba para configurar duración, estilo, posición y formato de exportación; esta sección inferior responde las preguntas clave para SEO y para decisiones reales de flujo de trabajo.",
+      "Time Overlay es un generador local-first. Configure arriba la duración, el estilo, la posición y el formato; consulte abajo cómo conservar la transparencia y qué debe probar antes de usar el archivo en producción.",
     exportFormatsTitle: "Formatos de exportación",
     exportFormatsPngText:
       "PNG Sequence es la exportación local más confiable cuando necesitas overlays transparentes o recursos amigables con editores.",
@@ -250,8 +253,8 @@ const esRootPageContent = {
     aboutHeading: "Acerca de Time Overlay",
     aboutPoints: [
       "Time Overlay es un generador de temporizador overlay local-first pensado para creadores que necesitan gráficos de cuenta regresiva sin subir su metraje a un servicio remoto de render.",
-      "La página es intencionalmente compacta: una superficie de trabajo real, un bloque claro sobre formatos de exportación y una zona SEO que responde las preguntas de flujo de trabajo que la gente busca antes de confiar en una herramienta de temporizador.",
-      "Eso hace que la homepage sirva tanto como utilidad de producción real como landing page rastreable para búsquedas como overlay timer, countdown timer overlay, transparent countdown overlay o timer overlay for video editing.",
+      "El generador reúne los controles, las recomendaciones de exportación y las notas de solución de problemas para que pueda crear el recurso y entender cómo llevarlo a otra aplicación.",
+      "Las guías separan el soporte documentado de las recomendaciones prácticas, citan las fuentes consultadas y muestran la fecha de la última revisión para que la compatibilidad pueda volver a comprobarse.",
     ],
     aboutCta: {
       beforeLink: "Si primero quieres resolver las dudas prácticas, ve al ",
@@ -270,7 +273,7 @@ const esRootPageContent = {
         question:
           "¿Puedo crear un temporizador overlay transparente para OBS o Twitch?",
         answer:
-          "Sí. Exporta el formato WebM con transparencia y añádelo como capa de video en OBS, Streamlabs o Twitch Studio. El fondo ya viene recortado, así que la cuenta regresiva queda limpia sobre tu escena sin un paso extra de chroma.",
+          "Sí. Exporte WebM con transparencia y añádalo como fuente multimedia en OBS o Streamlabs. El fondo ya está eliminado, así que no necesita un paso adicional de chroma. Twitch dejó de admitir Twitch Studio después del 30 de mayo de 2024.",
       },
       {
         question:

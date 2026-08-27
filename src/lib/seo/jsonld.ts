@@ -13,6 +13,48 @@ export type JsonLdObject = Record<string, unknown>;
 
 const SCHEMA_CONTEXT = "https://schema.org";
 
+export function buildOrganizationJsonLd({
+  operatorName = siteConfig.name,
+  contactEmail,
+}: {
+  operatorName?: string;
+  contactEmail?: string;
+} = {}): JsonLdObject {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "Organization",
+    "@id": `${siteConfig.url}/#organization`,
+    name: operatorName,
+    url: siteConfig.url,
+    logo: new URL("/icon.svg", siteConfig.url).toString(),
+    ...(contactEmail
+      ? {
+          contactPoint: {
+            "@type": "ContactPoint",
+            email: contactEmail,
+            contactType: "customer support",
+            availableLanguage: ["English", "Chinese"],
+          },
+        }
+      : {}),
+  };
+}
+
+export function buildWebSiteJsonLd(): JsonLdObject {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "WebSite",
+    "@id": `${siteConfig.url}/#website`,
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    publisher: {
+      "@id": `${siteConfig.url}/#organization`,
+    },
+    inLanguage: [...enabledLocales],
+  };
+}
+
 export function buildWebApplicationJsonLd({
   browserRequirements,
   description = siteConfig.description,
@@ -91,6 +133,59 @@ export function buildBreadcrumbJsonLd(
       name: crumb.name,
       item: crumb.url,
     })),
+  };
+}
+
+export function buildArticleJsonLd(input: {
+  headline: string;
+  description: string;
+  url: string;
+  datePublished: string;
+  dateModified: string;
+  authorName: string;
+  image?: string;
+  locale?: EnabledLocale;
+}): JsonLdObject {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": "TechArticle",
+    headline: input.headline,
+    description: input.description,
+    url: input.url,
+    mainEntityOfPage: input.url,
+    datePublished: input.datePublished,
+    dateModified: input.dateModified,
+    inLanguage: input.locale ?? defaultLocale,
+    author: {
+      "@type": "Person",
+      name: input.authorName,
+    },
+    publisher: {
+      "@id": `${siteConfig.url}/#organization`,
+    },
+    image: input.image ?? new URL(siteOgImage.url, siteConfig.url).toString(),
+  };
+}
+
+export function buildWebPageJsonLd(input: {
+  name: string;
+  description: string;
+  url: string;
+  pageType?: "AboutPage" | "ContactPage" | "WebPage";
+  locale?: EnabledLocale;
+  dateModified?: string;
+}): JsonLdObject {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@type": input.pageType ?? "WebPage",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+    inLanguage: input.locale ?? defaultLocale,
+    isPartOf: {
+      "@id": `${siteConfig.url}/#website`,
+    },
+    ...(input.dateModified ? { dateModified: input.dateModified } : {}),
   };
 }
 

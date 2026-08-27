@@ -37,7 +37,7 @@ export async function generateMetadata({
   return createPageMetadata({
     locale: defaultLocale,
     path: `/guides/${slug}`,
-    title: `${guide.title} — Time Overlay`,
+    title: guide.title,
     description: guide.description,
     alternateLocales: guideContentLocales,
   });

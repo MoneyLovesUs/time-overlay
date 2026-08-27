@@ -1,6 +1,7 @@
 import type { ComparePageContent } from "@/content/compare/types";
 import type { GuideChromeContent, GuideContent } from "@/content/guides";
 import type { RootPageContent } from "@/content/root/types";
+import { publicationConfig } from "@/lib/publication";
 import {
   EDITOR_IDS,
   FORMAT_MATRIX,
@@ -39,16 +40,37 @@ export function renderGuideMarkdown(
             .join("\n\n"),
         ]
       : [];
+  const verification = guide.verificationItems
+    .map((item) => `- ${item}`)
+    .join("\n");
+  const troubleshooting = guide.troubleshootingItems
+    .map(
+      (item) =>
+        `### ${item.symptom}\n\n**Resolution:** ${item.resolution}`,
+    )
+    .join("\n\n");
+  const sources = guide.sources
+    .map((source) => `- [${source.label}](${source.href}) — ${source.publisher}`)
+    .join("\n");
 
   return [
     `# ${guide.title}`,
+    `**Author:** ${publicationConfig.authorName}  \n**Published:** ${guide.publishedAt}  \n**Reviewed:** ${guide.reviewedAt}`,
     guide.intro,
     `**${chrome.markdownRecommendedExportLabel}:** ${guide.recommendedFormat}`,
+    `## ${guide.verificationHeading}`,
+    guide.reviewNote,
+    verification,
     `## ${chrome.markdownStepsHeading}`,
     steps,
+    `## ${guide.troubleshootingHeading}`,
+    troubleshooting,
     ...faq,
     `## ${chrome.markdownTipsHeading}`,
     guide.closer,
+    `## ${guide.sourcesHeading}`,
+    guide.sourcesIntro,
+    sources,
   ].join("\n\n");
 }
 

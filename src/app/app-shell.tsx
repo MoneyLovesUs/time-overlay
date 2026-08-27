@@ -12,8 +12,12 @@ import {
   siteConfig,
   siteThemeColor,
 } from "@/lib/site";
-import { buildWebApplicationJsonLd } from "@/lib/seo/jsonld";
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+} from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/site/json-ld";
+import { publicationConfig } from "@/lib/publication";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,11 +65,6 @@ const clarityBootstrapScript = `
       }
   })(window, document, "clarity", "script", "${clarityProjectId}");
 `;
-const browserRequirementsByLocale = {
-  en: "Requires JavaScript and a modern browser with Canvas + WebM support.",
-  "zh-hans": "需要启用 JavaScript，并使用支持 Canvas 与 WebM 的现代浏览器。",
-} as const;
-
 function resolveRootDefaultTitle(title: Metadata["title"]): string {
   if (!title) {
     return siteConfig.name;
@@ -114,16 +113,13 @@ export const siteViewport: Viewport = {
 type AppDocumentProps = Readonly<{
   children: React.ReactNode;
   lang: string;
-  applicationDescription?: string;
 }>;
 
 export function AppDocument({
   children,
   lang,
-  applicationDescription,
 }: AppDocumentProps) {
   const dir = isEnabledLocale(lang) ? getLocaleDirection(lang) : "ltr";
-  const locale = isEnabledLocale(lang) ? lang : defaultLocale;
   return (
     <html
       lang={lang}
@@ -147,14 +143,13 @@ export function AppDocument({
           dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }}
         />
         <JsonLd
-          data={buildWebApplicationJsonLd({
-            browserRequirements:
-              browserRequirementsByLocale[
-                locale as keyof typeof browserRequirementsByLocale
-              ],
-            description: applicationDescription,
-            locale,
-          })}
+          data={[
+            buildOrganizationJsonLd({
+              operatorName: publicationConfig.operatorName,
+              contactEmail: publicationConfig.contactEmail || undefined,
+            }),
+            buildWebSiteJsonLd(),
+          ]}
         />
       </head>
       <body

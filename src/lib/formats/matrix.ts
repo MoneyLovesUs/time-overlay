@@ -79,9 +79,9 @@ export const FORMAT_MATRIX: readonly FormatRow[] = [
     editors: {
       premiere: "native",
       davinci: "native",
-      finalcut: "native",
-      capcut: "works",
-      obs: "works",
+      finalcut: "works",
+      capcut: "unreliable",
+      obs: "unreliable",
     },
     browsers: {
       chrome: "works",
@@ -97,10 +97,10 @@ export const FORMAT_MATRIX: readonly FormatRow[] = [
     transparency: "compressed",
     directExport: true,
     editors: {
-      premiere: "works",
-      davinci: "works",
-      finalcut: "unreliable",
-      capcut: "works",
+      premiere: "unsupported",
+      davinci: "unsupported",
+      finalcut: "unsupported",
+      capcut: "unreliable",
       obs: "native",
     },
     browsers: {
@@ -118,10 +118,10 @@ export const FORMAT_MATRIX: readonly FormatRow[] = [
     transparency: "high",
     directExport: true,
     editors: {
-      premiere: "works",
-      davinci: "works",
-      finalcut: "unreliable",
-      capcut: "works",
+      premiere: "unsupported",
+      davinci: "unsupported",
+      finalcut: "unsupported",
+      capcut: "unreliable",
       obs: "works",
     },
     browsers: {
@@ -139,11 +139,11 @@ export const FORMAT_MATRIX: readonly FormatRow[] = [
     transparency: "high",
     directExport: true,
     editors: {
-      premiere: "works",
-      davinci: "works",
+      premiere: "unreliable",
+      davinci: "unreliable",
       finalcut: "native",
-      capcut: "works",
-      obs: "works",
+      capcut: "unreliable",
+      obs: "unsupported",
     },
     browsers: {
       chrome: "unsupported",

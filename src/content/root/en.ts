@@ -5,7 +5,7 @@ const enRootPageContent = {
     title:
       "Countdown Timer Overlay Generator — Transparent Timer | Time Overlay",
     description:
-      "Time Overlay builds a transparent timer overlay or countdown timer overlay in-browser. Export PNG or WebM with alpha for CapCut, Premiere, DaVinci, OBS.",
+      "Time Overlay builds a transparent countdown in your browser. Export PNG frames for editing or WebM with alpha for OBS and Streamlabs. No footage upload.",
   },
   generatorHero: {
     eyebrow: "Time Overlay",
@@ -149,10 +149,10 @@ const enRootPageContent = {
         "Most reliable for editors and transparent handoff.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "Transparent VP8 video for OBS and Streamlabs. Add it as a Media Source with the background already removed.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
       vp9AlphaDescription:
-        "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+        "A smaller transparent video for OBS and workflows where VP9 alpha has been tested. Editor import support varies.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription:
         "Apple-friendly transparent video. Best on Safari and macOS.",
@@ -194,7 +194,7 @@ const enRootPageContent = {
         pngSequenceInfo:
           "PNG sequence is the most reliable local-first handoff for editors, especially when transparency matters.",
         vp9AlphaInfo:
-          "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
+          "WebM VP9 + alpha is a compact transparent format for OBS and verified VP9-alpha workflows.",
         hevcAlphaInfo:
           "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
       },
@@ -217,7 +217,7 @@ const enRootPageContent = {
         elapsedLabel: "Building your overlay",
         tips: [
           "Everything renders locally in your browser — your frames never leave this device.",
-          "PNG sequence imports cleanly into Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+          "PNG preserves lossless alpha; test sequence timing in your target editor before a long export.",
           "Keep this tab in focus for the fastest export.",
           "Transparent exports drop straight onto your footage — no green screen needed.",
         ],
@@ -244,7 +244,7 @@ const enRootPageContent = {
     exportFormatsPngText:
       "PNG sequence is the most dependable countdown timer overlay export when you need transparent frames or editor-friendly image assets.",
     exportFormatsWebmText:
-      "WebM (with alpha) is the single-file transparent timer overlay video. The VP8 output drops into Premiere, DaVinci, CapCut, OBS, and Streamlabs as a video layer with the background already cut out.",
+      "WebM (with alpha) is the single-file option for OBS and Streamlabs. Editing-app support varies, so use a PNG sequence when the destination editor does not document alpha-enabled WebM import.",
     workflowEyebrow: "How it works",
     workflowHeading: "How the countdown timer overlay export works",
     workflowSteps: [
@@ -261,15 +261,15 @@ const enRootPageContent = {
       {
         title: "Export the timer overlay format that fits your editor",
         body:
-          "Ship it as a PNG sequence for master-grade transparency in Premiere, DaVinci, or Final Cut. Ship it as WebM (with alpha) for a single transparent video file that drops into CapCut and OBS as a video layer.",
+          "Use a PNG sequence for the broadest editor compatibility, including Premiere and DaVinci Resolve. Use WebM (with alpha) when you need a single transparent media file for OBS or Streamlabs.",
       },
     ],
     usageEyebrow: "How to use",
     usageHeading: "How to use Time Overlay in your video",
     usageNotes: [
       "Open the generator, set the timer length, and preview the overlay before exporting anything.",
-      "Use the PNG sequence for a transparent timer overlay in CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve, or any workflow that prefers image assets.",
-      "Use the WebM (with alpha) export when you want a single transparent countdown timer overlay video for OBS, Streamlabs, or a quick social edit.",
+      "Use the PNG sequence for a transparent timer overlay in Premiere Pro, DaVinci Resolve, or another workflow that accepts image assets. Check your editor's sequence-import behavior before a deadline.",
+      "Use the WebM (with alpha) export when you want a single transparent countdown timer overlay video for OBS or Streamlabs.",
       "Keep the overlay short, high-contrast, and away from captions or face framing so it survives mobile viewing.",
     ],
     usageCta: {
@@ -284,13 +284,13 @@ const enRootPageContent = {
     aboutHeading: "About Time Overlay",
     aboutPoints: [
       "Time Overlay is a local-first countdown timer overlay generator built for creators who need transparent countdown graphics without uploading footage to a remote render service.",
-      "The Time Overlay page is intentionally compact: one working tool surface, one export explanation block, and one help area that answers the questions people search for before they trust a timer overlay tool.",
-      "That makes it useful both as a real production utility and as a landing page for related searches such as timer overlay, overlay timer, transparent timer overlay, on-screen timer, and countdown timer overlay for video editing.",
+      "The generator keeps the working controls, export guidance, and troubleshooting notes together so creators can make an asset and understand how to hand it off to another application.",
+      "Our guides distinguish documented support from practical recommendations, list the sources we reviewed, and show a last-reviewed date so compatibility advice can be checked over time.",
     ],
     aboutCta: {
       beforeLink:
-        "If you only need the practical objections handled first, jump to the ",
-      linkLabel: "timer overlay FAQ",
+        "Read more about the project's local-first approach and editorial process on the ",
+      linkLabel: "About page",
       afterLink: ".",
     },
     faqTitle: "FAQ",
@@ -299,12 +299,12 @@ const enRootPageContent = {
       {
         question: "How do I add a timer overlay to a video?",
         answer:
-          "Set the duration and style in the generator above, then export. Choose PNG sequence for the most reliable transparent timer overlay, or WebM (with alpha) for a single transparent video file, and drop it onto a layer above your footage in CapCut, Premiere Pro, Final Cut Pro, DaVinci Resolve, or OBS.",
+          "Set the duration and style in the generator above, then export. Choose PNG sequence for the broadest editor compatibility, or WebM (with alpha) for a single transparent file in OBS or Streamlabs. Import the result and place it on a layer above your footage.",
       },
       {
         question: "Can I make a transparent timer overlay for OBS or Twitch?",
         answer:
-          "Yes. Export the WebM (with alpha) format and add it as a video layer in OBS, Streamlabs, or Twitch Studio. The background is already cut out, so the countdown sits cleanly over your scene without an extra chroma-key step.",
+          "Yes. Export WebM (with alpha) and add it as a Media Source in OBS or Streamlabs. The background is already cut out, so the countdown sits over your scene without an extra chroma-key step. Twitch Studio is omitted because Twitch ended support after May 30, 2024.",
       },
       {
         question:
@@ -320,7 +320,7 @@ const enRootPageContent = {
       {
         question: "Which export format should I pick first?",
         answer:
-          "Start with PNG sequence if you want the most dependable handoff, especially for compositing over real footage. Choose the WebM (with alpha) export when you want a single transparent video file ready for CapCut, OBS, or Streamlabs.",
+          "Start with PNG sequence if you want the most dependable handoff, especially for compositing over real footage. Choose WebM (with alpha) when you want a single transparent video file for OBS or Streamlabs.",
       },
       {
         question: "Is the timer overlay generator rendered on the server?",
@@ -336,7 +336,7 @@ const enRootPageContent = {
         question:
           "Does the timer overlay work for TikTok, YouTube, CapCut, and Premiere?",
         answer:
-          "Yes. It supports short-form and editor workflows that need transparent or image-sequence exports, and the WebM (with alpha) export covers quick local video exports for OBS, CapCut, and Streamlabs without a separate compositing step.",
+          "The exported overlay is platform-agnostic; compatibility depends on the editing app used before upload. PNG sequences are the safer editor handoff, while WebM (with alpha) is intended for OBS and Streamlabs. Test a short export in your exact app version before producing a long timer.",
       },
     ],
   },

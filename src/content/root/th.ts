@@ -145,9 +145,10 @@ const thRootPageContent = {
       pngSequenceDescription: "เหมาะที่สุดสำหรับงานตัดต่อและการส่งมอบไฟล์โปร่งใส",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "วิดีโอ VP8 แบบโปร่งใสสำหรับ OBS และ Streamlabs เพิ่มเป็นแหล่งสื่อได้ทันทีโดยไม่ต้องลบพื้นหลังอีก",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "วิดีโอโปร่งใสขนาดเล็กลงสำหรับ OBS และเวิร์กโฟลว์ที่ทดสอบ VP9 alpha แล้ว การรองรับการนำเข้าขึ้นอยู่กับโปรแกรมตัดต่อ",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -178,8 +179,10 @@ const thRootPageContent = {
           "การส่งออกนี้อาจใช้หน่วยความจำและ CPU สูง ลองใช้ 720p, 30 วินาที หรือ PNG Sequence หากเบราว์เซอร์เริ่มช้า",
         pngSequenceInfo:
           "PNG Sequence คือวิธี local-first ที่เชื่อถือได้ที่สุดสำหรับส่งต่อให้โปรแกรมตัดต่อ โดยเฉพาะเมื่อความโปร่งใสมีความสำคัญ",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha เป็นรูปแบบโปร่งใสขนาดกะทัดรัดสำหรับ OBS และเวิร์กโฟลว์ VP9 alpha ที่ตรวจสอบแล้ว",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha เป็นรูปแบบส่งออกโดยตรงที่แนะนำสำหรับ Final Cut Pro บน Mac ที่รองรับ",
       },
       runtimeMessages: {
         exportReadyTemplate: "ส่งออกพร้อมแล้ว: {fileName}",
@@ -197,7 +200,7 @@ const thRootPageContent = {
     notesEyebrow: "หมายเหตุเครื่องมือ",
     heading: "หน้าเครื่องมือเดียว พร้อมบริบทเท่าที่จำเป็นสำหรับการใช้งานจริง",
     description:
-      "Time Overlay ถูกออกแบบให้เป็น overlay timer generator แบบ local-first ใช้ตัวควบคุมด้านบนเพื่อตั้งระยะเวลา สไตล์ ตำแหน่ง และรูปแบบการส่งออก แล้วใช้ส่วนล่างเพื่อดูคำถามที่ยังสำคัญต่อ SEO และการทำงานจริง",
+      "Time Overlay เป็นตัวสร้างที่ทำงานบนอุปกรณ์เป็นหลัก ตั้งระยะเวลา สไตล์ ตำแหน่ง และรูปแบบได้ด้านบน แล้วดูวิธีรักษาความโปร่งใสกับสิ่งที่ควรทดสอบก่อนใช้งานจริงด้านล่าง",
     exportFormatsTitle: "รูปแบบการส่งออก",
     exportFormatsPngText:
       "หากคุณต้องการ overlay โปร่งใสหรือไฟล์ที่เหมาะกับโปรแกรมตัดต่อ PNG Sequence คือทางเลือกที่เสถียรที่สุด",
@@ -241,8 +244,8 @@ const thRootPageContent = {
     aboutHeading: "เกี่ยวกับ Time Overlay",
     aboutPoints: [
       "Time Overlay คือ overlay timer generator แบบ local-first สำหรับครีเอเตอร์ที่ต้องการกราฟิกนับถอยหลังโดยไม่ต้องอัปโหลดวิดีโอไปยังบริการเรนเดอร์ระยะไกล",
-      "หน้านี้ถูกตั้งใจให้อยู่ในรูปแบบกะทัดรัด: พื้นที่เครื่องมือจริงหนึ่งส่วน บล็อกอธิบายรูปแบบการส่งออกหนึ่งส่วน และพื้นที่ SEO ที่ตอบคำถามด้านเวิร์กโฟลว์ก่อนที่ผู้ใช้จะเชื่อถือเครื่องมือไทเมอร์",
-      "นั่นทำให้หน้าแรกทำหน้าที่ได้ทั้งเป็นเครื่องมือการผลิตจริง และเป็น landing page ที่ถูกเก็บดัชนีสำหรับคำค้นอย่าง overlay timer, countdown timer overlay, transparent countdown overlay และ timer overlay for video editing",
+      "ตัวสร้างรวมเครื่องมือ คำแนะนำการส่งออก และวิธีแก้ปัญหาไว้ในที่เดียว คุณจึงสร้างไฟล์และนำไปใช้ในแอปอื่นได้อย่างถูกต้อง",
+      "คู่มือแยกสิ่งที่เอกสารทางการรองรับออกจากคำแนะนำเชิงปฏิบัติ พร้อมแหล่งข้อมูลและวันที่ตรวจสอบล่าสุด เพื่อให้กลับมาตรวจสอบความเข้ากันได้อีกครั้งได้",
     ],
     aboutCta: {
       beforeLink: "ถ้าคุณต้องการเคลียร์คำถามเชิงปฏิบัติก่อน ให้ไปที่ ",

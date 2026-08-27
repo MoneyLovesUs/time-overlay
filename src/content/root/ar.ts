@@ -145,9 +145,10 @@ const arRootPageContent = {
       pngSequenceDescription: "الخيار الأكثر موثوقية للمحررات وللتسليم الشفاف.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "فيديو VP8 شفاف لـ OBS وStreamlabs. أضِفه كمصدر وسائط بخلفية مزالة مسبقًا.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "فيديو شفاف أصغر لـ OBS ولمسارات العمل التي اختُبر فيها VP9 alpha؛ يختلف دعم الاستيراد بين برامج التحرير.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -178,8 +179,10 @@ const arRootPageContent = {
           "قد يستهلك هذا التصدير قدرًا كبيرًا من الذاكرة والمعالج. جرّب 720p أو 30 ثانية أو PNG Sequence إذا بدأ المتصفح بالتباطؤ.",
         pngSequenceInfo:
           "يظل PNG Sequence أكثر مسار local-first موثوقية للتسليم إلى برامج المونتاج، خصوصًا عندما تكون الشفافية مهمة.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha تنسيق شفاف مدمج لـ OBS ولمسارات العمل التي تم التحقق منها مع VP9 alpha.",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha هو خيار التصدير المباشر الموصى به لـ Final Cut Pro على جهاز Mac متوافق.",
       },
       runtimeMessages: {
         exportReadyTemplate: "اكتمل التصدير: {fileName}",
@@ -197,7 +200,7 @@ const arRootPageContent = {
     notesEyebrow: "ملاحظات الأداة",
     heading: "صفحة أداة واحدة، ومعها فقط أقل قدر من السياق الذي تحتاجه لاستخدامها جيدًا.",
     description:
-      "تم تصميم Time Overlay كمولد overlay timer بنهج local-first. استخدم أدوات التحكم أعلاه لتحديد المدة والنمط والموضع وصيغة التصدير، ثم احتفظ بالقسم السفلي للأسئلة التي ما تزال مهمة فعلاً لـ SEO وقرارات سير العمل الواقعية.",
+      "Time Overlay مولّد يعمل محليًا أولًا. حدّد المدة والنمط والموضع والصيغة في الأعلى، ثم راجع أدناه كيفية الحفاظ على الشفافية وما ينبغي اختباره قبل استخدام الملف في الإنتاج.",
     exportFormatsTitle: "صيغ التصدير",
     exportFormatsPngText:
       "عندما تحتاج إلى overlay شفاف أو ملفات مناسبة للمونتاج، فإن PNG Sequence هو أكثر أساليب التصدير المحلي موثوقية.",
@@ -241,8 +244,8 @@ const arRootPageContent = {
     aboutHeading: "حول Time Overlay",
     aboutPoints: [
       "Time Overlay هو مولد overlay timer بنهج local-first للمبدعين الذين يحتاجون إلى رسومات عدّ تنازلي من دون رفع اللقطات إلى خدمة رندر بعيدة.",
-      "الصفحة مقصودة أن تبقى مضغوطة: سطح أداة فعلي واحد، وشرح واضح لصيغ التصدير، ومنطقة دعم SEO تجيب عن أسئلة سير العمل التي يبحث عنها الناس قبل أن يثقوا في أداة مؤقت.",
-      "لذلك تعمل الصفحة الرئيسية كأداة إنتاج حقيقية وكصفحة هبوط قابلة للفهرسة لعبارات مثل overlay timer وcountdown timer overlay وtransparent countdown overlay وtimer overlay for video editing.",
+      "يجمع المولّد عناصر التحكم وإرشادات التصدير وخطوات استكشاف الأعطال في مكان واحد، لتنشئ الأصل وتنقله بصورة صحيحة إلى تطبيق آخر.",
+      "تفصل الأدلة بين الدعم الموثق والتوصيات العملية، وتعرض المصادر التي تمت مراجعتها وتاريخ آخر مراجعة حتى يمكن إعادة التحقق من التوافق.",
     ],
     aboutCta: {
       beforeLink: "إذا كنت تريد أولًا حسم الاعتراضات العملية، فانتقل إلى ",

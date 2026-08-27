@@ -22,5 +22,6 @@ test("root seo section exposes crawlable homepage support sections", () => {
   assert.match(markup, /id="how-to-use"/);
   assert.match(markup, /id="about-time-overlay"/);
   assert.match(markup, /href="\/#tool"/);
-  assert.match(markup, /href="\/#faq"/);
+  assert.match(markup, /href="\/about"/);
+  assert.doesNotMatch(markup, /"@type":"HowTo"/);
 });

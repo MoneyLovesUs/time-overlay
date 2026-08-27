@@ -1,10 +1,11 @@
 import Link from "next/link";
 
+import type { NavigationItem } from "@/lib/site-navigation";
+
 type SiteFooterProps = {
-  navItems: readonly {
-    href: string;
-    label: string;
-  }[];
+  navItems: readonly NavigationItem[];
+  resourceItems: readonly NavigationItem[];
+  trustItems: readonly NavigationItem[];
   siteDescription: string;
   siteName: string;
   systemRailLabel: string;
@@ -14,10 +15,37 @@ type SiteFooterProps = {
   navAriaLabel?: string;
   productTitle: string;
   productDescription: string;
+  resourceTitle: string;
+  trustTitle: string;
 };
+
+function FooterLinkList({ items }: { items: readonly NavigationItem[] }) {
+  return (
+    <ul className="flex flex-col gap-2">
+      {items.map((item) => (
+        <li key={item.href}>
+          <Link
+            href={item.href}
+            className="inline-flex min-h-8 items-center gap-2 text-sm text-muted-foreground/80 transition-colors hover:text-foreground focus-visible:text-foreground"
+          >
+            <span
+              aria-hidden="true"
+              className="font-mono text-[10px] uppercase tracking-[0.28em] text-border"
+            >
+              &gt;
+            </span>
+            <span>{item.label}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function SiteFooter({
   navItems,
+  resourceItems,
+  trustItems,
   siteDescription,
   siteName,
   systemRailLabel,
@@ -27,6 +55,8 @@ export function SiteFooter({
   navAriaLabel = "Footer",
   productTitle,
   productDescription,
+  resourceTitle,
+  trustTitle,
 }: SiteFooterProps) {
   return (
     <footer className="relative z-20 px-3 pb-4 pt-8 sm:px-4 sm:pb-5">
@@ -48,7 +78,7 @@ export function SiteFooter({
               </p>
             </div>
 
-            <div className="grid gap-6 sm:grid-cols-3 sm:gap-5">
+            <div className="grid gap-6 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
               <div className="flex flex-col gap-2 border-b border-border/50 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
                   {identityTitle}
@@ -59,6 +89,14 @@ export function SiteFooter({
                 <p className="max-w-xs text-sm leading-6 text-muted-foreground/80">
                   {siteDescription}
                 </p>
+                <div className="mt-2 border-t border-border/45 pt-3">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-muted-foreground/55">
+                    {productTitle}
+                  </p>
+                  <p className="mt-1 max-w-xs text-xs leading-5 text-muted-foreground/70">
+                    {productDescription}
+                  </p>
+                </div>
               </div>
 
               <div className="flex flex-col gap-3 border-b border-border/50 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:px-1 sm:pr-5">
@@ -66,34 +104,26 @@ export function SiteFooter({
                   {jumpTitle}
                 </p>
                 <nav aria-label={navAriaLabel}>
-                  <ul className="flex flex-col gap-2">
-                    {navItems.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className="inline-flex items-center gap-2 text-sm text-muted-foreground/80 transition-colors hover:text-foreground"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className="font-mono text-[10px] uppercase tracking-[0.28em] text-border"
-                          >
-                            &gt;
-                          </span>
-                          <span>{item.label}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                  <FooterLinkList items={navItems} />
                 </nav>
               </div>
 
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3 border-b border-border/50 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-5">
                 <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
-                  {productTitle}
+                  {resourceTitle}
                 </p>
-                <p className="text-sm leading-6 text-muted-foreground/78">
-                  {productDescription}
+                <nav aria-label={resourceTitle}>
+                  <FooterLinkList items={resourceItems} />
+                </nav>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/65">
+                  {trustTitle}
                 </p>
+                <nav aria-label={trustTitle}>
+                  <FooterLinkList items={trustItems} />
+                </nav>
               </div>
             </div>
           </div>

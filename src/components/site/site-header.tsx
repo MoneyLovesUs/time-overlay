@@ -18,6 +18,8 @@ type SiteHeaderProps = {
   siteName: string;
   languagePickerLabel?: string;
   primaryNavAriaLabel?: string;
+  currentPath?: string;
+  localizedLocales?: readonly AppLocale[];
 };
 
 export function SiteHeader({
@@ -27,6 +29,8 @@ export function SiteHeader({
   siteName,
   languagePickerLabel = "Lang",
   primaryNavAriaLabel = "Primary",
+  currentPath = "/",
+  localizedLocales = enabledLocales,
 }: SiteHeaderProps) {
   const localizedHomeHref = locale === "en" ? "/" : `/${locale}`;
   const currentLocaleLabel = localeLabels[locale];
@@ -98,7 +102,11 @@ export function SiteHeader({
             <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-44 rounded-none border border-border/80 bg-background/95 p-2 shadow-[0_20px_60px_rgba(0,0,0,0.35)] backdrop-blur">
               <div className="flex flex-col gap-1">
                 {enabledLocales.map((languageLocale) => {
-                  const href = buildLocalizedPath("/", languageLocale);
+                  const hasEquivalent = localizedLocales.includes(languageLocale);
+                  const href = buildLocalizedPath(
+                    hasEquivalent ? currentPath : "/",
+                    languageLocale,
+                  );
                   const isCurrent = languageLocale === locale;
 
                   return (

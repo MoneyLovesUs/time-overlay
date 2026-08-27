@@ -147,10 +147,10 @@ const zhHansRootPageContent = {
       pngSequenceDescription: "对剪辑软件和透明交付最稳妥。",
       webmLabel: "WebM（带 alpha）",
       webmDescription:
-        "透明 VP8 视频。可作为背景已抠除的视频层放入 OBS、Premiere、DaVinci、CapCut 和 Streamlabs。",
+        "适用于 OBS 和 Streamlabs 的透明 VP8 视频，可作为背景已移除的媒体源添加。",
       vp9AlphaLabel: "WebM（VP9 + alpha）",
       vp9AlphaDescription:
-        "适合 Premiere、DaVinci Resolve、Final Cut 和 CapCut 的透明视频。",
+        "适用于 OBS 及已验证 VP9 alpha 的流程，文件更小；不同剪辑软件的导入支持并不一致。",
       hevcAlphaLabel: "MOV（HEVC + alpha）",
       hevcAlphaDescription: "Apple 工作流友好的透明视频，最适合 Safari 和 macOS。",
       fpsLabel: "帧率",
@@ -184,7 +184,7 @@ const zhHansRootPageContent = {
         pngSequenceInfo:
           "PNG 序列是最可靠的本地优先剪辑交付格式，尤其适合需要透明通道的场景。",
         vp9AlphaInfo:
-          "WebM VP9 + alpha 是现代剪辑软件中推荐的透明视频格式。",
+          "WebM VP9 + alpha 适用于 OBS 和已经验证过 VP9 alpha 的流程，透明且体积更紧凑。",
         hevcAlphaInfo:
           "MOV HEVC + alpha 是 Final Cut Pro 推荐的透明视频格式。",
       },
@@ -204,7 +204,7 @@ const zhHansRootPageContent = {
         elapsedLabel: "正在生成叠加素材",
         tips: [
           "所有帧都在你的浏览器本地渲染，不会离开这台设备。",
-          "PNG 序列可稳定导入 Premiere、DaVinci Resolve、Final Cut 和 CapCut。",
+          "PNG 可保留无损 alpha；长时间导出前，请先在目标剪辑软件中检查序列时序。",
           "保持当前标签页在前台，导出速度通常更快。",
           "透明导出可直接叠到素材上，不需要绿幕抠像。",
         ],
@@ -230,7 +230,7 @@ const zhHansRootPageContent = {
     exportFormatsPngText:
       "当你需要透明帧或剪辑软件友好的图像素材时，PNG 序列是最可靠的倒计时叠加导出方式。",
     exportFormatsWebmText:
-      "WebM（带 alpha）是单文件透明倒计时视频。VP8 输出可以作为背景已抠除的视频层放入 Premiere、DaVinci、CapCut、OBS 和 Streamlabs。",
+      "WebM（带 alpha）适合在 OBS 和 Streamlabs 中作为单文件透明素材使用。剪辑软件的支持情况并不一致；目标软件未明确支持时，请改用 PNG 序列。",
     workflowEyebrow: "工作方式",
     workflowHeading: "倒计时叠加导出如何工作",
     workflowSteps: [
@@ -247,15 +247,15 @@ const zhHansRootPageContent = {
       {
         title: "导出适合剪辑软件的透明格式",
         body:
-          "如果要在 Premiere、DaVinci 或 Final Cut 中获得最稳妥的透明通道，导出 PNG 序列。如果想要一个可直接拖入 CapCut 或 OBS 的透明视频文件，导出 WebM（带 alpha）。",
+          "需要更广泛的剪辑软件兼容性时，导出 PNG 序列，包括 Premiere 和 DaVinci Resolve。需要在 OBS 或 Streamlabs 中使用单个透明媒体文件时，再导出 WebM（带 alpha）。",
       },
     ],
     usageEyebrow: "使用方式",
     usageHeading: "如何在视频中使用 Time Overlay",
     usageNotes: [
       "打开生成器，设置计时器长度，并在导出前预览叠加效果。",
-      "如果你要在 CapCut、Premiere Pro、Final Cut Pro、DaVinci Resolve 或偏好图像素材的流程中使用透明计时器，优先选择 PNG 序列。",
-      "如果你想得到一个用于 OBS、Streamlabs 或快速社媒剪辑的单文件透明倒计时视频，选择 WebM（带 alpha）。",
+      "如果你要在 Premiere Pro、DaVinci Resolve 或接受图像素材的流程中使用透明计时器，优先选择 PNG 序列；正式制作前先确认目标软件的序列导入方式。",
+      "如果你想得到一个用于 OBS 或 Streamlabs 的单文件透明倒计时视频，选择 WebM（带 alpha）。",
       "让叠加层保持简短、高对比，并避开字幕和人脸构图区域，这样在移动端观看时也能读清。",
     ],
     usageCta: {
@@ -269,12 +269,12 @@ const zhHansRootPageContent = {
     aboutHeading: "关于 Time Overlay",
     aboutPoints: [
       "Time Overlay 是一个本地优先的倒计时叠加生成器，适合不想把素材上传到远程渲染服务的创作者。",
-      "页面刻意保持紧凑：一个可用的工具界面、一个导出说明区，以及一个回答真实使用问题的帮助区。",
-      "它既能作为实际生产工具，也能覆盖视频剪辑中常见的搜索需求，例如计时器叠加、透明倒计时叠加、屏幕计时器和视频倒计时 overlay。",
+      "生成器把操作控件、导出建议和故障排查放在一起，方便创作者既能制作素材，也能理解如何把素材交给其他应用。",
+      "指南会区分官方文档支持与实践建议，列出核查过的资料，并标注最后复核日期，便于以后重新验证兼容性。",
     ],
     aboutCta: {
-      beforeLink: "如果你想先解决实际顾虑，可以直接跳到",
-      linkLabel: "计时器叠加 FAQ",
+      beforeLink: "如需了解项目的本地优先原则与内容复核方法，请查看",
+      linkLabel: "关于页面",
       afterLink: "。",
     },
     faqTitle: "FAQ",
@@ -283,12 +283,12 @@ const zhHansRootPageContent = {
       {
         question: "如何给视频添加倒计时叠加？",
         answer:
-          "在上方生成器里设置时长和样式，然后导出。需要最稳定的透明计时器时选择 PNG 序列；需要单文件透明视频时选择 WebM（带 alpha），再把它放到 CapCut、Premiere Pro、Final Cut Pro、DaVinci Resolve 或 OBS 中素材上方的图层。",
+          "在上方生成器里设置时长和样式，然后导出。需要较广泛的剪辑软件兼容性时选择 PNG 序列；需要在 OBS 或 Streamlabs 中使用单文件透明素材时选择 WebM（带 alpha）。导入后把素材放到原视频上方的图层。",
       },
       {
         question: "可以为 OBS 或 Twitch 制作透明倒计时叠加吗？",
         answer:
-          "可以。导出 WebM（带 alpha），然后在 OBS、Streamlabs 或 Twitch Studio 中作为视频层添加。背景已经被抠除，不需要额外绿幕抠像步骤。",
+          "可以。导出 WebM（带 alpha），然后在 OBS 或 Streamlabs 中作为媒体源添加。背景已经被抠除，不需要额外绿幕抠像。Twitch 已在 2024 年 5 月 30 日后停止支持 Twitch Studio，因此这里不再把它列为当前方案。",
       },
       {
         question: "timer overlay 和 countdown overlay 有什么区别？",
@@ -303,7 +303,7 @@ const zhHansRootPageContent = {
       {
         question: "第一次应该选择哪种导出格式？",
         answer:
-          "如果你想要最可靠的交付，尤其是要叠到真实视频素材上，先选 PNG 序列。如果你想要一个可直接用于 CapCut、OBS 或 Streamlabs 的透明视频文件，再选 WebM（带 alpha）。",
+          "如果你想要最可靠的交付，尤其是要叠到真实视频素材上，先选 PNG 序列。如果你想要一个用于 OBS 或 Streamlabs 的透明视频文件，再选 WebM（带 alpha）。",
       },
       {
         question: "这个计时器叠加是在服务器上渲染的吗？",
@@ -318,7 +318,7 @@ const zhHansRootPageContent = {
       {
         question: "它适合 TikTok、YouTube、CapCut 和 Premiere 吗？",
         answer:
-          "适合。它支持短视频和剪辑流程常用的透明或图像序列导出；WebM（带 alpha）也覆盖 OBS、CapCut 和 Streamlabs 的快速本地视频导出，不需要额外合成步骤。",
+          "导出的叠加素材不受发布平台限制，真正决定兼容性的是上传前使用的剪辑软件。PNG 序列通常是更稳妥的编辑器交付方式；WebM（带 alpha）主要用于 OBS 和 Streamlabs。长时间导出前，建议先在你的具体软件版本中测试短片段。",
       },
     ],
   },

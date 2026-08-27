@@ -1,11 +1,16 @@
 import type { EnabledLocale } from "@/lib/i18n";
-import { buildLocalizedPath } from "@/lib/i18n";
 import type { RootPageContent } from "@/content/root";
 import { LazyGeneratorShell } from "@/components/site/lazy-generator-shell";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { RootSeoSection } from "@/components/site/root-seo-section";
 import { RootGuidesSection } from "@/components/site/root-guides-section";
+import { JsonLd } from "@/components/site/json-ld";
+import {
+  buildFooterNavigation,
+  buildPrimaryNavigation,
+} from "@/lib/site-navigation";
+import { buildWebApplicationJsonLd } from "@/lib/seo/jsonld";
 
 type RootPageProps = {
   locale: EnabledLocale;
@@ -13,35 +18,17 @@ type RootPageProps = {
 };
 
 export function RootPage({ locale, content }: RootPageProps) {
-  const formatsJumpLink = content.siteChrome.footer.jumpLinks.find(
-    (item) => item.anchorId === "export-formats",
-  );
-
-  if (!formatsJumpLink) {
-    throw new Error("Missing export-formats jump link for localized chrome.");
-  }
-
-  const headerNavItems = [
-    {
-      href: buildLocalizedPath("/#tool", locale),
-      label: content.siteChrome.header.toolLinkLabel,
-    },
-    {
-      href: buildLocalizedPath("/#faq", locale),
-      label: content.siteChrome.header.faqLinkLabel,
-    },
-    {
-      href: buildLocalizedPath("/#export-formats", locale),
-      label: formatsJumpLink.label,
-    },
-  ];
-  const footerNavItems = content.siteChrome.footer.jumpLinks.map((item) => ({
-    href: buildLocalizedPath(`/#${item.anchorId}`, locale),
-    label: item.label,
-  }));
+  const headerNavItems = buildPrimaryNavigation(locale, content);
+  const footerNavigation = buildFooterNavigation(locale, content);
 
   return (
     <div>
+      <JsonLd
+        data={buildWebApplicationJsonLd({
+          description: content.metadata.description,
+          locale,
+        })}
+      />
       <SiteHeader
         locale={locale}
         navItems={headerNavItems}
@@ -56,7 +43,9 @@ export function RootPage({ locale, content }: RootPageProps) {
         <RootGuidesSection locale={locale} guidesSection={content.guidesSection} />
       ) : null}
       <SiteFooter
-        navItems={footerNavItems}
+        navItems={footerNavigation.jumpItems}
+        resourceItems={footerNavigation.resourceItems}
+        trustItems={footerNavigation.trustItems}
         siteDescription={content.siteChrome.siteDescription}
         siteName={content.siteChrome.siteName}
         systemRailLabel={content.siteChrome.footer.systemRailLabel}
@@ -66,6 +55,8 @@ export function RootPage({ locale, content }: RootPageProps) {
         navAriaLabel={content.siteChrome.footer.navAriaLabel}
         productTitle={content.siteChrome.footer.productTitle}
         productDescription={content.siteChrome.footer.productDescription}
+        resourceTitle={footerNavigation.resourceTitle}
+        trustTitle={footerNavigation.trustTitle}
       />
     </div>
   );

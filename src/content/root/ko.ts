@@ -149,9 +149,10 @@ const koRootPageContent = {
         "편집기 전달과 투명 배경 워크플로에서 가장 안정적인 선택입니다.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "OBS와 Streamlabs용 투명 VP8 영상이에요. 배경이 제거된 상태로 미디어 소스에 추가할 수 있어요.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "OBS와 VP9 alpha가 확인된 작업 환경을 위한 더 작은 투명 영상이에요. 편집기별 가져오기 지원은 달라요.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -183,8 +184,10 @@ const koRootPageContent = {
           "이 내보내기는 메모리와 CPU를 많이 사용할 가능성이 큽니다. 브라우저가 버거워지면 720p, 30초 또는 PNG 시퀀스를 고려하세요.",
         pngSequenceInfo:
           "PNG 시퀀스는 특히 투명도가 중요할 때 편집기에 전달하기 가장 안정적인 로컬 우선 형식입니다.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha는 OBS와 이미 확인된 VP9 alpha 작업 환경을 위한 용량이 작은 투명 형식이에요.",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha는 호환되는 Mac의 Final Cut Pro에 권장하는 직접 내보내기 형식이에요.",
       },
       runtimeMessages: {
         exportReadyTemplate: "내보내기 준비 완료: {fileName}",
@@ -204,7 +207,7 @@ const koRootPageContent = {
     notesEyebrow: "도구 메모",
     heading: "한 페이지 도구에, 실제 사용에 필요한 최소한의 맥락만 담았습니다.",
     description:
-      "Time Overlay는 로컬 우선 오버레이 타이머 생성기로 설계되었습니다. 위 컨트롤에서 길이, 스타일, 위치, 내보내기 포맷을 설정하고, 아래 섹션에서는 SEO와 실제 제작 워크플로에 중요한 핵심 질문만 확인하세요.",
+      "Time Overlay는 로컬 우선 생성기예요. 위에서 길이, 스타일, 위치, 형식을 정하고 아래에서 투명도를 유지하는 방법과 실제 제작 전에 확인할 항목을 살펴보세요.",
     exportFormatsTitle: "내보내기 포맷",
     exportFormatsPngText:
       "투명 오버레이나 편집기 친화적 에셋이 필요할 때는 PNG 시퀀스가 가장 신뢰할 수 있는 로컬 내보내기입니다.",
@@ -249,8 +252,8 @@ const koRootPageContent = {
     aboutHeading: "Time Overlay 소개",
     aboutPoints: [
       "Time Overlay는 원격 렌더 서비스에 영상을 업로드하지 않고도 카운트다운 그래픽이 필요한 크리에이터를 위한 로컬 우선 오버레이 타이머 생성기입니다.",
-      "이 페이지는 의도적으로 압축되어 있습니다. 실제로 작동하는 도구 표면 하나, 명확한 내보내기 형식 설명 하나, 그리고 사람들이 타이머 도구를 신뢰하기 전에 검색하는 워크플로 질문에 답하는 SEO 지원 영역 하나로 구성됩니다.",
-      "그 덕분에 homepage는 실제 제작용 유틸리티이면서 overlay timer, countdown timer overlay, transparent countdown overlay, timer overlay for video editing 같은 검색어에 대응하는 랜딩 페이지 역할도 합니다.",
+      "조작 도구, 내보내기 안내, 문제 해결 내용을 한곳에 모아 에셋을 만들고 다른 앱으로 정확하게 넘길 수 있도록 구성했어요.",
+      "가이드는 공식 문서로 확인한 지원과 실무 권장 사항을 구분하고, 참고한 출처와 마지막 검토일을 표시해 호환성 정보를 다시 확인할 수 있게 해요.",
     ],
     aboutCta: {
       beforeLink: "실무적인 질문부터 빠르게 확인하고 싶다면 ",
@@ -268,7 +271,7 @@ const koRootPageContent = {
       {
         question: "OBS나 Twitch용 투명 오버레이 타이머를 만들 수 있나요?",
         answer:
-          "네. WebM(투명) 형식으로 내보낸 뒤 OBS, Streamlabs, Twitch Studio에 영상 레이어로 추가하세요. 배경이 이미 제거되어 있어 별도의 크로마키 작업 없이 카운트다운이 장면 위에 깔끔하게 올라갑니다.",
+          "네. 투명 WebM으로 내보낸 뒤 OBS 또는 Streamlabs에 미디어 소스로 추가하세요. 배경이 이미 제거되어 별도의 크로마키가 필요 없어요. Twitch Studio는 2024년 5월 30일 이후 지원이 종료됐어요.",
       },
       {
         question:

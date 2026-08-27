@@ -12,7 +12,7 @@ const compareContent = {
   eyebrow: "Format comparison",
   h1: `Best transparent overlay export format for each editor in ${CONTENT_YEAR}`,
   leadAnswer:
-    "For most editors, export a PNG sequence — it is the most reliable transparent timer-overlay format and imports losslessly into Premiere Pro, DaVinci Resolve, Final Cut Pro, and CapCut. Use WebM (VP9 + alpha) when you want a single transparent video file for Chrome or Firefox workflows and OBS, and MOV (HEVC + alpha) on Safari and macOS, where it is the native pick for Final Cut Pro. Convert the PNG sequence to ProRes 4444 only when you need a lossless master inside a professional editor. The table below compares every Time Overlay export format by editor support, browser support, and transparency quality.",
+    "For Premiere Pro and DaVinci Resolve, start with a PNG sequence; both document image-sequence workflows and preserve the exported alpha channel. For Final Cut Pro, use MOV with HEVC alpha or convert the PNG frames to ProRes 4444. For OBS and Streamlabs, WebM with alpha is the practical single-file choice. CapCut support varies by platform and version, so test a short PNG or WebM export before committing to a long render. The table below separates documented paths from formats that need verification in your exact setup.",
   tableCaption: `Transparent timer overlay export formats compared by editor and browser support (${CONTENT_YEAR}).`,
   columns: {
     format: "Format",
@@ -49,38 +49,38 @@ const compareContent = {
     "png-sequence": {
       name: "PNG sequence",
       bestFor:
-        "The default for any editor. Master-grade, lossless transparency that Premiere, DaVinci, and Final Cut import natively as an image sequence.",
+        "The safest browser export for professional editing. Premiere Pro and DaVinci Resolve document image-sequence import, and PNG preserves lossless transparency.",
       weakness:
-        "Largest on disk and a folder of frames rather than a single file. Silent — no embedded audio.",
+        "It is a folder of frames rather than a single clip. Final Cut and CapCut may require a different still-image or conversion workflow, so verify timing before a deadline.",
       verdict:
-        "Pick this first unless you specifically need a single video file. It is the most reliable transparent handoff and works in every browser.",
+        "Pick this first for Premiere or Resolve. For Final Cut, convert it to ProRes 4444 when you want one timeline-ready file.",
     },
     "webm-vp8": {
       name: "WebM (VP8 + alpha)",
       bestFor:
         "Quick streaming overlays. Drops into OBS and Streamlabs as a Media Source with the background already cut out, and plays back cheaply.",
       weakness:
-        "More compressed alpha edges than VP9, and unreliable in Safari before 17 and inside Final Cut Pro on macOS.",
+        "More compressed alpha edges than VP9. Adobe, Blackmagic, and Apple documentation do not establish this WebM-alpha file as a dependable native editing path.",
       verdict:
-        "The fast single-file path for streaming. For editing, prefer VP9 or a PNG sequence.",
+        "The fast single-file path for streaming. For editing, use PNG or a documented professional codec.",
     },
     "webm-vp9": {
       name: "WebM (VP9 + alpha)",
       bestFor:
-        "A single transparent video file for Chrome, Edge, and Firefox 130+ workflows, OBS, CapCut, and Premiere or DaVinci.",
+        "A smaller single transparent video file for OBS and browser-based workflows where VP9 alpha has been tested.",
       weakness:
-        "Cannot be exported in Safari, and Final Cut Pro playback on macOS is unreliable.",
+        "Cannot be exported in Safari. Native alpha import is not documented as a dependable route in Premiere Pro, DaVinci Resolve, or Final Cut Pro.",
       verdict:
-        "The best single-file transparent format on non-Apple platforms. On macOS, reach for HEVC or PNG instead.",
+        "Use it for OBS when file size matters. Use PNG or ProRes 4444 for a professional editing handoff.",
     },
     "mov-hevc": {
       name: "MOV (HEVC + alpha)",
       bestFor:
-        "Apple workflows. The native transparent video pick for Final Cut Pro, and clean inside Premiere and DaVinci on macOS.",
+        "Apple workflows. Apple documents HEVC with alpha as a transparent media path for Final Cut Pro.",
       weakness:
-        "Can only be exported from Safari 17.4+ on macOS — not available in Chrome, Edge, or Firefox.",
+        "Can only be exported from Safari 17.4+ on macOS. Treat Premiere, Resolve, and CapCut compatibility as version-dependent until tested locally.",
       verdict:
-        "The right single-file format if you are on a Mac in Safari. Off Apple, use VP9.",
+        "The right direct single-file format for Final Cut on a supported Mac. Elsewhere, use PNG or convert to a documented codec.",
     },
     "prores-4444": {
       name: "ProRes 4444 (via ffmpeg)",
@@ -107,17 +107,17 @@ const compareContent = {
       question:
         "What is the best transparent timer overlay format for video editing?",
       answer:
-        "A PNG sequence is the most reliable transparent timer-overlay format for editing. Premiere Pro, DaVinci Resolve, and Final Cut Pro import it natively with lossless, unambiguous alpha. Use WebM (VP9 + alpha) or MOV (HEVC + alpha) when you specifically want a single video file instead of a folder of frames.",
+        "A PNG sequence is the safest direct browser export for editing, and Premiere Pro and DaVinci Resolve document image-sequence workflows. For a single professional editing file, convert the frames to ProRes 4444. Final Cut users on supported Macs can also choose MOV with HEVC alpha.",
     },
     {
       question: "Which transparent video format works in Final Cut Pro?",
       answer:
-        "On macOS, use a PNG sequence or MOV (HEVC + alpha) for Final Cut Pro. WebM playback inside Final Cut is historically unreliable, so avoid VP8/VP9 WebM there. HEVC + alpha exports from Safari 17.4+ and imports as native transparent media.",
+        "On a supported Mac, use MOV with HEVC alpha or convert the PNG sequence to ProRes 4444 for Final Cut Pro. Apple documents both codecs as supporting alpha. Do not depend on a WebM-alpha editing workflow unless you have tested it in your exact version.",
     },
     {
       question: "What transparent overlay format should I use for OBS?",
       answer:
-        "Export WebM (with alpha) for OBS or Streamlabs — it drops in as a Media Source with the background already cut out. If playback is heavy, fall back to a PNG sequence routed through an Image Slideshow Source; the transparency is identical.",
+        "Export WebM (with alpha) for OBS or Streamlabs and add it as a Media Source. If playback is heavy, make a shorter overlay or reduce resolution and frame rate, then verify looping and transparency in a test scene.",
     },
     {
       question: "Do I need ProRes 4444 for a transparent timer overlay?",

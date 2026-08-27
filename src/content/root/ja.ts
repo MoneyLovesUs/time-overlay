@@ -148,9 +148,10 @@ const jaRootPageContent = {
         "編集ソフト連携や透過素材の受け渡しで最も信頼性が高い形式です。",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "OBS と Streamlabs 向けの透過 VP8 動画です。背景を除いた状態でメディアソースとして追加できます。",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "OBS や動作確認済みの VP9 alpha ワークフロー向けの小容量な透過動画です。編集ソフトの読み込み対応は製品ごとに異なります。",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -182,8 +183,10 @@ const jaRootPageContent = {
           "この書き出しはメモリと CPU に大きな負荷をかける可能性があります。ブラウザが重くなる場合は 720p、30 秒、または PNG シーケンスを検討してください。",
         pngSequenceInfo:
           "PNG シーケンスは、特に透過が重要なときに編集ソフトへ渡す最も信頼できるローカルファースト形式です。",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha は、OBS や動作確認済みの VP9 alpha ワークフロー向けの小容量な透過形式です。",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha は、対応する Mac の Final Cut Pro に適した直接書き出し形式です。",
       },
       runtimeMessages: {
         exportReadyTemplate: "書き出し完了: {fileName}",
@@ -204,7 +207,7 @@ const jaRootPageContent = {
     heading:
       "1つのツールページに、実運用で必要な最小限のコンテキストだけを載せました。",
     description:
-      "Time Overlay はローカルファーストのオーバーレイタイマージェネレーターとして設計されています。上部のコントロールで長さ・スタイル・位置・書き出し形式を設定し、下部セクションでは SEO と実務フローに本当に必要な質問だけを確認できます。",
+      "Time Overlay はローカルファーストのジェネレーターです。上部で長さ・スタイル・位置・形式を設定し、下部で透過を保つ方法と本番利用前の確認項目を確認できます。",
     exportFormatsTitle: "書き出し形式",
     exportFormatsPngText:
       "透過オーバーレイや編集しやすい素材が必要な場合、PNGシーケンスが最も安定したローカル書き出しです。",
@@ -249,8 +252,8 @@ const jaRootPageContent = {
     aboutHeading: "Time Overlay について",
     aboutPoints: [
       "Time Overlay は、映像を遠隔レンダーサービスにアップロードせずにカウントダウン素材を作りたいクリエイター向けのローカルファーストなオーバーレイタイマージェネレーターです。",
-      "このページは意図的にコンパクトです。実際に使えるツール面、明確な書き出し形式ブロック、そしてタイマーツールを信用する前に検索されるワークフローの疑問に答える SEO サポート領域だけを置いています。",
-      "そのため homepage は実用的な制作ツールであると同時に、overlay timer、countdown timer overlay、transparent countdown overlay、timer overlay for video editing といった検索向けのランディングページにもなります。",
+      "操作、書き出しの判断材料、トラブル対処を一か所にまとめ、素材を作るだけでなく別のアプリへ正しく渡せるようにしています。",
+      "ガイドでは公式文書で確認できる対応と実務上の推奨を分け、参照元と最終確認日を明記しています。互換性が変わったときも再確認できます。",
     ],
     aboutCta: {
       beforeLink: "実務上の疑問を先に確認したい場合は、",
@@ -268,7 +271,7 @@ const jaRootPageContent = {
       {
         question: "OBS や Twitch 向けの透過オーバーレイタイマーは作れますか？",
         answer:
-          "はい。WebM（透過）形式で書き出し、OBS、Streamlabs、Twitch Studio に動画レイヤーとして追加します。背景はすでに切り抜かれているため、追加のクロマキー処理なしでカウントダウンがシーンの上にきれいに重なります。",
+          "はい。WebM（透過）で書き出し、OBS または Streamlabs にメディアソースとして追加します。背景はすでに除かれているため、クロマキーは不要です。Twitch Studio は 2024 年 5 月 30 日をもってサポートが終了しています。",
       },
       {
         question:

@@ -103,10 +103,10 @@ describe("localized SEO helpers", () => {
     expect(zhHansRootPageContent.metadata.description.length).toBeLessThanOrEqual(160);
   });
 
-  it("emits localized homepage entries plus translated guides and comparison", () => {
+  it("emits localized homepage, trust, guide, and comparison entries", () => {
     const entries = buildSitemapEntries();
-    // homepage × 17 locales + 6 guides × 2 locales + 1 comparison × 2 locales.
-    expect(entries.length).toBe(17 + 6 * 2 + 2);
+    // homepage × 17 locales + (5 supporting + 6 guides + 1 comparison) × 2 locales.
+    expect(entries.length).toBe(17 + (5 + 6 + 1) * 2);
 
     const homepageRoots = entries.filter((entry) => {
       const path = entry.url.replace(/^https?:\/\/[^/]+/, "");
@@ -155,6 +155,21 @@ describe("localized SEO helpers", () => {
         "https://timeoverlay.co/zh-hans/compare/transparent-overlay-formats",
       ]),
     );
+
+    const supportingEntries = entries.filter((entry) =>
+      ["/guides", "/about", "/privacy", "/contact", "/terms"].some(
+        (path) => new URL(entry.url).pathname.endsWith(path),
+      ),
+    );
+    expect(supportingEntries.length).toBe(10);
+    expect(
+      supportingEntries.every(
+        (entry) =>
+          entry.alternates?.languages?.en &&
+          entry.alternates.languages["zh-hans"] &&
+          entry.alternates.languages["x-default"],
+      ),
+    ).toBe(true);
   });
 
   it("omits hreflang language alternates for English-only pages", () => {

@@ -149,9 +149,10 @@ const fiRootPageContent = {
         "Luotettavin vaihtoehto editoreille ja läpinäkyvään toimitukseen.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "Läpinäkyvä VP8-video OBS:lle ja Streamlabsille. Lisää se medialähteeksi ilman taustan poistoa.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "Pienempi läpinäkyvä video OBS:lle ja testattuihin VP9 alpha -työnkulkuihin; tuontituki vaihtelee editorin mukaan.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -183,8 +184,10 @@ const fiRootPageContent = {
           "Tämä vienti kuormittaa todennäköisesti muistia ja CPU:ta paljon. Harkitse 720p:tä, 30 sekuntia tai PNG Sequencea, jos selain alkaa hidastua.",
         pngSequenceInfo:
           "PNG Sequence on luotettavin local-first-siirtotapa editoreille, erityisesti kun läpinäkyvyys on tärkeää.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha on kompakti läpinäkyvä muoto OBS:lle ja testattuihin VP9 alpha -työnkulkuihin.",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha on suositeltu suora vientimuoto Final Cut Prolle yhteensopivassa Macissa.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Vienti valmis: {fileName}",
@@ -205,7 +208,7 @@ const fiRootPageContent = {
     heading:
       "Yksi työkalusivu ja vain se konteksti, joka tarvitaan tehokkaaseen käyttöön.",
     description:
-      "Time Overlay on suunniteltu local-first overlay-ajastimen generaattoriksi. Aseta yllä kestot, tyyli, sijainti ja vientimuoto, ja käytä tätä alaosaa niihin kysymyksiin, jotka ovat edelleen tärkeitä SEO:n ja käytännön työnkulkujen kannalta.",
+      "Time Overlay on paikallisesti toimiva generaattori. Määritä yllä kesto, tyyli, sijainti ja muoto; tarkista alta, miten läpinäkyvyys säilyy ja mitä kannattaa testata ennen tuotantokäyttöä.",
     exportFormatsTitle: "Vientiformaatit",
     exportFormatsPngText:
       "PNG Sequence on luotettavin paikallinen vienti, kun tarvitset läpinäkyviä overlay-elementtejä tai editoriystävällisiä assetteja.",
@@ -250,8 +253,8 @@ const fiRootPageContent = {
     aboutHeading: "Tietoa Time Overlaysta",
     aboutPoints: [
       "Time Overlay on local-first overlay-ajastimen generaattori sisällöntuottajille, jotka tarvitsevat countdown-grafiikkaa ilman videon lataamista etärenderipalveluun.",
-      "Sivu on tarkoituksella tiivis: yksi toimiva työkalupinta, yksi selkeä vientiformaattiosio ja yksi SEO-tukialue, joka vastaa työnkulkuun liittyviin kysymyksiin ennen kuin käyttäjä luottaa ajastintyökaluun.",
-      "Siksi homepage toimii sekä oikeana tuotantotyökaluna että indeksoitavana laskeutumissivuna hauille kuten overlay timer, countdown timer overlay, transparent countdown overlay ja timer overlay for video editing.",
+      "Generaattori kokoaa ohjaimet, vientiohjeet ja vianmäärityksen samaan paikkaan, jotta voit luoda aineiston ja siirtää sen oikein toiseen sovellukseen.",
+      "Oppaissa dokumentoitu tuki erotetaan käytännön suosituksista. Niissä näkyvät tarkistetut lähteet ja viimeisin tarkistuspäivä, jotta yhteensopivuus voidaan arvioida uudelleen.",
     ],
     aboutCta: {
       beforeLink:

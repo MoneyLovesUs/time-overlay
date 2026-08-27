@@ -149,9 +149,10 @@ const ruRootPageContent = {
         "Самый надежный вариант для редакторов и передачи с прозрачностью.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "Прозрачное видео VP8 для OBS и Streamlabs. Добавьте его как медиаисточник — фон уже удалён.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "Более компактное прозрачное видео для OBS и проверенных процессов с VP9 alpha; поддержка импорта зависит от редактора.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -183,8 +184,10 @@ const ruRootPageContent = {
           "Этот экспорт, вероятно, будет сильно нагружать память и CPU. Попробуйте 720p, 30 секунд или PNG Sequence, если браузер начинает тормозить.",
         pngSequenceInfo:
           "PNG Sequence — самый надежный local-first формат передачи в редакторы, особенно когда важна прозрачность.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha — компактный прозрачный формат для OBS и уже проверенных процессов с VP9 alpha.",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha — рекомендуемый прямой экспорт для Final Cut Pro на совместимом Mac.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Экспорт готов: {fileName}",
@@ -205,7 +208,7 @@ const ruRootPageContent = {
     heading:
       "Одна страница инструмента и только минимальный контекст для уверенной работы.",
     description:
-      "Time Overlay создан как local-first генератор таймера-оверлея. Настройте длительность, стиль, позицию и формат экспорта в блоке выше, а нижний раздел оставлен для ключевых вопросов, важных для SEO и реальных рабочих сценариев.",
+      "Time Overlay — local-first генератор. Настройте длительность, стиль, позицию и формат выше, а ниже проверьте, как сохранить прозрачность и что протестировать перед использованием файла в проекте.",
     exportFormatsTitle: "Форматы экспорта",
     exportFormatsPngText:
       "PNG Sequence — самый надежный локальный экспорт, когда нужны прозрачные оверлеи и удобная передача в монтаж.",
@@ -250,8 +253,8 @@ const ruRootPageContent = {
     aboutHeading: "О Time Overlay",
     aboutPoints: [
       "Time Overlay — это local-first генератор overlay-таймера для авторов, которым нужны графические таймеры без загрузки видео в удаленный сервис рендера.",
-      "Страница намеренно компактна: одна рабочая поверхность инструмента, один понятный блок про форматы экспорта и одна SEO-зона, отвечающая на рабочие вопросы, которые люди ищут перед тем как довериться таймерному инструменту.",
-      "Это делает главную страницу одновременно практичной производственной утилитой и индексируемой посадочной страницей для запросов вроде overlay timer, countdown timer overlay, transparent countdown overlay и timer overlay for video editing.",
+      "Генератор объединяет настройки, рекомендации по экспорту и устранение неполадок, чтобы вы могли создать графику и правильно передать её в другое приложение.",
+      "Руководства отделяют документированную поддержку от практических советов, указывают проверенные источники и дату последней редакции, чтобы совместимость можно было перепроверить.",
     ],
     aboutCta: {
       beforeLink:
@@ -270,7 +273,7 @@ const ruRootPageContent = {
       {
         question: "Можно ли сделать прозрачный таймер-оверлей для OBS или Twitch?",
         answer:
-          "Да. Экспортируйте формат WebM с прозрачностью и добавьте его как видеослой в OBS, Streamlabs или Twitch Studio. Фон уже вырезан, поэтому обратный отсчёт аккуратно ложится поверх сцены без дополнительного хромакея.",
+          "Да. Экспортируйте WebM с прозрачностью и добавьте его как медиаисточник в OBS или Streamlabs. Фон уже удалён, дополнительный хромакей не нужен. Twitch прекратил поддержку Twitch Studio после 30 мая 2024 года.",
       },
       {
         question:

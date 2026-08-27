@@ -18,6 +18,10 @@ describe("markdown mirrors", () => {
     expect(md).toContain("## Steps");
     expect(md).toContain(`### 1. ${guide.steps[0].title}`);
     expect(md).toContain("## Tips");
+    expect(md).toContain(`**Published:** ${guide.publishedAt}`);
+    expect(md).toContain(`## ${guide.verificationHeading}`);
+    expect(md).toContain(`## ${guide.troubleshootingHeading}`);
+    expect(md).toContain(`## ${guide.sourcesHeading}`);
   });
 
   it("renders Chinese markdown mirrors from Chinese content", () => {

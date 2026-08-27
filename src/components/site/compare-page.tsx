@@ -8,7 +8,11 @@ import type { ComparePageContent } from "@/content/compare/types";
 import type { RootPageContent } from "@/content/root/types";
 import { FORMAT_MATRIX } from "@/lib/formats/matrix";
 import { buildLocalizedPath, type EnabledLocale } from "@/lib/i18n";
-import { siteConfig } from "@/lib/site";
+import { secondaryContentLocales, siteConfig } from "@/lib/site";
+import {
+  buildFooterNavigation,
+  buildPrimaryNavigation,
+} from "@/lib/site-navigation";
 import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -28,14 +32,8 @@ export function ComparePage({ content, chrome, locale, path }: ComparePageProps)
   const generatorPath = buildLocalizedPath("/#tool", locale);
   const guidesPath = buildLocalizedPath("/#guides", locale);
 
-  const headerNavItems = [
-    { href: buildLocalizedPath("/#tool", locale), label: chrome.siteChrome.header.toolLinkLabel },
-    { href: buildLocalizedPath("/#faq", locale), label: chrome.siteChrome.header.faqLinkLabel },
-  ];
-  const footerNavItems = chrome.siteChrome.footer.jumpLinks.map((item) => ({
-    href: buildLocalizedPath(`/#${item.anchorId}`, locale),
-    label: item.label,
-  }));
+  const headerNavItems = buildPrimaryNavigation(locale, chrome);
+  const footerNavigation = buildFooterNavigation(locale, chrome);
 
   const itemListJsonLd = buildItemListJsonLd({
     name: content.h1,
@@ -63,6 +61,8 @@ export function ComparePage({ content, chrome, locale, path }: ComparePageProps)
         siteName={chrome.siteChrome.siteName}
         languagePickerLabel={chrome.siteChrome.header.languagePickerLabel}
         primaryNavAriaLabel={chrome.siteChrome.header.primaryNavAriaLabel}
+        currentPath={path}
+        localizedLocales={secondaryContentLocales}
       />
       <main className="bg-background text-foreground">
         <section className="border-b border-border/70 px-6 py-16">
@@ -149,7 +149,9 @@ export function ComparePage({ content, chrome, locale, path }: ComparePageProps)
         </section>
       </main>
       <SiteFooter
-        navItems={footerNavItems}
+        navItems={footerNavigation.jumpItems}
+        resourceItems={footerNavigation.resourceItems}
+        trustItems={footerNavigation.trustItems}
         siteDescription={chrome.siteChrome.siteDescription}
         siteName={chrome.siteChrome.siteName}
         systemRailLabel={chrome.siteChrome.footer.systemRailLabel}
@@ -159,6 +161,8 @@ export function ComparePage({ content, chrome, locale, path }: ComparePageProps)
         navAriaLabel={chrome.siteChrome.footer.navAriaLabel}
         productTitle={chrome.siteChrome.footer.productTitle}
         productDescription={chrome.siteChrome.footer.productDescription}
+        resourceTitle={footerNavigation.resourceTitle}
+        trustTitle={footerNavigation.trustTitle}
       />
     </div>
   );

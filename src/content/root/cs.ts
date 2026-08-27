@@ -145,9 +145,10 @@ const csRootPageContent = {
       pngSequenceDescription: "Nejspolehlivější volba pro editory a transparentní předání.",
       webmLabel: "WebM (with alpha)",
       webmDescription:
-        "Transparent VP8 video. Drops into OBS, Premiere, DaVinci, CapCut, and Streamlabs as a video layer with the background already cut out.",
+        "Průhledné video VP8 pro OBS a Streamlabs. Přidejte ho jako zdroj médií s již odstraněným pozadím.",
       vp9AlphaLabel: "WebM (VP9 + alpha)",
-      vp9AlphaDescription: "Transparent video for Premiere, DaVinci Resolve, Final Cut, and CapCut.",
+      vp9AlphaDescription:
+        "Menší průhledné video pro OBS a ověřené postupy s VP9 alpha; podpora importu se mezi editory liší.",
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription: "Apple-friendly transparent video. Best on Safari and macOS.",
       fpsLabel: "FPS",
@@ -178,8 +179,10 @@ const csRootPageContent = {
           "Tento export pravděpodobně výrazně zatíží paměť a CPU. Pokud se prohlížeč začne zadýchávat, zvažte 720p, 30 sekund nebo PNG Sequence.",
         pngSequenceInfo:
           "PNG Sequence je nejspolehlivější local-first způsob předání do editorů, zejména když záleží na průhlednosti.",
-      vp9AlphaInfo: "WebM VP9 + alpha is the recommended transparent video format for modern editors.",
-      hevcAlphaInfo: "MOV HEVC + alpha is the recommended transparent video format for Final Cut Pro.",
+      vp9AlphaInfo:
+        "WebM VP9 + alpha je kompaktní průhledný formát pro OBS a ověřené postupy s VP9 alpha.",
+      hevcAlphaInfo:
+        "MOV HEVC + alpha je doporučený přímý export pro Final Cut Pro na kompatibilním Macu.",
       },
       runtimeMessages: {
         exportReadyTemplate: "Export připraven: {fileName}",
@@ -197,7 +200,7 @@ const csRootPageContent = {
     notesEyebrow: "Poznámky k nástroji",
     heading: "Jedna stránka nástroje a jen tolik kontextu, kolik je opravdu potřeba.",
     description:
-      "Time Overlay je navržen jako local-first generátor overlay timeru. Nahoře nastavíte délku, styl, pozici a exportní formát, zatímco spodní část zůstává pro otázky, které mají skutečný význam pro SEO a praktický workflow.",
+      "Time Overlay je generátor pracující především lokálně. Nahoře nastavíte délku, styl, pozici a formát; dole zjistíte, jak zachovat průhlednost a co ověřit před použitím ve skutečném projektu.",
     exportFormatsTitle: "Exportní formáty",
     exportFormatsPngText:
       "Pokud potřebujete transparentní overlay nebo assety vhodné do editoru, PNG Sequence je nejspolehlivější lokální export.",
@@ -241,8 +244,8 @@ const csRootPageContent = {
     aboutHeading: "O Time Overlay",
     aboutPoints: [
       "Time Overlay je local-first generátor overlay timeru pro tvůrce, kteří potřebují countdown grafiku bez nahrávání záběrů do vzdálené renderovací služby.",
-      "Stránka je záměrně kompaktní: jedna skutečně funkční plocha nástroje, jeden jasný blok o exportních formátech a jedna SEO část, která odpovídá na workflow otázky, které lidé hledají ještě předtím, než začnou nástroji důvěřovat.",
-      "Díky tomu homepage funguje jako reálný produkční nástroj i jako indexovatelná landing page pro dotazy jako overlay timer, countdown timer overlay, transparent countdown overlay nebo timer overlay for video editing.",
+      "Generátor spojuje ovládání, doporučení k exportu a řešení potíží, abyste mohli soubor vytvořit a správně předat do jiné aplikace.",
+      "Průvodci oddělují doloženou podporu od praktických doporučení, uvádějí ověřené zdroje i datum poslední kontroly a umožňují kompatibilitu později znovu posoudit.",
     ],
     aboutCta: {
       beforeLink: "Pokud chcete nejdřív vyřešit praktické námitky, přejděte na ",

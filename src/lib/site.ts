@@ -9,6 +9,7 @@ import {
   type EnabledLocale,
   type AppLocale,
 } from "./i18n.ts";
+import { publicationConfig } from "./publication.ts";
 
 const defaultSiteUrl = "https://timeoverlay.co";
 
@@ -50,6 +51,7 @@ export const siteThemeColor = "#05060a";
  * yearly bump is an intentional content review, enforced by a unit test.
  */
 export const CONTENT_YEAR = 2026;
+export const SITE_CONTENT_LAST_REVIEWED = "2026-08-28";
 
 export const siteOgImage = {
   url: "/og.png",
@@ -101,10 +103,18 @@ type ComparisonRouteDefinition = {
   readonly locales: readonly AppLocale[];
 };
 
+type SupportingRouteDefinition = {
+  readonly href: "/guides" | "/about" | "/privacy" | "/contact" | "/terms";
+  readonly changeFrequency: "monthly";
+  readonly priority: 0.5 | 0.7;
+  readonly locales: readonly AppLocale[];
+};
+
 type PublicRouteDefinition =
   | HomepageRouteDefinition
   | GuideRouteDefinition
-  | ComparisonRouteDefinition;
+  | ComparisonRouteDefinition
+  | SupportingRouteDefinition;
 
 const homepageRoute: HomepageRouteDefinition = {
   href: "/",
@@ -124,6 +134,13 @@ export const GUIDE_SLUGS = [
 ] as const;
 
 export const COMPARE_SLUGS = ["transparent-overlay-formats"] as const;
+export const SUPPORTING_PATHS = [
+  "/guides",
+  "/about",
+  "/privacy",
+  "/contact",
+  "/terms",
+] as const;
 
 export const secondaryContentLocales = ["en", "zh-hans"] as const satisfies readonly AppLocale[];
 
@@ -143,8 +160,18 @@ const comparisonRoutes: readonly ComparisonRouteDefinition[] = COMPARE_SLUGS.map
   }),
 );
 
+const supportingRoutes: readonly SupportingRouteDefinition[] = SUPPORTING_PATHS.map(
+  (href) => ({
+    href,
+    changeFrequency: "monthly" as const,
+    priority: href === "/guides" ? (0.7 as const) : (0.5 as const),
+    locales: secondaryContentLocales,
+  }),
+);
+
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
   homepageRoute,
+  ...supportingRoutes,
   ...guideRoutes,
   ...comparisonRoutes,
 ] as const;
@@ -224,6 +251,13 @@ export function createPageMetadata({
     description,
     applicationName: siteConfig.name,
     category: "video",
+    ...(publicationConfig.adsenseAccount
+      ? {
+          other: {
+            "google-adsense-account": publicationConfig.adsenseAccount,
+          },
+        }
+      : {}),
     icons: buildSiteIconMetadata(),
     alternates: {
       canonical: canonicalPath,
@@ -263,7 +297,7 @@ export async function createRootPageMetadata(
 }
 
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
-  const lastModified = new Date();
+  const lastModified = new Date(SITE_CONTENT_LAST_REVIEWED);
 
   return publicRouteDefinitions.flatMap((route) => {
     return route.locales.map((locale) => {

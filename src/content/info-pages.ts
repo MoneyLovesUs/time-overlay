@@ -92,7 +92,7 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
         {
           heading: "Business and editorial transparency",
           paragraphs: [
-            "The core generator is currently available without an account. Time Overlay may test clearly labelled advertising or paid export conveniences in the future, but commercial placement does not change compatibility verdicts or guide recommendations.",
+            "The core generator is available without an account. Time Overlay displays clearly labelled advertising and may test paid export conveniences in the future, but commercial placement does not change compatibility verdicts or guide recommendations.",
             "Questions, corrections, and accessibility reports can be sent to " +
               email +
               ". Please do not send private footage, account credentials, or files that contain personal information unless support explicitly asks for a safe diagnostic sample.",
@@ -158,7 +158,7 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
         {
           heading: "Advertising and Google cookies",
           paragraphs: [
-            "If Google AdSense is enabled, third-party vendors including Google may use cookies to serve ads based on a visitor's prior visits to this or other websites. Google's advertising cookies allow Google and its partners to personalize advertising where consent and applicable law permit.",
+            "Time Overlay uses Google AdSense. Third-party vendors including Google may use cookies to serve ads based on a visitor's prior visits to this or other websites. Google's advertising cookies allow Google and its partners to personalize advertising where consent and applicable law permit.",
             "Visitors can manage personalized advertising through Google's Ads Settings. Other advertising vendors may provide their own opt-out controls. Where Google requires a certified consent management platform, Time Overlay will present that choice before requesting personalized ads. Advertising is not currently necessary to use the generator.",
           ],
           links: [
@@ -375,7 +375,7 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
         {
           heading: "联系与商业透明",
           paragraphs: [
-            `核心生成器目前无需账号。未来可能测试清晰标注的广告或付费导出便利功能，但商业合作不会改变兼容性结论。问题、纠错和无障碍反馈可以发送到 ${email}。请不要发送密码、验证码或包含私人信息的完整项目素材。`,
+            `核心生成器无需账号。Time Overlay 会展示清晰标注的广告，并可能在未来测试付费导出便利功能，但商业合作不会改变兼容性结论。问题、纠错和无障碍反馈可以发送到 ${email}。请不要发送密码、验证码或包含私人信息的完整项目素材。`,
           ],
         },
       ],
@@ -430,7 +430,7 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
         {
           heading: "广告与 Google Cookie",
           paragraphs: [
-            "如果启用 Google AdSense，包括 Google 在内的第三方供应商可能根据访客此前访问本网站或其他网站的情况使用 Cookie 投放广告。只有在用户同意且适用法律允许时，Google 及其合作伙伴才会用于个性化广告。",
+            "Time Overlay 使用 Google AdSense。包括 Google 在内的第三方供应商可能根据访客此前访问本网站或其他网站的情况使用 Cookie 投放广告。只有在用户同意且适用法律允许时，Google 及其合作伙伴才会用于个性化广告。",
             "访客可以通过 Google 广告设置管理个性化广告。在 Google 要求认证同意管理平台的地区，Time Overlay 会在请求个性化广告前提供相应选择。使用生成器本身不以接受广告个性化为条件。",
           ],
           links: [

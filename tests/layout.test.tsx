@@ -9,6 +9,10 @@ vi.mock("next/font/google", () => ({
   Geist_Mono: () => ({ variable: "font-geist-mono" }),
 }));
 
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers({ "x-nonce": "test-nonce" }),
+}));
+
 vi.mock("@/components/site/site-header", () => ({
   SiteHeader: () => React.createElement("header", null, "header"),
 }));
@@ -27,6 +31,7 @@ type ScriptLikeProps = {
     __html?: string;
   };
   id?: string;
+  nonce?: string;
   src?: string;
   strategy?: string;
 };
@@ -51,7 +56,7 @@ function collectScriptLikeProps(node: React.ReactNode): ScriptLikeProps[] {
   return scriptProps;
 }
 
-test("app document schedules an idle-loaded Microsoft Clarity bootstrap after hydration", () => {
+test("app document schedules an idle-loaded Microsoft Clarity bootstrap after hydration", async () => {
   const document = AppDocument({
     children: React.createElement("main", null, "content"),
     lang: "en",
@@ -80,7 +85,7 @@ test("root layout injects the Ahrefs analytics script with the site data key", a
   assert.match(markup, /data-key="NQce666pfXHzSj3WBXaUIQ"/);
 });
 
-test("app document mounts the Google Analytics gtag snippet", () => {
+test("app document mounts the Google Analytics gtag snippet", async () => {
   const document = AppDocument({
     children: React.createElement("main", null, "content"),
     lang: "en",
@@ -104,6 +109,23 @@ test("app document mounts the Google Analytics gtag snippet", () => {
     googleBootstrapScript.dangerouslySetInnerHTML.__html ?? "",
     /gtag\('config', 'G-1FB0KM19XV'\);/,
   );
+});
+
+test("app document loads the approved AdSense account with the request nonce", async () => {
+  const document = AppDocument({
+    children: React.createElement("main", null, "content"),
+    lang: "en",
+    nonce: "test-nonce",
+  });
+  const adsenseScript = collectScriptLikeProps(document).find(({ src }) =>
+    src?.startsWith(
+      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=",
+    ),
+  );
+
+  assert.ok(adsenseScript);
+  assert.equal(adsenseScript.nonce, "test-nonce");
+  assert.match(adsenseScript.src ?? "", /ca-pub-1565960034992068$/);
 });
 
 test("localized layout defines an html lang that matches the active locale", async () => {

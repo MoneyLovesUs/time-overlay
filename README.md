@@ -39,9 +39,12 @@ adds the `google-adsense-account` meta tag and serves the corresponding Google
 authorized-seller record from `/ads.txt`. When absent or malformed, `/ads.txt`
 returns `404` instead of publishing a placeholder account.
 
-The production build intentionally does not load the AdSense ad-serving script
-yet. Add that only after the site is approved and the required consent/CSP path
-has been selected and tested.
+The approved production site loads the AdSense ad-serving script on every HTML
+route. `src/proxy.ts` generates a per-request nonce and a strict CSP compatible
+with Google's changing ad-resource origins; every first-party and third-party
+script in the shared app shell receives that nonce. Consent messages are managed
+through AdSense **Privacy & messaging** and must be kept published for all
+applicable visitor regions.
 
 ## Project Structure
 

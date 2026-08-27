@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { CSP_NONCE_HEADER } from "@/lib/content-security-policy";
 import { defaultLocale, isEnabledLocale } from "@/lib/i18n";
 import { createRootPageMetadata } from "@/lib/site";
 import { AppDocument, siteViewport } from "@/app/app-shell";
@@ -41,5 +43,11 @@ export default async function LocalizedLayout({ children, params }: LocalizedLay
     notFound();
   }
 
-  return <AppDocument lang={locale}>{children}</AppDocument>;
+  const nonce = (await headers()).get(CSP_NONCE_HEADER) ?? undefined;
+
+  return (
+    <AppDocument lang={locale} nonce={nonce}>
+      {children}
+    </AppDocument>
+  );
 }

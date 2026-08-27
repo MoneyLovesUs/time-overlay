@@ -25,24 +25,11 @@ describe("security response headers", () => {
     expect(headers.get("Permissions-Policy")).toContain("microphone=()");
   });
 
-  it("ships a production CSP for the app and its approved analytics providers", () => {
+  it("leaves per-request CSP generation to the production proxy", () => {
     const headers = asHeaderMap("production");
-    const csp = headers.get("Content-Security-Policy");
 
-    expect(csp).toBeDefined();
-    expect(csp).not.toContain("\n");
-    expect(csp).toContain("default-src 'self'");
-    expect(csp).toContain("script-src 'self' 'unsafe-inline'");
-    expect(csp).toContain("script-src-attr 'none'");
-    expect(csp).toContain("https://www.googletagmanager.com");
-    expect(csp).toContain("https://analytics.ahrefs.com");
-    expect(csp).toContain("https://*.clarity.ms");
-    expect(csp).toContain("https://us.i.posthog.com");
-    expect(csp).toContain("frame-src 'none'");
-    expect(csp).toContain("form-action 'self'");
-    expect(csp).not.toContain("checkout.stripe.com");
-    expect(csp).toContain("frame-ancestors 'none'");
-    expect(csp).toContain("upgrade-insecure-requests");
+    expect(headers.has("Content-Security-Policy")).toBe(false);
+    expect(headers.get("Strict-Transport-Security")).toContain("max-age=63072000");
   });
 
   it("does not ship CSP or HSTS in development", () => {

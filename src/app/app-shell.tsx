@@ -113,13 +113,19 @@ export const siteViewport: Viewport = {
 type AppDocumentProps = Readonly<{
   children: React.ReactNode;
   lang: string;
+  nonce?: string;
 }>;
 
 export function AppDocument({
   children,
   lang,
+  nonce,
 }: AppDocumentProps) {
   const dir = isEnabledLocale(lang) ? getLocaleDirection(lang) : "ltr";
+  const adsenseScriptUrl = publicationConfig.adsenseAccount
+    ? `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publicationConfig.adsenseAccount}`
+    : null;
+
   return (
     <html
       lang={lang}
@@ -129,20 +135,32 @@ export function AppDocument({
     >
       <head>
         <script
+          nonce={nonce}
           src="https://analytics.ahrefs.com/analytics.js"
           data-key={ahrefsAnalyticsDataKey}
           async
         />
+        {adsenseScriptUrl ? (
+          <script
+            nonce={nonce}
+            async
+            src={adsenseScriptUrl}
+            crossOrigin="anonymous"
+          />
+        ) : null}
         <Script
+          nonce={nonce}
           src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
           strategy="afterInteractive"
         />
         <Script
           id="google-analytics"
+          nonce={nonce}
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: googleAnalyticsBootstrapScript }}
         />
         <JsonLd
+          nonce={nonce}
           data={[
             buildOrganizationJsonLd({
               operatorName: publicationConfig.operatorName,
@@ -168,6 +186,7 @@ export function AppDocument({
         <div className="relative flex min-h-full flex-1 flex-col">{children}</div>
         <Script
           id="microsoft-clarity"
+          nonce={nonce}
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: clarityBootstrapScript }}
         />

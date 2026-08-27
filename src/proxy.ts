@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+
+import {
+  buildContentSecurityPolicy,
+  CSP_NONCE_HEADER,
+} from "@/lib/content-security-policy";
 
 // The /styles/<preset> landing pages (and their /<locale>/styles/<preset>
-// variants) were retired: 160 near-duplicate URLs that earned zero Search
-// Console impressions over 12+ months. They are gone for good, so answer with
-// 410 Gone — the explicit "deleted, drop it from the index" signal — instead of
-// the soft 404 that a missing route would produce. Preset deep-linking still
-// works through the generator's `/?preset=<id>` query param, which is untouched.
+// variants) were retired after producing no search demand. Preserve the
+// explicit 410 response while expanding Proxy coverage to inject CSP nonces.
 const RETIRED_STYLES_SEGMENT = /(?:^|\/)styles(?:\/|$)/;
 
 export function proxy(request: NextRequest): NextResponse {
@@ -17,9 +18,33 @@ export function proxy(request: NextRequest): NextResponse {
     });
   }
 
-  return NextResponse.next();
+  const nonce = crypto.randomUUID();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_HEADER, nonce);
+
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
+
+  response.headers.set(
+    "Content-Security-Policy",
+    buildContentSecurityPolicy(nonce),
+  );
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/styles/:path*", "/:locale/styles/:path*"],
+  matcher: [
+    {
+      source:
+        "/((?!api|_next/static|_next/image|.*\\.(?:avif|css|gif|ico|jpg|jpeg|js|json|map|png|svg|txt|webmanifest|webp|xml)$).*)",
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
+  ],
 };

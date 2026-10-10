@@ -1,7 +1,6 @@
 import type { EnabledLocale } from "@/lib/i18n";
 import type { RootPageContent } from "@/content/root";
 import { LazyGeneratorShell } from "@/components/site/lazy-generator-shell";
-import { AdsterraNativeBanner } from "@/components/site/adsterra-ads";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { RootSeoSection } from "@/components/site/root-seo-section";
@@ -39,7 +38,6 @@ export function RootPage({ locale, content }: RootPageProps) {
         primaryNavAriaLabel={content.siteChrome.header.primaryNavAriaLabel}
       />
       <LazyGeneratorShell hero={content.generatorHero} ui={content.generatorUi} />
-      <AdsterraNativeBanner />
       <RootSeoSection locale={locale} seoSection={content.seoSection} />
       {content.guidesSection ? (
         <RootGuidesSection locale={locale} guidesSection={content.guidesSection} />

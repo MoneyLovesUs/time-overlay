@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { SiteFooter } from "@/components/site/site-footer";
+import { AdsterraNativeBanner } from "@/components/site/adsterra-ads";
 import { SiteHeader } from "@/components/site/site-header";
 import { JsonLd } from "@/components/site/json-ld";
 import { GuideWorkflowDiagram } from "@/components/site/guide-workflow-diagram";
@@ -346,6 +347,7 @@ export function GuidePage({
           </div>
           </section>
         </article>
+        <AdsterraNativeBanner />
       </main>
       <SiteFooter
         navItems={footerNavigation.jumpItems}

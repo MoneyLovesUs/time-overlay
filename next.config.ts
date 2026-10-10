@@ -42,6 +42,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Allow the local browser-preview proxy (127.0.0.1:port) to load dev chunks
+  // and HMR. Dev-only setting; has no effect on production builds.
+  allowedDevOrigins: ["127.0.0.1"],
   async headers() {
     return [
       {

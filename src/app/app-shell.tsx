@@ -17,6 +17,7 @@ import {
   buildWebSiteJsonLd,
 } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/site/json-ld";
+import { AdsterraSocialBar } from "@/components/site/adsterra-ads";
 import { publicationConfig } from "@/lib/publication";
 
 const geistSans = Geist({
@@ -139,15 +140,8 @@ export function AppDocument({
           src="https://analytics.ahrefs.com/analytics.js"
           data-key={ahrefsAnalyticsDataKey}
           async
+          suppressHydrationWarning
         />
-        {adsenseScriptUrl ? (
-          <script
-            nonce={nonce}
-            async
-            src={adsenseScriptUrl}
-            crossOrigin="anonymous"
-          />
-        ) : null}
         <Script
           nonce={nonce}
           src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
@@ -169,6 +163,18 @@ export function AppDocument({
             buildWebSiteJsonLd(),
           ]}
         />
+        {/* AdSense rewrites its own loader tag and appends the managed script
+            to the end of <head>. Keeping it last plus suppressing hydration
+            warnings avoids false hydration mismatches. */}
+        {adsenseScriptUrl ? (
+          <script
+            nonce={nonce}
+            async
+            src={adsenseScriptUrl}
+            crossOrigin="anonymous"
+            suppressHydrationWarning
+          />
+        ) : null}
       </head>
       <body
         suppressHydrationWarning
@@ -190,6 +196,7 @@ export function AppDocument({
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: clarityBootstrapScript }}
         />
+        <AdsterraSocialBar />
       </body>
     </html>
   );

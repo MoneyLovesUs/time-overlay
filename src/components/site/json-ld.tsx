@@ -15,6 +15,9 @@ export function JsonLd({ data, nonce }: JsonLdProps) {
     <script
       nonce={nonce}
       type="application/ld+json"
+      // Browsers mask the nonce attribute after parsing, so React always sees
+      // "" during hydration — suppress the false mismatch warning.
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{
         __html: JSON.stringify(data).replace(/</g, "\\u003c"),
       }}

@@ -13,6 +13,7 @@ function createRenderContextStub() {
     arc: noop,
     beginPath: noop,
     closePath: noop,
+    createLinearGradient: () => ({ addColorStop: noop }),
     createRadialGradient: () => ({ addColorStop: noop }),
     fill: noop,
     fillRect: noop,
@@ -23,6 +24,7 @@ function createRenderContextStub() {
     restore: noop,
     save: noop,
     stroke: noop,
+    strokeRect: noop,
   } as unknown as CanvasRenderingContext2D;
 }
 

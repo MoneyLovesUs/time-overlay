@@ -86,7 +86,19 @@ export type TemplateId =
   | "music-visual-timer"
   | "countdown-ring"
   | "luxury-event"
-  | "custom-font-showcase";
+  | "custom-font-showcase"
+  | "editor-amber-timecode"
+  | "documentary-date-stamp"
+  | "studio-tally-clock"
+  | "podcast-chapter-clock"
+  | "vertical-live-sale"
+  | "shorts-bold-rail"
+  | "speedrun-split-pro"
+  | "stream-intermission-pro"
+  | "shot-clock-broadcast"
+  | "round-timer-pro"
+  | "luxury-launch-editorial"
+  | "cinema-frame-counter";
 
 export type TemplateTier = "free" | "growth" | "signature";
 

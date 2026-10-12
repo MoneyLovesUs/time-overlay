@@ -1,4 +1,4 @@
-import { getGeneratorTemplateById } from "@/lib/generator/templates";
+import { SIGNATURE_TEMPLATE_IDS, getGeneratorTemplateById } from "@/lib/generator/templates";
 import type {
   GeneratorSettings,
   TemplateMotif,
@@ -285,6 +285,393 @@ function drawRing(
   context.restore();
 }
 
+function drawSmallLabel(
+  context: RenderContext,
+  label: string,
+  x: number,
+  y: number,
+  color: string,
+  scale: number,
+  align: CanvasTextAlign = "left",
+) {
+  context.save();
+  context.font = `700 ${Math.max(9, 10 * scale)}px ui-monospace, monospace`;
+  context.textAlign = align;
+  context.textBaseline = "top";
+  context.fillStyle = color;
+  context.globalAlpha = 0.68;
+  context.fillText(label, x, y);
+  context.restore();
+}
+
+function drawSignatureBackdrop(
+  context: RenderContext,
+  frameState: TemplateFrameState,
+  templateId: GeneratorSettings["templateId"],
+  scale: number,
+) {
+  if (!(SIGNATURE_TEMPLATE_IDS as readonly string[]).includes(templateId)) {
+    return false;
+  }
+
+  const template = getGeneratorTemplateById(templateId);
+  const { frame } = frameState;
+  const { accent, secondaryAccent, kicker } = template.visual;
+  const plate = getPlateBounds(frameState, scale);
+
+  switch (templateId) {
+    case "editor-amber-timecode": {
+      drawPlate(context, frameState, "center-plate", accent, kicker, scale);
+      const left = frame.width * 0.1;
+      const right = frame.width * 0.9;
+      const top = frame.height * 0.12;
+      const bottom = frame.height * 0.88;
+      context.save();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.2;
+      context.lineWidth = Math.max(1, scale);
+      context.beginPath();
+      context.moveTo(left, top);
+      context.lineTo(right, top);
+      context.moveTo(left, bottom);
+      context.lineTo(right, bottom);
+      context.moveTo(frame.width * 0.15, top);
+      context.lineTo(frame.width * 0.15, bottom);
+      context.moveTo(frame.width * 0.85, top);
+      context.lineTo(frame.width * 0.85, bottom);
+      context.stroke();
+      context.restore();
+      drawSmallLabel(
+        context,
+        "V1 / CUT 08",
+        frame.width * 0.15 + 10 * scale,
+        bottom - 28 * scale,
+        secondaryAccent,
+        scale,
+      );
+      return true;
+    }
+    case "documentary-date-stamp": {
+      context.save();
+      context.fillStyle = "rgba(236, 217, 178, 0.035)";
+      for (let y = 0; y < frame.height; y += Math.max(4, 5 * scale)) {
+        context.fillRect(0, y, frame.width, Math.max(1, scale));
+      }
+      context.restore();
+      drawPlate(context, frameState, "corner-plate", accent, kicker, scale);
+      drawSmallLabel(
+        context,
+        "16MM / A-CAM",
+        frame.width - 44 * scale,
+        frame.height - 42 * scale,
+        secondaryAccent,
+        scale,
+        "right",
+      );
+      return true;
+    }
+    case "studio-tally-clock": {
+      drawPlate(context, frameState, "corner-plate", accent, kicker, scale);
+      context.save();
+      context.fillStyle = accent;
+      context.shadowBlur = 14 * scale;
+      context.shadowColor = accent;
+      context.beginPath();
+      context.arc(
+        plate.x + 14 * scale,
+        plate.y - 18 * scale,
+        5 * scale,
+        0,
+        Math.PI * 2,
+      );
+      context.fill();
+      context.restore();
+      drawSmallLabel(
+        context,
+        "CAM 02     PROGRAM",
+        frame.width - 44 * scale,
+        34 * scale,
+        secondaryAccent,
+        scale,
+        "right",
+      );
+      return true;
+    }
+    case "podcast-chapter-clock": {
+      const x = Math.max(30 * scale, plate.x - 220 * scale);
+      const y = plate.y - 22 * scale;
+      const width = Math.min(
+        frame.width - x - 30 * scale,
+        plate.width + 250 * scale,
+      );
+      const height = plate.height + 44 * scale;
+      context.save();
+      roundedRect(context, x, y, width, height, height / 2);
+      context.fillStyle = "rgba(7, 13, 24, 0.72)";
+      context.fill();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.3;
+      context.lineWidth = Math.max(1, 1.5 * scale);
+      context.stroke();
+      context.globalAlpha = 0.56;
+      context.fillStyle = secondaryAccent;
+      const baseline = y + height / 2;
+      for (let index = 0; index < 14; index += 1) {
+        const barHeight = (10 + Math.abs(Math.sin(index * 0.78)) * 28) * scale;
+        context.fillRect(
+          x + 26 * scale + index * 9 * scale,
+          baseline - barHeight / 2,
+          3 * scale,
+          barHeight,
+        );
+      }
+      context.restore();
+      drawSmallLabel(
+        context,
+        kicker ?? "CHAPTER 04",
+        x + width - 22 * scale,
+        y + 10 * scale,
+        accent,
+        scale,
+        "right",
+      );
+      return true;
+    }
+    case "vertical-live-sale": {
+      const width = Math.min(frame.width - 54 * scale, frame.height * 0.52);
+      const height = Math.min(frame.height - 54 * scale, width * 1.72);
+      const x = (frame.width - width) / 2;
+      const y = (frame.height - height) / 2;
+      context.save();
+      roundedRect(context, x, y, width, height, 18 * scale);
+      context.fillStyle = "rgba(14, 6, 14, 0.4)";
+      context.fill();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.55;
+      context.lineWidth = Math.max(1, 2 * scale);
+      context.stroke();
+      context.globalAlpha = 0.52;
+      context.fillStyle = accent;
+      context.fillRect(x, y, width, height * 0.3);
+      context.globalAlpha = 0.3;
+      context.strokeStyle = secondaryAccent;
+      context.strokeRect(
+        x + width * 0.1,
+        y + height * 0.42,
+        width * 0.8,
+        height * 0.36,
+      );
+      context.restore();
+      drawSmallLabel(
+        context,
+        "CENTER-SAFE PRODUCT ZONE",
+        frame.width / 2,
+        y + height - 34 * scale,
+        secondaryAccent,
+        scale,
+        "center",
+      );
+      return true;
+    }
+    case "shorts-bold-rail": {
+      const left = frame.width * 0.18;
+      const right = frame.width * 0.82;
+      const top = frame.height * 0.08;
+      const bottom = frame.height * 0.92;
+      context.save();
+      context.lineWidth = Math.max(3, 5 * scale);
+      context.shadowBlur = 12 * scale;
+      context.strokeStyle = accent;
+      context.shadowColor = accent;
+      context.beginPath();
+      context.moveTo(left, top);
+      context.lineTo(left, bottom);
+      context.stroke();
+      context.strokeStyle = secondaryAccent;
+      context.shadowColor = secondaryAccent;
+      context.beginPath();
+      context.moveTo(right, top);
+      context.lineTo(right, bottom);
+      context.stroke();
+      context.restore();
+      drawSmallLabel(
+        context,
+        "MAKE THE CUT",
+        frame.width / 2,
+        frame.height * 0.78,
+        secondaryAccent,
+        scale,
+        "center",
+      );
+      return true;
+    }
+    case "speedrun-split-pro": {
+      const x = Math.max(frame.width * 0.64, plate.x - 70 * scale);
+      const y = frame.height * 0.08;
+      const width = frame.width - x - frame.width * 0.05;
+      const height = frame.height * 0.84;
+      context.save();
+      roundedRect(context, x, y, width, height, 8 * scale);
+      context.fillStyle = "rgba(3, 8, 18, 0.8)";
+      context.fill();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.42;
+      context.lineWidth = Math.max(1, 1.5 * scale);
+      context.stroke();
+      context.restore();
+      drawSmallLabel(context, "ANY%", x + 18 * scale, y + 16 * scale, accent, scale);
+      drawSmallLabel(
+        context,
+        "PB",
+        x + width - 18 * scale,
+        y + 16 * scale,
+        secondaryAccent,
+        scale,
+        "right",
+      );
+      const rows = ["DOCK          -0.8", "CORE          -1.4", "GATE          +0.2"];
+      rows.forEach((row, index) => {
+        drawSmallLabel(
+          context,
+          row,
+          x + 18 * scale,
+          y + (54 + index * 28) * scale,
+          index === 2 ? "#FFD580" : accent,
+          scale,
+        );
+      });
+      return true;
+    }
+    case "stream-intermission-pro": {
+      const insetX = frame.width * 0.09;
+      const insetY = frame.height * 0.13;
+      context.save();
+      roundedRect(
+        context,
+        insetX,
+        insetY,
+        frame.width - insetX * 2,
+        frame.height - insetY * 2,
+        12 * scale,
+      );
+      context.fillStyle = "rgba(255, 255, 255, 0.035)";
+      context.fill();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.35;
+      context.stroke();
+      context.strokeStyle = secondaryAccent;
+      context.lineWidth = Math.max(2, 3 * scale);
+      context.beginPath();
+      context.moveTo(insetX, insetY + 38 * scale);
+      context.lineTo(insetX, insetY);
+      context.lineTo(insetX + 38 * scale, insetY);
+      context.moveTo(frame.width - insetX - 38 * scale, frame.height - insetY);
+      context.lineTo(frame.width - insetX, frame.height - insetY);
+      context.lineTo(frame.width - insetX, frame.height - insetY - 38 * scale);
+      context.stroke();
+      context.restore();
+      drawSmallLabel(
+        context,
+        "BACK IN",
+        frame.width / 2,
+        plate.y - 42 * scale,
+        secondaryAccent,
+        scale,
+        "center",
+      );
+      return true;
+    }
+    case "shot-clock-broadcast":
+      drawScoreboard(context, frameState, accent, kicker, scale);
+      drawSmallLabel(
+        context,
+        "BROADCAST SAFE / 16:9",
+        48 * scale,
+        frame.height - 44 * scale,
+        secondaryAccent,
+        scale,
+      );
+      return true;
+    case "round-timer-pro": {
+      const x = frame.width * 0.07;
+      const width = frame.width * 0.86;
+      const height = Math.max(plate.height + 74 * scale, frame.height * 0.25);
+      const y = frame.height - height - frame.height * 0.08;
+      context.save();
+      context.fillStyle = "rgba(2, 3, 7, 0.84)";
+      context.fillRect(x, y, width, height);
+      const accentWidth = width * 0.16;
+      const red = context.createLinearGradient(x, y, x + accentWidth, y);
+      red.addColorStop(0, accent);
+      red.addColorStop(1, "rgba(255, 64, 84, 0.12)");
+      context.fillStyle = red;
+      context.fillRect(x, y, accentWidth, height);
+      const blue = context.createLinearGradient(
+        x + width - accentWidth,
+        y,
+        x + width,
+        y,
+      );
+      blue.addColorStop(0, "rgba(67, 139, 255, 0.12)");
+      blue.addColorStop(1, secondaryAccent);
+      context.fillStyle = blue;
+      context.fillRect(x + width - accentWidth, y, accentWidth, height);
+      context.strokeStyle = "rgba(255, 255, 255, 0.18)";
+      context.strokeRect(x, y, width, height);
+      context.restore();
+      drawSmallLabel(
+        context,
+        "ROUND 03",
+        x + width * 0.32,
+        y + 18 * scale,
+        "#FFFFFF",
+        scale,
+        "center",
+      );
+      return true;
+    }
+    case "luxury-launch-editorial": {
+      const inset = frame.width * 0.08;
+      context.save();
+      context.strokeStyle = accent;
+      context.globalAlpha = 0.3;
+      context.lineWidth = Math.max(1, scale);
+      context.strokeRect(
+        inset,
+        frame.height * 0.1,
+        frame.width - inset * 2,
+        frame.height * 0.8,
+      );
+      context.globalAlpha = 0.16;
+      context.strokeRect(
+        inset + 24 * scale,
+        frame.height * 0.1 + 24 * scale,
+        frame.width - inset * 2 - 48 * scale,
+        frame.height * 0.8 - 48 * scale,
+      );
+      context.globalAlpha = 0.8;
+      context.fillStyle = accent;
+      context.fillRect(frame.width * 0.37, frame.height * 0.1, frame.width * 0.26, scale);
+      context.fillRect(frame.width * 0.37, frame.height * 0.9, frame.width * 0.26, scale);
+      context.restore();
+      drawSmallLabel(
+        context,
+        "THE REVEAL BEGINS",
+        frame.width / 2,
+        plate.y + plate.height + 30 * scale,
+        secondaryAccent,
+        scale,
+        "center",
+      );
+      return true;
+    }
+    case "cinema-frame-counter":
+      return false;
+    default:
+      return false;
+  }
+}
+
 export function drawTemplateBackdrop(
   context: RenderContext,
   frameState: TemplateFrameState,
@@ -295,6 +682,10 @@ export function drawTemplateBackdrop(
   const { frame } = frameState;
   const scale = getScale(frame);
   const plate = getPlateBounds(frameState, scale);
+
+  if (drawSignatureBackdrop(context, frameState, templateId, scale)) {
+    return;
+  }
 
   if (
     motif === "corner-plate" ||

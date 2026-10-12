@@ -8,14 +8,44 @@ import {
 import {
   GENERATOR_QUICK_TEMPLATE_IDS,
   GENERATOR_TEMPLATES,
+  LEGACY_FREE_TEMPLATE_IDS,
+  SIGNATURE_TEMPLATE_IDS,
 } from "@/lib/generator/templates";
 
 describe("generator templates", () => {
-  it("ships the complete 48-template catalog with unique ids", () => {
+  it("ships the complete 60-template catalog with unique ids", () => {
     const ids = GENERATOR_TEMPLATES.map((template) => template.id);
 
-    expect(GENERATOR_TEMPLATES).toHaveLength(48);
-    expect(new Set(ids).size).toBe(48);
+    expect(GENERATOR_TEMPLATES).toHaveLength(60);
+    expect(new Set(ids).size).toBe(60);
+  });
+
+  it("keeps the approved 12-template signature catalog additive", () => {
+    expect(SIGNATURE_TEMPLATE_IDS).toHaveLength(12);
+    expect(new Set(SIGNATURE_TEMPLATE_IDS).size).toBe(12);
+
+    const signatureTemplates = GENERATOR_TEMPLATES.filter((template) =>
+      (SIGNATURE_TEMPLATE_IDS as readonly string[]).includes(template.id),
+    );
+    const legacyIds = new Set<string>(LEGACY_FREE_TEMPLATE_IDS);
+    expect(signatureTemplates.map((template) => template.id)).toEqual(
+      SIGNATURE_TEMPLATE_IDS,
+    );
+    expect(
+      signatureTemplates.every((template) => !legacyIds.has(template.id)),
+    ).toBe(true);
+  });
+
+  it("keeps the exact original catalog regardless of analytics tier", () => {
+    expect(LEGACY_FREE_TEMPLATE_IDS).toHaveLength(48);
+    expect(new Set(LEGACY_FREE_TEMPLATE_IDS).size).toBe(48);
+
+    const byId = new Map(
+      GENERATOR_TEMPLATES.map((template) => [template.id, template]),
+    );
+    for (const id of LEGACY_FREE_TEMPLATE_IDS) {
+      expect(byId.get(id), id).toBeDefined();
+    }
   });
 
   it("keeps the planned free, growth, and signature tier split", () => {
@@ -29,7 +59,7 @@ describe("generator templates", () => {
     expect(countByTier).toEqual({
       free: 18,
       growth: 18,
-      signature: 12,
+      signature: 24,
     });
   });
 

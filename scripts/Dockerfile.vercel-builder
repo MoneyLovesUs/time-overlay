@@ -1,0 +1,5 @@
+# Matches the project's Node 24 runtime. The runner forces linux/amd64.
+# Upload .vercel/output, never this image or the source tree.
+FROM node:24-bookworm-slim
+RUN npm install -g --allow-scripts=esbuild pnpm@9.15.9 vercel@53.2.0
+WORKDIR /work

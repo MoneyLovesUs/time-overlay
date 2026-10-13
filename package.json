@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest"
+    "test": "vitest",
+    "release:solo": "node scripts/release-solo.mjs",
+    "release:test": "node --test scripts/release-solo.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

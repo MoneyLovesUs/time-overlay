@@ -19,7 +19,23 @@ pnpm build
 pnpm start
 pnpm lint
 pnpm test -- --run
+pnpm release:test
 ```
+
+## Production release
+
+Run `pnpm release:solo` from a clean main checkout synced with origin/main.
+The script builds inside local linux/amd64 Docker and uploads the finished
+`.vercel/output` to Vercel with `--prebuilt --prod`. This avoids remote source
+build usage; Vercel still hosts the site and runs its functions.
+
+Git automatic deployments are disabled in `vercel.json`: pushing or merging
+does not release the site. Validate a committed branch without deploying using
+`pnpm release:solo --build-only`. Use `--reuse-artifact` to reuse only a matching,
+verified cached output. Do not use Dashboard Redeploy or ordinary `vercel --prod`.
+
+Setup, first cutover, environment handling and rollback:
+[local prebuilt release runbook](docs/deploy/local-prebuilt-release.md).
 
 ## Public publication configuration
 

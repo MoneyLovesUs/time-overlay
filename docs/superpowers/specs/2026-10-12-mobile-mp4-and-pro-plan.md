@@ -214,14 +214,14 @@ export function restorePro(email: string): Promise<"restored" | "not_found" | "u
    - 新增 `STRIPE_PRO_PRICE_ID` = 上一步得到的 price id
    - 新增 `PRO_LICENSE_SECRET` = `openssl rand -base64 32` 生成的随机串，两个环境分别生成
 3. 任何密钥都不许打印、不许写进仓库。需要确认密钥类型时，只看前 8 个字符（例如 `sk_live_` / `rk_live_`）。
-4. Git 上 main 一更新，Vercel 就会自动部署生产环境（已确认存在 `time-overlay-git-main-…` 这个别名）。**合并 PR＝上线**，所以合并必须在验收通过之后。
+4. 发布流程更新（2026-10-13）：所有分支的 Git 自动部署关闭，**合并 PR 不再等于上线**。验收并合并后，从干净且与 origin/main 同步的 main 执行 `pnpm release:solo`，在本地 Docker 构建，再 prebuilt 上传。操作说明见 `docs/deploy/local-prebuilt-release.md`。
 
 ## 7.1 合并和上线顺序
 
-1. 本地 main 比 origin 多 2 个提交（`46d08f7` 新增 12 个模板，以及本规格所在的提交）。谁先开工谁执行 `git push origin main`（这一步会触发一次生产部署，内容只有新增的免费模板，风险低）。
+1. 以下 A/B/C 顺序为原任务计划；2026-10-13 起推送仅同步代码，不再触发生产构建，上线统一走 `pnpm release:solo`。
 2. A、B 各自 push 分支、开 PR，不自己合并。
-3. 验收 AI 按第 9 节验收，通过后合并。顺序是先 B 后 A：B 上线后没有任何界面入口，最安全。
-4. A、B 都合并后，从最新的 origin/main 跑 C。C 验收通过、合并之后，Pro 才算真正上线。
+3. 验收 AI 按第 9 节验收，通过后合并。顺序是先 B 后 A；合并之后按本地 prebuilt 流程发布。
+4. A、B 都合并后，从最新的 origin/main 跑 C。C 验收通过、合并并通过 `pnpm release:solo` 发布之后，Pro 才算真正上线。
 5. C 上线后的人工冒烟测试：领导用自己的卡在正式环境买一单 $9，确认解锁，然后在 Stripe 后台退款。这一步 AI 做不了，因为需要真实银行卡。
 
 ## 8. 上线后怎么判断成败（跑满 4 周再看）

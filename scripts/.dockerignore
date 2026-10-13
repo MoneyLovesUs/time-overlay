@@ -1,0 +1,3 @@
+# The build context is scripts/; only the Dockerfile belongs in the image.
+**
+!Dockerfile.vercel-builder

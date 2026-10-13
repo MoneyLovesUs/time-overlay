@@ -12,6 +12,11 @@ export type LocalExportSupport = {
   supportsWebmAudio: boolean | null;
   supportsVp9Alpha: boolean | null;
   supportsHevcAlpha: boolean | null;
+  /**
+   * Populated asynchronously by probeMp4ExportSupport; stays undefined while
+   * the probe is in flight so mp4 is neither offered nor disabled yet.
+   */
+  supportsMp4?: boolean | null;
 };
 
 export type ExportAdvisory = {

@@ -34,6 +34,7 @@ import {
 import { validateExportArtifact } from "@/lib/generator/export/artifact";
 import { downloadBlob } from "@/lib/generator/export/png-sequence";
 import { estimateRemainingMs } from "@/lib/generator/export/progress";
+import { buildExportFunnelTelemetry } from "@/lib/generator/export/telemetry";
 import {
   getExportAdvisory,
   getInitialLocalExportSupport,
@@ -175,6 +176,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       supportsWebmAudio: support.supportsWebmAudio ?? "unknown",
       supportsVp9Alpha: support.supportsVp9Alpha ?? "unknown",
       supportsHevcAlpha: support.supportsHevcAlpha ?? "unknown",
+      supportsMp4: support.supportsMp4 ?? "unknown",
       hasWorkerSupport: support.hasWorkerSupport ?? "unknown",
     };
   }, [support, clientEnvironment]);
@@ -802,15 +804,17 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }
     lastUnsupportedCodeRef.current = exportAdvisory.code;
     trackEvent("export_unsupported", {
-      format: settings.export.format,
       reason: exportAdvisory.code,
-      ...templateAnalytics,
-      ...analyticsEnvironment,
+      ...buildExportFunnelTelemetry({
+        settings,
+        environment: analyticsEnvironment,
+        template: templateAnalytics,
+      }),
     });
   }, [
     exportAdvisory.severity,
     exportAdvisory.code,
-    settings.export.format,
+    settings,
     templateAnalytics,
     analyticsEnvironment,
   ]);
@@ -853,19 +857,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       exportSettings.canvas.width *
       exportSettings.canvas.height *
       totalFrames;
-    const telemetry: AnalyticsEventPayload = {
-      format: exportSettings.export.format,
-      fps: exportSettings.export.fps,
-      durationSeconds: exportSettings.timer.durationSeconds,
-      resolution: exportSettings.canvas.resolutionPresetId,
-      width: exportSettings.canvas.width,
-      height: exportSettings.canvas.height,
-      pixelFrames,
-      quality: exportSettings.export.quality,
-      audioVariant: exportSettings.audio.variant,
-      ...templateAnalytics,
-      ...analyticsEnvironment,
-    };
+    const telemetry = buildExportFunnelTelemetry({
+      settings: exportSettings,
+      environment: analyticsEnvironment,
+      template: templateAnalytics,
+    });
 
     exportTotalsRef.current = totalFrames;
     exportStartedAtRef.current = performance.now();

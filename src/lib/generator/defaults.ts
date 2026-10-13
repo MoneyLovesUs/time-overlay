@@ -586,3 +586,31 @@ export function getProExportBlockReason(
   }
   return isProTemplateId(templateId) ? "template" : null;
 }
+
+export type ProFeatureUsage = {
+  feature: "duration" | "fps60" | "template";
+  value: string | number;
+};
+
+/**
+ * Pro features actually in use by the current settings, reported once per
+ * pro export_started (spec 6.3).
+ */
+export function getProFeatureUsage(
+  settings: GeneratorSettings,
+): ProFeatureUsage[] {
+  const usage: ProFeatureUsage[] = [];
+  if (settings.timer.durationSeconds > GENERATOR_DURATION_LIMIT_SECONDS) {
+    usage.push({
+      feature: "duration",
+      value: settings.timer.durationSeconds,
+    });
+  }
+  if (settings.export.fps === 60) {
+    usage.push({ feature: "fps60", value: 60 });
+  }
+  if (isProTemplateId(settings.templateId)) {
+    usage.push({ feature: "template", value: settings.templateId });
+  }
+  return usage;
+}

@@ -24,6 +24,7 @@ import {
   DEFAULT_GENERATOR_SETTINGS,
   GENERATOR_CANVAS_PRESETS,
   getProExportBlockReason,
+  getProFeatureUsage,
   applyGeneratorTemplate,
   normalizeGeneratorSettings,
   resolveDefaultExportFormat,
@@ -988,7 +989,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     setPreview(null);
     setEtaMs(null);
     setIsExporting(true);
-    trackEvent("export_started", telemetry);
+    trackEvent("export_started", { ...telemetry, isPro });
+    if (isPro) {
+      for (const { feature, value } of getProFeatureUsage(exportSettings)) {
+        trackEvent("pro_feature_used", { feature, value });
+      }
+    }
 
     if (exportSettings.export.format === "webm") {
       activeExportKindRef.current = "webm";

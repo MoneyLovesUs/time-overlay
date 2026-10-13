@@ -125,7 +125,9 @@ export function inspectArtifact(root) {
         if (!inside(canonicalRoot, realpathSync(path))) throw new Error(`Escaping artifact symlink: ${rel}`);
         hash.update(JSON.stringify([rel, "link", readlinkSync(path)]) + "\n");
       } else if (stat.isDirectory()) {
-        hash.update(JSON.stringify([rel, "directory", stat.mode & 0o777]) + "\n");
+        // Permission bits are not hashed: artifact copies legitimately rewrite
+        // them (umask, clone vs copy semantics) without changing what deploys.
+        hash.update(JSON.stringify([rel, "directory"]) + "\n");
         walk(path);
       } else if (stat.isFile()) {
         const header = prefix(path);
@@ -137,7 +139,7 @@ export function inspectArtifact(root) {
             header.length < 20 || header.readUInt16LE(18) !== 62)) {
           throw new Error(`Native module is not Linux x64: ${rel}`);
         }
-        hash.update(JSON.stringify([rel, "file", stat.mode & 0o777, stat.size]) + "\n");
+        hash.update(JSON.stringify([rel, "file", stat.size]) + "\n");
         hash.update(readFileSync(path));
         files++;
         bytes += stat.size;

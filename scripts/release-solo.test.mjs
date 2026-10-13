@@ -92,6 +92,15 @@ test("artifact inventory permits internal function aliases and detects content t
   assert.throws(() => assertReceipt(receipt, { ...identity, environmentHash: sha256("changed") }, inventory), /identity/);
 });
 
+test("artifact inventory ignores permission bits rewritten by artifact copies", (t) => {
+  const root = temporary(t);
+  artifact(root);
+  const before = inspectArtifact(root);
+  chmodSync(join(root, "static", "page.html"), 0o664);
+  chmodSync(join(root, "static"), 0o775);
+  assert.deepEqual(inspectArtifact(root), before);
+});
+
 test("artifact rejects env leaks, escaping aliases, wrong API version and macOS binaries", (t) => {
   const root = temporary(t);
   artifact(root);

@@ -256,17 +256,33 @@ export function getExportAdvisory(
   const pixelFrames = canvasPixels * projectedFrames;
   const isMobileDevice = deviceType === "mobile" || deviceType === "tablet";
 
-  if (
-    isMobileDevice &&
-    (settings.timer.durationSeconds > 60 ||
+  if (isMobileDevice) {
+    if (settings.export.format === "mp4") {
+      // MP4 streams frames straight into the encoder instead of buffering a
+      // whole archive in memory, so phones get higher limits — bounded at
+      // 300s, 1080p, and 9000 total frames for device memory safety.
+      if (
+        settings.timer.durationSeconds > 300 ||
+        canvasPixels > 1920 * 1080 ||
+        projectedFrames > 9000
+      ) {
+        return {
+          disabledFormats,
+          code: "mobileExportLimitError",
+          severity: "error",
+        };
+      }
+    } else if (
+      settings.timer.durationSeconds > 60 ||
       canvasPixels > 1920 * 1080 ||
-      pixelFrames > 1_900_000_000)
-  ) {
-    return {
-      disabledFormats,
-      code: "mobileExportLimitError",
-      severity: "error",
-    };
+      pixelFrames > 1_900_000_000
+    ) {
+      return {
+        disabledFormats,
+        code: "mobileExportLimitError",
+        severity: "error",
+      };
+    }
   }
 
   if (

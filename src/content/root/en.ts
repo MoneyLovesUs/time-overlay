@@ -156,6 +156,9 @@ const enRootPageContent = {
       hevcAlphaLabel: "MOV (HEVC + alpha)",
       hevcAlphaDescription:
         "Apple-friendly transparent video. Best on Safari and macOS.",
+      mp4Label: "MP4 (green screen)",
+      mp4Description:
+        "MP4 with a solid green background. Works in CapCut, InShot and other phone editors — use Chroma Key to remove the green.",
       fpsLabel: "FPS",
       fpsOptions: {
         24: "24 FPS",
@@ -203,11 +206,13 @@ const enRootPageContent = {
         preparingWebm: "Preparing local WebM export",
         preparingPngSequence: "Preparing local PNG sequence export",
         preparingAlphaVideo: "Preparing transparent video export",
+        preparingMp4: "Preparing local MP4 export",
         exportWorkerUnavailable:
           "Export worker is unavailable in this browser session.",
         webmFailedUnexpectedly: "WebM export failed unexpectedly.",
         alphaVideoFailedUnexpectedly:
           "Transparent video export failed unexpectedly.",
+        mp4FailedUnexpectedly: "MP4 export failed unexpectedly.",
         pngSequenceFailedUnexpectedly:
           "PNG sequence export failed unexpectedly.",
       },

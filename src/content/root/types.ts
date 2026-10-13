@@ -139,6 +139,10 @@ export type RootPageContent = {
       vp9AlphaDescription: string;
       hevcAlphaLabel: string;
       hevcAlphaDescription: string;
+      // Optional so locales without MP4 copy fall back to the English strings
+      // built into the export panel (same pattern as mobileExportLimitError?).
+      mp4Label?: string;
+      mp4Description?: string;
       fpsLabel: string;
       fpsOptions: Record<24 | 30, string>;
       qualityLabel: string;
@@ -168,9 +172,11 @@ export type RootPageContent = {
         preparingWebm: string;
         preparingPngSequence: string;
         preparingAlphaVideo: string;
+        preparingMp4?: string;
         exportWorkerUnavailable: string;
         webmFailedUnexpectedly: string;
         alphaVideoFailedUnexpectedly: string;
+        mp4FailedUnexpectedly?: string;
         pngSequenceFailedUnexpectedly: string;
       };
       // Optional perceived-wait copy for the live export progress view. Optional

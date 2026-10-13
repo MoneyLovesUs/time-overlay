@@ -21,6 +21,7 @@ import {
   GENERATOR_CANVAS_PRESETS,
   applyGeneratorTemplate,
   normalizeGeneratorSettings,
+  resolveDefaultExportFormat,
 } from "@/lib/generator/defaults";
 import {
   GENERATOR_TEMPLATES,
@@ -121,6 +122,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [etaMs, setEtaMs] = useState<number | null>(null);
   const [previewBitmap, setPreviewBitmap] = useState<ImageBitmap | null>(null);
   const [isTemplateCustomized, setIsTemplateCustomized] = useState(false);
+  // Set on the first manual format pick; the mp4 auto-default must never
+  // override a choice the user made themselves.
+  const hasUserSelectedFormatRef = useRef(false);
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
@@ -276,6 +280,27 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }
   }, []);
 
+  // Once the async mp4 capability probe lands, phones that support it switch
+  // their default format to mp4 — unless the user already picked a format.
+  useEffect(() => {
+    if (support.supportsMp4 === undefined || support.supportsMp4 === null) {
+      return;
+    }
+    const defaultFormat = resolveDefaultExportFormat({
+      deviceType: clientEnvironment.deviceType,
+      supportsMp4: support.supportsMp4,
+      hasUserSelectedFormat: hasUserSelectedFormatRef.current,
+    });
+    setSettings((current) =>
+      current.export.format === defaultFormat
+        ? current
+        : {
+            ...current,
+            export: { ...current.export, format: defaultFormat },
+          },
+    );
+  }, [clientEnvironment.deviceType, support.supportsMp4]);
+
   const getExportRuntime = () => {
     exportRuntimeRef.current ??= createLazyExportRuntime();
     return exportRuntimeRef.current;
@@ -357,6 +382,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFormatChange = (format: GeneratorFormat) => {
+    hasUserSelectedFormatRef.current = true;
     updateSettings((current) => ({
       ...current,
       export: {
@@ -721,7 +747,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         code === "alphaVideoFailedUnexpectedly"
           ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
           : code === "mp4FailedUnexpectedly"
-            ? DEFAULT_MP4_FAILED_MESSAGE
+            ? (ui.exportPanel.runtimeMessages.mp4FailedUnexpectedly ??
+              DEFAULT_MP4_FAILED_MESSAGE)
           : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
       const baseMessage = event.data.payload.message ?? fallback;
       const activeSettings = activeExportSettingsRef.current;
@@ -947,7 +974,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       exportSettings.export.format === "png-sequence"
         ? ui.exportPanel.runtimeMessages.preparingPngSequence
         : exportSettings.export.format === "mp4"
-          ? DEFAULT_PREPARING_MP4_MESSAGE
+          ? (ui.exportPanel.runtimeMessages.preparingMp4 ??
+            DEFAULT_PREPARING_MP4_MESSAGE)
         : ui.exportPanel.runtimeMessages.preparingAlphaVideo;
     const initialProgress: ExportProgressState = {
       stage: "validating",

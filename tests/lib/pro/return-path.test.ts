@@ -17,6 +17,23 @@ describe("sanitizeReturnPath", () => {
     assert.equal(sanitizeReturnPath("/" + String.fromCharCode(92) + "evil.com"), "/");
   });
 
+  it("rewrites percent-encoded protocol-relative bypasses to /", () => {
+    assert.equal(sanitizeReturnPath("/%2F%2Fevil.com"), "/");
+    assert.equal(sanitizeReturnPath("/%2f%2fevil.com"), "/");
+    assert.equal(sanitizeReturnPath("/%252F%252Fevil.com"), "/");
+    assert.equal(sanitizeReturnPath("/%2Fguides"), "/");
+  });
+
+  it("rewrites malformed or control-character encodings to /", () => {
+    assert.equal(sanitizeReturnPath("/%zz"), "/");
+    assert.equal(sanitizeReturnPath("/%00evil.com"), "/");
+  });
+
+  it("keeps legitimately encoded on-site paths and returns the decoded form", () => {
+    assert.equal(sanitizeReturnPath("/guides%20obs"), "/guides obs");
+    assert.equal(sanitizeReturnPath("/docs/a%2Fb"), "/docs/a/b");
+  });
+
   it("rewrites non-path values to /", () => {
     assert.equal(sanitizeReturnPath("https://evil.com"), "/");
     assert.equal(sanitizeReturnPath("relative"), "/");

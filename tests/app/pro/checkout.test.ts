@@ -97,6 +97,29 @@ describe("POST /api/pro/checkout", () => {
     assert.equal(params.cancel_url, ORIGIN + "/");
   });
 
+  it("resolves the encoded returnPath /%2F%2Fevil.com to / in both checkout urls", async () => {
+    stripeMocks.create.mockResolvedValue({
+      id: "cs_unit_3",
+      url: "https://checkout.stripe.com/c/pay/unit",
+    });
+
+    const response = await POST(
+      makeRequest({
+        trigger: "direct",
+        locale: "en",
+        returnPath: "/%2F%2Fevil.com",
+      }),
+    );
+
+    assert.equal(response.status, 200);
+    const params = stripeMocks.create.mock.calls[0][0];
+    assert.equal(
+      params.success_url,
+      ORIGIN + "/pro/success?session_id={CHECKOUT_SESSION_ID}&return=%2F",
+    );
+    assert.equal(params.cancel_url, ORIGIN + "/");
+  });
+
   it("returns 400 without touching Stripe for invalid parameters", async () => {
     for (const body of [
       { trigger: "hacked", locale: "en", returnPath: "/" },

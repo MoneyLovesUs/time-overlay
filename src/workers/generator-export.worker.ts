@@ -5,6 +5,10 @@ import { Zip, ZipPassThrough, strToU8 } from "fflate";
 import { encodeAlphaVideo } from "@/lib/generator/encode/alpha-video-encoder";
 import { synthesizeAudioCues } from "@/lib/generator/encode/audio-cues";
 import {
+  encodeMp4Video,
+  resolveMp4FrameBackground,
+} from "@/lib/generator/encode/mp4-encoder";
+import {
   createExportJobPlan,
   type ExportWorkerMessage,
   type ExportWorkerRequest,
@@ -118,6 +122,7 @@ function drawFrameToContext({
 
 type PngSequenceRequest = Extract<ExportWorkerRequest, { kind: "export-png-sequence" }>;
 type AlphaVideoRequest = Extract<ExportWorkerRequest, { kind: "export-alpha-video" }>;
+type Mp4Request = Extract<ExportWorkerRequest, { kind: "export-mp4" }>;
 
 async function handlePngSequence(request: PngSequenceRequest) {
   const { settings, uploadedFont, enablePreview = true } = request.payload;
@@ -317,8 +322,84 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
   });
 }
 
+async function handleMp4Export(request: Mp4Request) {
+  const { settings, uploadedFont, enablePreview = true } = request.payload;
+
+  if (uploadedFont) {
+    await loadFontIntoWorker(uploadedFont);
+  }
+
+  const audioBuffer = await synthesizeAudioCues({
+    durationSeconds: settings.timer.durationSeconds,
+    variant: settings.audio.variant,
+  });
+  const plan = createExportJobPlan({
+    durationSeconds: settings.timer.durationSeconds,
+    fps: settings.export.fps,
+    format: "mp4",
+  });
+
+  let previewCanvas: OffscreenCanvas | null = null;
+  let lastPreviewAt = 0;
+
+  const result = await encodeMp4Video({
+    width: settings.canvas.width,
+    height: settings.canvas.height,
+    fps: settings.export.fps,
+    totalFrames: plan.totalFrames,
+    quality: settings.export.quality,
+    audioBuffer,
+    drawFrame(canvas, frameIndex) {
+      const context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("Could not create encoder canvas context.");
+      }
+      // MP4 has no alpha channel: composite the timer over the chroma-key
+      // green (or the user's solid color) before drawing the frame.
+      context.fillStyle = resolveMp4FrameBackground(settings.canvas);
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      previewCanvas = canvas;
+      drawFrameToContext({
+        context,
+        settings,
+        frameIndex,
+        fps: settings.export.fps,
+      });
+    },
+    onProgress(progress) {
+      postMessageToHost({
+        kind: "progress",
+        payload: progress,
+      });
+      const now = performance.now();
+      if (
+        enablePreview &&
+        previewCanvas &&
+        now - lastPreviewAt >= PREVIEW_INTERVAL_MS
+      ) {
+        lastPreviewAt = now;
+        void emitPreview(previewCanvas, progress.completedFrames);
+      }
+    },
+  });
+
+  postMessageToHost({
+    kind: "complete",
+    payload: {
+      blob: result.blob,
+      fileName: plan.outputFileName,
+      mimeType: result.mimeType,
+    },
+  });
+}
+
 self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
   try {
+    if (event.data.kind === "export-mp4") {
+      await handleMp4Export(event.data);
+      return;
+    }
+
     if (event.data.kind === "export-png-sequence") {
       await handlePngSequence(event.data);
       return;
@@ -330,9 +411,11 @@ self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
     }
   } catch (error) {
     const code =
-      event.data.kind === "export-alpha-video"
-        ? "alphaVideoFailedUnexpectedly"
-        : "pngSequenceFailedUnexpectedly";
+      event.data.kind === "export-mp4"
+        ? "mp4FailedUnexpectedly"
+        : event.data.kind === "export-alpha-video"
+          ? "alphaVideoFailedUnexpectedly"
+          : "pngSequenceFailedUnexpectedly";
     postMessageToHost({
       kind: "error",
       payload: {

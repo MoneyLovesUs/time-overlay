@@ -71,6 +71,7 @@ const DEFAULT_COPY: TemplateGalleryCopy = {
 };
 
 const FORMAT_LABELS: Record<GeneratorFormat, string> = {
+  mp4: "MP4",
   "png-sequence": "PNG",
   webm: "WebM",
   "webm-vp9-alpha": "WebM alpha",

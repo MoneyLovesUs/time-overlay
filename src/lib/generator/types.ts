@@ -1,6 +1,7 @@
 export type TimerDisplayFormat = "ss" | "mm:ss" | "hh:mm:ss";
 
 export type GeneratorFormat =
+  | "mp4"
   | "png-sequence"
   | "webm"
   | "webm-vp9-alpha"

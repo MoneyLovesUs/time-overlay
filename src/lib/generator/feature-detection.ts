@@ -4,6 +4,7 @@ import {
   ALPHA_WEBM_VIDEO_MIME_TYPES,
   getPreferredAlphaWebmMimeType as selectAlphaWebmMimeType,
 } from "@/lib/generator/export/webm-mime";
+import { canEncodeVideo } from "mediabunny";
 
 export type LocalExportSupport = {
   hasWorkerSupport: boolean | null;
@@ -140,6 +141,19 @@ export async function probeAlphaExportSupport(): Promise<{
   return { supportsVp9Alpha, supportsHevcAlpha };
 }
 
+/**
+ * MP4 export relies on the platform H.264 encoder. Probing at a common phone
+ * resolution up front lets the advisory disable mp4 before the user commits to
+ * an export that would otherwise fail mid-run.
+ */
+export async function probeMp4ExportSupport(): Promise<boolean> {
+  try {
+    return await canEncodeVideo("avc", { width: 1280, height: 720 });
+  } catch {
+    return false;
+  }
+}
+
 export function getPreferredWebmMimeType() {
   if (typeof MediaRecorder === "undefined") {
     return null;
@@ -163,6 +177,7 @@ export function getExportAdvisory(
 
   if (support.hasWorkerSupport === false) {
     disabledFormats.push(
+      "mp4",
       "png-sequence",
       "webm-vp9-alpha",
       "mov-hevc-alpha",
@@ -178,6 +193,9 @@ export function getExportAdvisory(
   }
   if (support.supportsHevcAlpha === false) {
     disabledFormats.push("mov-hevc-alpha");
+  }
+  if (support.supportsMp4 === false) {
+    disabledFormats.push("mp4");
   }
 
   if (

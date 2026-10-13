@@ -17,6 +17,7 @@ export const GENERATOR_DURATION_LIMIT_SECONDS = 300;
 export const GENERATOR_MIN_DURATION_SECONDS = 3;
 
 export const GENERATOR_SUPPORTED_FORMATS: readonly GeneratorFormat[] = [
+  "mp4",
   "png-sequence",
   "webm",
   "webm-vp9-alpha",

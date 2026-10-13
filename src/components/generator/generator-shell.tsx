@@ -40,6 +40,7 @@ import {
   getInitialLocalExportSupport,
   getLocalExportSupport,
   probeAlphaExportSupport,
+  probeMp4ExportSupport,
 } from "@/lib/generator/feature-detection";
 import {
   loadFontIntoDocument,
@@ -79,6 +80,11 @@ type CompletedExportArtifact = {
 
 const WORKER_WATCHDOG_MS = 60_000;
 const WORKER_PACKAGING_WATCHDOG_MS = 120_000;
+
+// MP4 copy lands with the export-panel button (task 3); until then the
+// pipeline uses the same English fallbacks as the other runtime messages.
+const DEFAULT_PREPARING_MP4_MESSAGE = "Preparing local MP4 export";
+const DEFAULT_MP4_FAILED_MESSAGE = "MP4 export failed unexpectedly.";
 
 function getExportErrorCode(error: unknown, fallback: string): string {
   if (
@@ -234,6 +240,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         ...prev,
         supportsVp9Alpha,
         supportsHevcAlpha,
+      }));
+    });
+    probeMp4ExportSupport().then((supportsMp4) => {
+      setSupport((prev) => ({
+        ...prev,
+        supportsMp4,
       }));
     });
 
@@ -708,6 +720,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       const fallback =
         code === "alphaVideoFailedUnexpectedly"
           ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
+          : code === "mp4FailedUnexpectedly"
+            ? DEFAULT_MP4_FAILED_MESSAGE
           : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
       const baseMessage = event.data.payload.message ?? fallback;
       const activeSettings = activeExportSettingsRef.current;
@@ -932,6 +946,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     const preparingMessage =
       exportSettings.export.format === "png-sequence"
         ? ui.exportPanel.runtimeMessages.preparingPngSequence
+        : exportSettings.export.format === "mp4"
+          ? DEFAULT_PREPARING_MP4_MESSAGE
         : ui.exportPanel.runtimeMessages.preparingAlphaVideo;
     const initialProgress: ExportProgressState = {
       stage: "validating",
@@ -970,6 +986,17 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       if (exportSettings.export.format === "png-sequence") {
         exportWorker.postMessage({
           kind: "export-png-sequence",
+          payload: {
+            settings: exportSettings,
+            uploadedFont: uploadedFont ?? undefined,
+            enablePreview,
+          },
+        });
+        return;
+      }
+      if (exportSettings.export.format === "mp4") {
+        exportWorker.postMessage({
+          kind: "export-mp4",
           payload: {
             settings: exportSettings,
             uploadedFont: uploadedFont ?? undefined,

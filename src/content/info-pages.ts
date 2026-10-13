@@ -168,6 +168,13 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
           ],
         },
         {
+          heading: "Payments",
+          paragraphs: [
+            "Time Overlay sells optional paid products through Stripe. Payment card details are entered and processed on Stripe's own checkout; Time Overlay does not store card numbers or other payment credentials on its servers.",
+            "To verify a purchase or restore it later, Time Overlay asks Stripe about the checkout session using the session reference from your checkout link or the email address used at checkout. That lookup happens at Stripe; Time Overlay does not build a customer database from it.",
+          ],
+        },
+        {
           heading: "Cookies and browser controls",
           paragraphs: [
             "Essential browser storage may retain interface or export preferences needed for the tool to behave consistently. Analytics providers may set additional identifiers. You can clear site data, block cookies, use browser privacy controls, or use provider opt-out tools; blocking storage can reduce measurement and may reset preferences.",
@@ -299,6 +306,17 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
           heading: "Advertising and future paid features",
           paragraphs: [
             "The service may display clearly identified advertising or offer optional paid features in the future. Advertising does not purchase a favorable guide verdict. Any paid offer will identify its price, included capability, and applicable refund or cancellation terms before purchase.",
+          ],
+        },
+        {
+          heading: "Time Overlay Pro one-time purchase",
+          paragraphs: [
+            "Time Overlay Pro is a single one-time payment of $9 (USD). It is not a subscription and it does not renew.",
+            "The purchase unlocks Pro in the browser where the purchase was verified: a longer per-export duration cap, 60 fps, and the signature template pack. The unlock is stored locally in that browser.",
+            "A purchase can be restored in another browser with the email address used at checkout, so keep that email address accessible.",
+            "If Pro does not work as described, contact " +
+              email +
+              " within 14 days of purchase for a full refund, no questions asked.",
           ],
         },
         {
@@ -440,6 +458,13 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
           ],
         },
         {
+          heading: "支付",
+          paragraphs: [
+            "Time Overlay 的可选付费项目通过 Stripe 销售。银行卡信息在 Stripe 自己的结账页面输入和处理；Time Overlay 的服务器不存储银行卡号或其他支付凭据。",
+            "验证或找回购买时，Time Overlay 使用结账链接中的会话引用或付款邮箱向 Stripe 查询对应的 checkout 会话；查询发生在 Stripe 侧，Time Overlay 不会据此建立用户资料库。",
+          ],
+        },
+        {
           heading: "Cookie、依据、保存与跨境处理",
           paragraphs: [
             "必要的浏览器存储可能保存界面或导出偏好；分析服务可能设置额外标识符。你可以清理网站数据、阻止 Cookie 或使用服务商提供的退出工具，但这可能重置偏好并减少统计。",
@@ -546,6 +571,17 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
           heading: "广告与未来付费功能",
           paragraphs: [
             "未来可能展示清晰标注的广告或提供可选付费功能。广告不能购买有利的兼容性结论；任何付费项目会在购买前说明价格、包含能力以及适用的退款或取消条件。",
+          ],
+        },
+        {
+          heading: "Time Overlay Pro 一次性买断",
+          paragraphs: [
+            "Time Overlay Pro 是 9 美元的一次性付款，不是订阅，不会自动续费。",
+            "购买后在完成验证的浏览器中解锁 Pro：单次导出时长上限提升、60fps，以及 signature 模板包。解锁状态保存在该浏览器本地。",
+            "可以在其他浏览器中凭付款时使用的邮箱找回 Pro，请保存好付款邮箱。",
+            "如果 Pro 无法按说明使用，可在购买后 14 天内无理由全额退款，联系邮箱：" +
+              email +
+              "。",
           ],
         },
         {

@@ -26,7 +26,12 @@ export type AnalyticsEventName =
   | "template_gallery_opened"
   | "template_filter_changed"
   | "template_selected"
-  | "preset_selected";
+  | "preset_selected"
+  | "pro_checkout_redirected"
+  | "pro_purchase_verified"
+  | "pro_purchase_verify_failed"
+  | "pro_restore_succeeded"
+  | "pro_restore_failed";
 
 export function trackEvent(
   event: AnalyticsEventName,

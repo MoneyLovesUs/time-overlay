@@ -12,6 +12,7 @@ import {
   getDefaultTemplateForPreset,
   getGeneratorTemplateById,
 } from "@/lib/generator/templates";
+import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
 
 export const GENERATOR_DURATION_LIMIT_SECONDS = 300;
 
@@ -27,6 +28,12 @@ export const GENERATOR_SUPPORTED_FORMATS: readonly GeneratorFormat[] = [
 ];
 
 export const GENERATOR_ALLOWED_FPS = [24, 30] as const;
+
+/**
+ * Pro unlocks 60 fps (spec 6.1). The free fallback list above stays untouched
+ * so free normalize results remain byte-identical to the pre-Pro behavior.
+ */
+export const GENERATOR_PRO_ALLOWED_FPS = [24, 30, 60] as const;
 
 export const GENERATOR_ALLOWED_AUDIO_VARIANTS = [
   "none",
@@ -345,18 +352,32 @@ function getThemePresetById(themePresetId: GeneratorSettings["themePresetId"]) {
   );
 }
 
+export type NormalizeGeneratorSettingsOptions = {
+  /**
+   * Pro raises the duration cap to PRO_MAX_DURATION_SECONDS and unlocks the
+   * 60 fps entry. Omitted/false keeps the historical free-tier fallback.
+   */
+  isPro?: boolean;
+};
+
 export function normalizeGeneratorSettings(
   settings: GeneratorSettings,
+  options: NormalizeGeneratorSettingsOptions = {},
 ): GeneratorSettings {
+  const isPro = options.isPro === true;
+  const durationLimitSeconds = isPro
+    ? PRO_MAX_DURATION_SECONDS
+    : GENERATOR_DURATION_LIMIT_SECONDS;
+  const allowedFpsList: readonly number[] = isPro
+    ? GENERATOR_PRO_ALLOWED_FPS
+    : GENERATOR_ALLOWED_FPS;
   const canvasPreset = getCanvasPresetById(settings.canvas.resolutionPresetId);
   const themePreset = getThemePresetById(settings.themePresetId);
   const template = getGeneratorTemplateById(settings.templateId);
   const allowedFormat = GENERATOR_SUPPORTED_FORMATS.includes(settings.export.format)
     ? settings.export.format
     : DEFAULT_GENERATOR_SETTINGS.export.format;
-  const allowedFps = GENERATOR_ALLOWED_FPS.includes(
-    settings.export.fps as (typeof GENERATOR_ALLOWED_FPS)[number],
-  )
+  const allowedFps = allowedFpsList.includes(settings.export.fps)
     ? settings.export.fps
     : DEFAULT_GENERATOR_SETTINGS.export.fps;
   const allowedFontWeight = GENERATOR_ALLOWED_FONT_WEIGHTS.includes(
@@ -377,7 +398,7 @@ export function normalizeGeneratorSettings(
       durationSeconds: clamp(
         Math.round(settings.timer.durationSeconds),
         GENERATOR_MIN_DURATION_SECONDS,
-        GENERATOR_DURATION_LIMIT_SECONDS,
+        durationLimitSeconds,
       ),
     },
     canvas: {
@@ -451,6 +472,7 @@ type DeepPartial<T> = T extends object
 
 export function createGeneratorSettings(
   overrides: DeepPartial<GeneratorSettings> = {},
+  options: NormalizeGeneratorSettingsOptions = {},
 ): GeneratorSettings {
   const hasExplicitTemplate = overrides.templateId !== undefined;
   const hasExplicitTheme = overrides.themePresetId !== undefined;
@@ -512,15 +534,19 @@ export function createGeneratorSettings(
     },
     themePresetId: themePreset.id,
     templateId: template.id,
-  });
+  }, options);
 }
 
 export function applyGeneratorTemplate(
   current: GeneratorSettings,
   templateId: GeneratorSettings["templateId"],
+  options: NormalizeGeneratorSettingsOptions = {},
 ): GeneratorSettings {
   const template = getGeneratorTemplateById(templateId);
-  const templateSettings = createGeneratorSettings({ templateId: template.id });
+  const templateSettings = createGeneratorSettings(
+    { templateId: template.id },
+    options,
+  );
 
   return normalizeGeneratorSettings({
     ...current,
@@ -541,5 +567,5 @@ export function applyGeneratorTemplate(
     audio: template.settings.audio ? templateSettings.audio : current.audio,
     themePresetId: templateSettings.themePresetId,
     templateId: template.id,
-  });
+  }, options);
 }

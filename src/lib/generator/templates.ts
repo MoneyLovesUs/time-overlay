@@ -101,6 +101,17 @@ export const SIGNATURE_TEMPLATE_IDS = [
   "cinema-frame-counter",
 ] as const satisfies readonly TemplateId[];
 
+/**
+ * The 12 signature templates shipped with the Pro plan. Free users may select
+ * and preview them, but export is gated behind Pro (spec 6.1). The original
+ * 48 templates — including the older signature-tier set — stay free.
+ */
+export const PRO_SIGNATURE_TEMPLATE_IDS = SIGNATURE_TEMPLATE_IDS;
+
+export function isProTemplateId(templateId: TemplateId): boolean {
+  return (PRO_SIGNATURE_TEMPLATE_IDS as readonly string[]).includes(templateId);
+}
+
 export const GENERATOR_TEMPLATES = [
   {
     id: "clean-corner",

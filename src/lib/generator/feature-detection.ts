@@ -1,5 +1,6 @@
 import type { GeneratorSettings } from "@/lib/generator/types";
 import type { ClientDeviceType } from "@/lib/analytics/environment";
+import { PRO_PNG_SEQUENCE_MAX_SECONDS } from "@/lib/pro/entitlements";
 import {
   ALPHA_WEBM_VIDEO_MIME_TYPES,
   getPreferredAlphaWebmMimeType as selectAlphaWebmMimeType,
@@ -29,6 +30,7 @@ export type ExportAdvisory = {
     | "vp9AlphaUnavailableError"
     | "hevcAlphaUnavailableError"
     | "mobileExportLimitError"
+    | "pngSequenceTooLongError"
     | "webmRealtimeWarning"
     | "heavyExportWarning"
     | "pngSequenceInfo"
@@ -247,6 +249,20 @@ export function getExportAdvisory(
     return {
       disabledFormats,
       code: "hevcAlphaUnavailableError",
+      severity: "error",
+    };
+  }
+
+  // Pro-only state: free jobs are normalized to <=300s, so only a Pro user can
+  // reach a PNG sequence over the 600s archive limit. Point them at a streamed
+  // video format instead (spec 6.1).
+  if (
+    settings.export.format === "png-sequence" &&
+    settings.timer.durationSeconds > PRO_PNG_SEQUENCE_MAX_SECONDS
+  ) {
+    return {
+      disabledFormats,
+      code: "pngSequenceTooLongError",
       severity: "error",
     };
   }

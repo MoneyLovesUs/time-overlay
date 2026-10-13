@@ -4,6 +4,7 @@ import {
   ALPHA_WEBM_VIDEO_MIME_TYPES,
   getPreferredAlphaWebmMimeType as selectAlphaWebmMimeType,
 } from "@/lib/generator/export/webm-mime";
+import { canEncodeVideo } from "mediabunny";
 
 export type LocalExportSupport = {
   hasWorkerSupport: boolean | null;
@@ -12,6 +13,11 @@ export type LocalExportSupport = {
   supportsWebmAudio: boolean | null;
   supportsVp9Alpha: boolean | null;
   supportsHevcAlpha: boolean | null;
+  /**
+   * Populated asynchronously by probeMp4ExportSupport; stays undefined while
+   * the probe is in flight so mp4 is neither offered nor disabled yet.
+   */
+  supportsMp4?: boolean | null;
 };
 
 export type ExportAdvisory = {
@@ -135,6 +141,19 @@ export async function probeAlphaExportSupport(): Promise<{
   return { supportsVp9Alpha, supportsHevcAlpha };
 }
 
+/**
+ * MP4 export relies on the platform H.264 encoder. Probing at a common phone
+ * resolution up front lets the advisory disable mp4 before the user commits to
+ * an export that would otherwise fail mid-run.
+ */
+export async function probeMp4ExportSupport(): Promise<boolean> {
+  try {
+    return await canEncodeVideo("avc", { width: 1280, height: 720 });
+  } catch {
+    return false;
+  }
+}
+
 export function getPreferredWebmMimeType() {
   if (typeof MediaRecorder === "undefined") {
     return null;
@@ -158,6 +177,7 @@ export function getExportAdvisory(
 
   if (support.hasWorkerSupport === false) {
     disabledFormats.push(
+      "mp4",
       "png-sequence",
       "webm-vp9-alpha",
       "mov-hevc-alpha",
@@ -173,6 +193,9 @@ export function getExportAdvisory(
   }
   if (support.supportsHevcAlpha === false) {
     disabledFormats.push("mov-hevc-alpha");
+  }
+  if (support.supportsMp4 === false) {
+    disabledFormats.push("mp4");
   }
 
   if (
@@ -233,17 +256,33 @@ export function getExportAdvisory(
   const pixelFrames = canvasPixels * projectedFrames;
   const isMobileDevice = deviceType === "mobile" || deviceType === "tablet";
 
-  if (
-    isMobileDevice &&
-    (settings.timer.durationSeconds > 60 ||
+  if (isMobileDevice) {
+    if (settings.export.format === "mp4") {
+      // MP4 streams frames straight into the encoder instead of buffering a
+      // whole archive in memory, so phones get higher limits — bounded at
+      // 300s, 1080p, and 9000 total frames for device memory safety.
+      if (
+        settings.timer.durationSeconds > 300 ||
+        canvasPixels > 1920 * 1080 ||
+        projectedFrames > 9000
+      ) {
+        return {
+          disabledFormats,
+          code: "mobileExportLimitError",
+          severity: "error",
+        };
+      }
+    } else if (
+      settings.timer.durationSeconds > 60 ||
       canvasPixels > 1920 * 1080 ||
-      pixelFrames > 1_900_000_000)
-  ) {
-    return {
-      disabledFormats,
-      code: "mobileExportLimitError",
-      severity: "error",
-    };
+      pixelFrames > 1_900_000_000
+    ) {
+      return {
+        disabledFormats,
+        code: "mobileExportLimitError",
+        severity: "error",
+      };
+    }
   }
 
   if (

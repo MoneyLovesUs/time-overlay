@@ -153,6 +153,9 @@ const zhHansRootPageContent = {
         "适用于 OBS 及已验证 VP9 alpha 的流程，文件更小；不同剪辑软件的导入支持并不一致。",
       hevcAlphaLabel: "MOV（HEVC + alpha）",
       hevcAlphaDescription: "Apple 工作流友好的透明视频，最适合 Safari 和 macOS。",
+      mp4Label: "MP4（绿幕）",
+      mp4Description:
+        "带纯绿色背景的 MP4，可直接导入 CapCut、InShot 等手机剪辑软件——导入后用色度抠像（Chroma Key）把绿色去掉即可。",
       fpsLabel: "帧率",
       fpsOptions: {
         24: "24 FPS",
@@ -193,9 +196,11 @@ const zhHansRootPageContent = {
         preparingWebm: "正在准备本地 WebM 导出",
         preparingPngSequence: "正在准备本地 PNG 序列导出",
         preparingAlphaVideo: "正在准备透明视频导出",
+        preparingMp4: "正在准备本地 MP4 导出",
         exportWorkerUnavailable: "当前浏览器会话中无法使用导出 worker。",
         webmFailedUnexpectedly: "WebM 导出意外失败。",
         alphaVideoFailedUnexpectedly: "透明视频导出意外失败。",
+        mp4FailedUnexpectedly: "MP4 导出意外失败。",
         pngSequenceFailedUnexpectedly: "PNG 序列导出意外失败。",
       },
       progress: {

@@ -6,6 +6,7 @@ import type {
   PlacementAnchor,
   ThemePreset,
 } from "@/lib/generator/types";
+import type { ClientDeviceType } from "@/lib/analytics/environment";
 import {
   DEFAULT_GENERATOR_TEMPLATE_ID,
   getDefaultTemplateForPreset,
@@ -17,6 +18,7 @@ export const GENERATOR_DURATION_LIMIT_SECONDS = 300;
 export const GENERATOR_MIN_DURATION_SECONDS = 3;
 
 export const GENERATOR_SUPPORTED_FORMATS: readonly GeneratorFormat[] = [
+  "mp4",
   "png-sequence",
   "webm",
   "webm-vp9-alpha",
@@ -415,6 +417,32 @@ export function normalizeGeneratorSettings(
         : DEFAULT_GENERATOR_SETTINGS.audio.variant,
     },
   };
+}
+
+/**
+ * Pick the export format a fresh session starts with. Phones that can encode
+ * H.264 jump straight to MP4 (the only format their editors accept); desktop
+ * and tablets keep the historical png-sequence default. A manual format pick
+ * always wins.
+ */
+export function resolveDefaultExportFormat({
+  deviceType,
+  supportsMp4,
+  hasUserSelectedFormat = false,
+}: {
+  deviceType: ClientDeviceType;
+  supportsMp4: boolean | null | undefined;
+  hasUserSelectedFormat?: boolean;
+}): GeneratorFormat {
+  if (
+    deviceType === "mobile" &&
+    supportsMp4 === true &&
+    !hasUserSelectedFormat
+  ) {
+    return "mp4";
+  }
+
+  return DEFAULT_GENERATOR_SETTINGS.export.format;
 }
 
 type DeepPartial<T> = T extends object

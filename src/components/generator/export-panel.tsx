@@ -1,4 +1,12 @@
-import { Download, FileStack, Film, MonitorSmartphone, Sparkles, X } from "lucide-react";
+import {
+  Clapperboard,
+  Download,
+  FileStack,
+  Film,
+  MonitorSmartphone,
+  Sparkles,
+  X,
+} from "lucide-react";
 
 import { ExportProgressView } from "@/components/generator/export-progress-view";
 import { Button } from "@/components/ui/button";
@@ -39,6 +47,14 @@ const DEFAULT_WEBM_REALTIME_WARNING =
 
 const DEFAULT_WEBM_AUDIO_UNAVAILABLE_ERROR =
   "This browser cannot record transparent WebM with audio. Turn Audio Cues off and retry.";
+
+const DEFAULT_MP4_LABEL = "MP4 (green screen)";
+
+const DEFAULT_MP4_DESCRIPTION =
+  "MP4 with a solid green background. Works in CapCut, InShot and other phone editors — use Chroma Key to remove the green.";
+
+const DEFAULT_MP4_UNAVAILABLE_MESSAGE =
+  "MP4 export is not available in this browser.";
 
 const fieldClassName =
   "mt-2 h-10 w-full rounded-none border border-border/80 bg-background/65 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-tertiary";
@@ -178,6 +194,18 @@ export function ExportPanel({
               unavailableReason={ui.advisoryMessages.webmUnavailableError}
               onSelect={() => onFormatChange("webm")}
             />
+
+            {support.supportsMp4 === true ? (
+              <FormatOption
+                active={settings.export.format === "mp4"}
+                disabled={advisory.disabledFormats.includes("mp4")}
+                icon={<Clapperboard className="size-4 text-primary" />}
+                label={ui.mp4Label ?? DEFAULT_MP4_LABEL}
+                description={ui.mp4Description ?? DEFAULT_MP4_DESCRIPTION}
+                unavailableReason={DEFAULT_MP4_UNAVAILABLE_MESSAGE}
+                onSelect={() => onFormatChange("mp4")}
+              />
+            ) : null}
 
             {support.supportsVp9Alpha === true ? (
               <FormatOption

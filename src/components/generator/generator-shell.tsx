@@ -21,6 +21,7 @@ import {
   GENERATOR_CANVAS_PRESETS,
   applyGeneratorTemplate,
   normalizeGeneratorSettings,
+  resolveDefaultExportFormat,
 } from "@/lib/generator/defaults";
 import {
   GENERATOR_TEMPLATES,
@@ -34,11 +35,13 @@ import {
 import { validateExportArtifact } from "@/lib/generator/export/artifact";
 import { downloadBlob } from "@/lib/generator/export/png-sequence";
 import { estimateRemainingMs } from "@/lib/generator/export/progress";
+import { buildExportFunnelTelemetry } from "@/lib/generator/export/telemetry";
 import {
   getExportAdvisory,
   getInitialLocalExportSupport,
   getLocalExportSupport,
   probeAlphaExportSupport,
+  probeMp4ExportSupport,
 } from "@/lib/generator/feature-detection";
 import {
   loadFontIntoDocument,
@@ -79,6 +82,11 @@ type CompletedExportArtifact = {
 const WORKER_WATCHDOG_MS = 60_000;
 const WORKER_PACKAGING_WATCHDOG_MS = 120_000;
 
+// MP4 copy lands with the export-panel button (task 3); until then the
+// pipeline uses the same English fallbacks as the other runtime messages.
+const DEFAULT_PREPARING_MP4_MESSAGE = "Preparing local MP4 export";
+const DEFAULT_MP4_FAILED_MESSAGE = "MP4 export failed unexpectedly.";
+
 function getExportErrorCode(error: unknown, fallback: string): string {
   if (
     error &&
@@ -114,6 +122,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [etaMs, setEtaMs] = useState<number | null>(null);
   const [previewBitmap, setPreviewBitmap] = useState<ImageBitmap | null>(null);
   const [isTemplateCustomized, setIsTemplateCustomized] = useState(false);
+  // Set on the first manual format pick; the mp4 auto-default must never
+  // override a choice the user made themselves.
+  const hasUserSelectedFormatRef = useRef(false);
   const deferredSettings = useDeferredValue(settings);
   const exportRuntimeRef = useRef<LazyExportRuntime | null>(null);
   const exportTotalsRef = useRef(0);
@@ -175,6 +186,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       supportsWebmAudio: support.supportsWebmAudio ?? "unknown",
       supportsVp9Alpha: support.supportsVp9Alpha ?? "unknown",
       supportsHevcAlpha: support.supportsHevcAlpha ?? "unknown",
+      supportsMp4: support.supportsMp4 ?? "unknown",
       hasWorkerSupport: support.hasWorkerSupport ?? "unknown",
     };
   }, [support, clientEnvironment]);
@@ -234,6 +246,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         supportsHevcAlpha,
       }));
     });
+    probeMp4ExportSupport().then((supportsMp4) => {
+      setSupport((prev) => ({
+        ...prev,
+        supportsMp4,
+      }));
+    });
 
     if (typeof window === "undefined") {
       return;
@@ -261,6 +279,27 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       setIsTemplateCustomized(false);
     }
   }, []);
+
+  // Once the async mp4 capability probe lands, phones that support it switch
+  // their default format to mp4 — unless the user already picked a format.
+  useEffect(() => {
+    if (support.supportsMp4 === undefined || support.supportsMp4 === null) {
+      return;
+    }
+    const defaultFormat = resolveDefaultExportFormat({
+      deviceType: clientEnvironment.deviceType,
+      supportsMp4: support.supportsMp4,
+      hasUserSelectedFormat: hasUserSelectedFormatRef.current,
+    });
+    setSettings((current) =>
+      current.export.format === defaultFormat
+        ? current
+        : {
+            ...current,
+            export: { ...current.export, format: defaultFormat },
+          },
+    );
+  }, [clientEnvironment.deviceType, support.supportsMp4]);
 
   const getExportRuntime = () => {
     exportRuntimeRef.current ??= createLazyExportRuntime();
@@ -343,6 +382,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFormatChange = (format: GeneratorFormat) => {
+    hasUserSelectedFormatRef.current = true;
     updateSettings((current) => ({
       ...current,
       export: {
@@ -706,6 +746,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       const fallback =
         code === "alphaVideoFailedUnexpectedly"
           ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
+          : code === "mp4FailedUnexpectedly"
+            ? (ui.exportPanel.runtimeMessages.mp4FailedUnexpectedly ??
+              DEFAULT_MP4_FAILED_MESSAGE)
           : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
       const baseMessage = event.data.payload.message ?? fallback;
       const activeSettings = activeExportSettingsRef.current;
@@ -802,15 +845,17 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }
     lastUnsupportedCodeRef.current = exportAdvisory.code;
     trackEvent("export_unsupported", {
-      format: settings.export.format,
       reason: exportAdvisory.code,
-      ...templateAnalytics,
-      ...analyticsEnvironment,
+      ...buildExportFunnelTelemetry({
+        settings,
+        environment: analyticsEnvironment,
+        template: templateAnalytics,
+      }),
     });
   }, [
     exportAdvisory.severity,
     exportAdvisory.code,
-    settings.export.format,
+    settings,
     templateAnalytics,
     analyticsEnvironment,
   ]);
@@ -853,19 +898,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       exportSettings.canvas.width *
       exportSettings.canvas.height *
       totalFrames;
-    const telemetry: AnalyticsEventPayload = {
-      format: exportSettings.export.format,
-      fps: exportSettings.export.fps,
-      durationSeconds: exportSettings.timer.durationSeconds,
-      resolution: exportSettings.canvas.resolutionPresetId,
-      width: exportSettings.canvas.width,
-      height: exportSettings.canvas.height,
-      pixelFrames,
-      quality: exportSettings.export.quality,
-      audioVariant: exportSettings.audio.variant,
-      ...templateAnalytics,
-      ...analyticsEnvironment,
-    };
+    const telemetry = buildExportFunnelTelemetry({
+      settings: exportSettings,
+      environment: analyticsEnvironment,
+      template: templateAnalytics,
+    });
 
     exportTotalsRef.current = totalFrames;
     exportStartedAtRef.current = performance.now();
@@ -936,6 +973,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     const preparingMessage =
       exportSettings.export.format === "png-sequence"
         ? ui.exportPanel.runtimeMessages.preparingPngSequence
+        : exportSettings.export.format === "mp4"
+          ? (ui.exportPanel.runtimeMessages.preparingMp4 ??
+            DEFAULT_PREPARING_MP4_MESSAGE)
         : ui.exportPanel.runtimeMessages.preparingAlphaVideo;
     const initialProgress: ExportProgressState = {
       stage: "validating",
@@ -974,6 +1014,17 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       if (exportSettings.export.format === "png-sequence") {
         exportWorker.postMessage({
           kind: "export-png-sequence",
+          payload: {
+            settings: exportSettings,
+            uploadedFont: uploadedFont ?? undefined,
+            enablePreview,
+          },
+        });
+        return;
+      }
+      if (exportSettings.export.format === "mp4") {
+        exportWorker.postMessage({
+          kind: "export-mp4",
           payload: {
             settings: exportSettings,
             uploadedFont: uploadedFont ?? undefined,

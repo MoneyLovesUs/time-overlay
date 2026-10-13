@@ -14,6 +14,7 @@ export type ExportJobPlan = {
 };
 
 const FORMAT_EXTENSIONS: Record<GeneratorFormat, string> = {
+  mp4: "mp4",
   "png-sequence": "zip",
   webm: "webm",
   "webm-vp9-alpha": "webm",
@@ -22,6 +23,14 @@ const FORMAT_EXTENSIONS: Record<GeneratorFormat, string> = {
 };
 
 export type ExportWorkerRequest =
+  | {
+      kind: "export-mp4";
+      payload: {
+        settings: GeneratorSettings;
+        uploadedFont?: UploadedFont;
+        enablePreview?: boolean;
+      };
+    }
   | {
       kind: "export-png-sequence";
       payload: {
@@ -68,6 +77,7 @@ export type ExportWorkerMessage =
       kind: "error";
       payload: {
         code?:
+          | "mp4FailedUnexpectedly"
           | "pngSequenceFailedUnexpectedly"
           | "alphaVideoFailedUnexpectedly";
         message?: string;

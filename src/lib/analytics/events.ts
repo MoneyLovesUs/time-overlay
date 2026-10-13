@@ -31,7 +31,12 @@ export type AnalyticsEventName =
   | "pro_purchase_verified"
   | "pro_purchase_verify_failed"
   | "pro_restore_succeeded"
-  | "pro_restore_failed";
+  | "pro_restore_failed"
+  | "duration_limit_hit"
+  | "pro_upsell_viewed"
+  | "pro_checkout_clicked"
+  | "pro_restore_clicked"
+  | "pro_feature_used";
 
 export function trackEvent(
   event: AnalyticsEventName,

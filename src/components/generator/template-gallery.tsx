@@ -43,6 +43,9 @@ type TemplateGalleryProps = {
   activeTemplateId: TemplateId;
   isCustomized: boolean;
   copy?: Partial<TemplateGalleryCopy>;
+  // Templates the free tier can preview but not export (spec 6.1).
+  proTemplateIds?: readonly TemplateId[];
+  proBadgeLabel?: string;
   onSelectTemplate: (templateId: TemplateId) => void;
   onGalleryOpened: () => void;
   onFilterChanged: (filter: string) => void;
@@ -361,10 +364,14 @@ function TemplatePreview({
 function TemplateCard({
   template,
   active,
+  isProTemplate = false,
+  proBadgeLabel = "Pro",
   onSelect,
 }: {
   template: GeneratorTemplate;
   active: boolean;
+  isProTemplate?: boolean;
+  proBadgeLabel?: string;
   onSelect: () => void;
 }) {
   return (
@@ -380,6 +387,11 @@ function TemplateCard({
       )}
     >
       <TemplatePreview template={template} />
+      {isProTemplate ? (
+        <span className="absolute left-2 top-2 border border-secondary/60 bg-background/85 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] text-secondary">
+          {proBadgeLabel}
+        </span>
+      ) : null}
       <span className="mt-2 flex min-w-0 items-start justify-between gap-2">
         <span className="min-w-0">
           <span className="block truncate text-xs font-semibold text-foreground">
@@ -408,6 +420,8 @@ export function TemplateGallery({
   activeTemplateId,
   isCustomized,
   copy,
+  proTemplateIds,
+  proBadgeLabel = "Pro",
   onSelectTemplate,
   onGalleryOpened,
   onFilterChanged,
@@ -629,6 +643,10 @@ export function TemplateGallery({
                       key={template.id}
                       template={template}
                       active={template.id === activeTemplateId}
+                      isProTemplate={
+                        proTemplateIds?.includes(template.id) ?? false
+                      }
+                      proBadgeLabel={proBadgeLabel}
                       onSelect={() => selectTemplate(template.id, true)}
                     />
                   ))}

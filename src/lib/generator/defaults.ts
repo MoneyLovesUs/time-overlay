@@ -11,6 +11,7 @@ import {
   DEFAULT_GENERATOR_TEMPLATE_ID,
   getDefaultTemplateForPreset,
   getGeneratorTemplateById,
+  isProTemplateId,
 } from "@/lib/generator/templates";
 import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
 
@@ -568,4 +569,20 @@ export function applyGeneratorTemplate(
     themePresetId: templateSettings.themePresetId,
     templateId: template.id,
   }, options);
+}
+
+export type ProExportBlockReason = "template" | null;
+
+/**
+ * Free users can select and preview Pro templates; only the export click is
+ * gated (spec 6.1). Returns null for Pro users and every original template.
+ */
+export function getProExportBlockReason(
+  templateId: GeneratorSettings["templateId"],
+  isPro: boolean,
+): ProExportBlockReason {
+  if (isPro) {
+    return null;
+  }
+  return isProTemplateId(templateId) ? "template" : null;
 }

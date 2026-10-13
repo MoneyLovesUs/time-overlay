@@ -198,6 +198,36 @@ export type RootPageContent = {
         };
       };
     };
+    // Optional so locales without Pro copy fall back to the English strings
+    // built into the generator components (spec 6.4: en + zh-hans required,
+    // every other locale uses the English fallback).
+    pro?: {
+      // Shown under the duration input after a free user's request is clamped
+      // back to the free cap (spec 6.1).
+      durationUpsellHint: string;
+      fps60Label?: string;
+      // Export-panel badge for unlocked Pro sessions (spec 6.2).
+      proEnabledLabel: string;
+      // Badge on the 12 Pro-gated templates in the gallery.
+      proBadgeLabel: string;
+      paywall: {
+        title: string;
+        benefitDuration: string;
+        benefitFps: string;
+        benefitTemplates: string;
+        priceNote: string;
+        unlockButton: string;
+        unavailableMessage: string;
+        errorMessage: string;
+        restoreHeading: string;
+        restoreEmailLabel: string;
+        restoreEmailPlaceholder: string;
+        restoreButton: string;
+        restoreSuccessMessage: string;
+        restoreNotFoundMessage: string;
+        closeLabel: string;
+      };
+    };
   };
   seoSection: {
     notesEyebrow: string;

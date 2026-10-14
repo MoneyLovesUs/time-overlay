@@ -2,7 +2,7 @@ import { createProStripeConfig, PRO_PRODUCT } from "@/lib/pro/config";
 import type { ProTrigger } from "@/lib/pro/entitlements";
 import { sanitizeReturnPath } from "@/lib/pro/return-path";
 import { verifyPriceQuote, type QuotePayload } from "@/lib/pro/pricing-quote";
-import { allowedOrigin, checkoutIdempotency, pricingResponse, regionalConfig, regionalEnabled,
+import { allowedOrigin, logPricingFailure, checkoutIdempotency, pricingResponse, regionalConfig, regionalEnabled,
   requestCountry, validateRegionalCatalog, validRegionalSession } from "@/lib/pro/pricing-server";
 import type Stripe from "stripe";
 
@@ -38,7 +38,8 @@ export async function POST(request: Request): Promise<Response> {
     if (quote.priceId !== config.priceId || quote.mode !== regional.mode || quote.country !== requestCountry(request)) {
       return pricingResponse({ error: "quote_changed" }, 409);
     }
-    try { await validateRegionalCatalog(config, regional); } catch {
+    try { await validateRegionalCatalog(config, regional); } catch (error) {
+      logPricingFailure("catalog", error);
       return pricingResponse({ error: "pricing_unavailable" }, 503);
     }
     couponId = quote.tier === "standard" ? undefined : regional.coupons[quote.tier];
@@ -79,7 +80,8 @@ export async function POST(request: Request): Promise<Response> {
       return pricingResponse({ error: "checkout_failed" }, 502);
     }
     return pricingResponse({ url: session.url });
-  } catch {
+  } catch (error) {
+    logPricingFailure("checkout", error);
     return pricingResponse({ error: "checkout_failed" }, 502);
   }
 }

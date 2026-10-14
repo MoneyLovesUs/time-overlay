@@ -47,6 +47,16 @@ export function pricingResponse(data: unknown, status = 200) {
     "Vercel-CDN-Cache-Control": "no-store",
   } });
 }
+export function logPricingFailure(stage: "catalog" | "checkout", error: unknown) {
+  const value = error && typeof error === "object" ? error as Record<string, unknown> : {};
+  const known = new Set(["invalid_regional_price", "invalid_regional_product", "invalid_regional_coupon",
+    "resource_missing", "api_key_expired", "rate_limit", "idempotency_key_in_use", "parameter_invalid_integer"]);
+  const code = [value.code, value.message].find((v) => typeof v === "string" && known.has(v));
+  const requestId = typeof value.requestId === "string" && /^req_[A-Za-z0-9]{1,100}$/.test(value.requestId)
+    ? value.requestId : undefined;
+  // Never serialize Stripe errors: raw response/params may contain private data.
+  console.error("[pro-pricing]", { stage, code: code ?? "provider_failure", requestId });
+}
 export function checkoutIdempotency(quote: QuotePayload, origin: string, returnPath: string, trigger: string, locale: string) {
   return "pro-quote-" + createHash("sha256")
     .update(JSON.stringify([quote.quoteId, origin, returnPath, trigger, locale, quote.mode])).digest("hex");

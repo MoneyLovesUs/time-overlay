@@ -1,7 +1,7 @@
 import { createProStripeConfig } from "@/lib/pro/config";
 import { regionalPrice } from "@/lib/pro/regional-pricing";
 import { signPriceQuote } from "@/lib/pro/pricing-quote";
-import { allowedOrigin, pricingResponse, regionalConfig, regionalEnabled, requestCountry, validateRegionalCatalog } from "@/lib/pro/pricing-server";
+import { allowedOrigin, logPricingFailure, pricingResponse, regionalConfig, regionalEnabled, requestCountry, validateRegionalCatalog } from "@/lib/pro/pricing-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,8 @@ export async function GET(request: Request) {
   try {
     await validateRegionalCatalog(base, config);
     return pricingResponse(signPriceQuote(requestCountry(request), base.priceId, config.mode, config.secret));
-  } catch {
+  } catch (error) {
+    logPricingFailure("catalog", error);
     return pricingResponse({ error: "pricing_unavailable" }, 503);
   }
 }

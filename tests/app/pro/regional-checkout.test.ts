@@ -8,7 +8,7 @@ vi.mock("stripe", () => ({ default: class {
 } }));
 import { GET } from "@/app/api/pro/quote/route";
 import { POST } from "@/app/api/pro/checkout/route";
-import { checkoutIdempotency, requestCountry } from "@/lib/pro/pricing-server";
+import { checkoutIdempotency, logPricingFailure, requestCountry } from "@/lib/pro/pricing-server";
 import { verifyPriceQuote, signPriceQuote } from "@/lib/pro/pricing-quote";
 const secret = "q".repeat(64);
 function request(path: string, country = "IN", body?: unknown, origin?: string) {
@@ -27,6 +27,7 @@ async function quote(country = "IN") {
 }
 describe("regional quote and checkout boundary", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubEnv("STRIPE_SECRET_KEY","sk_test_unit");
     vi.stubEnv("STRIPE_PRO_PRICE_ID","price_pro");
     vi.stubEnv("PRO_LICENSE_SECRET","license");
@@ -50,7 +51,13 @@ describe("regional quote and checkout boundary", () => {
         status:"open", payment_status:"unpaid",amount_subtotal:900,amount_total:900-discount,total_details:{amount_discount:discount,amount_tax:0} };
     });
   });
-  afterEach(() => { vi.unstubAllEnvs(); vi.resetAllMocks(); vi.useRealTimers(); });
+  afterEach(() => { vi.unstubAllEnvs(); vi.resetAllMocks(); vi.restoreAllMocks(); vi.useRealTimers(); });
+  it("logs only whitelisted error fields, not provider response, tokens or secrets", () => {
+    logPricingFailure("catalog", { message: "sk_live_private", code: "bad_secret",
+      requestId: "req_unit", raw: { secret: "quote_token_private" } });
+    expect(console.error).toHaveBeenCalledWith("[pro-pricing]", { stage: "catalog", code: "provider_failure", requestId: "req_unit" });
+    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain("private");
+  });
   it.each([["US",900,undefined],["MY",720,"off20"],["CN",540,"off40"],["IN",360,"off60"]])("quotes %s and creates the exact discounted USD session", async (country, amount, coupon) => {
     const q = await quote(country);
     expect(q.amount).toBe(amount);

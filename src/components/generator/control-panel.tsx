@@ -26,8 +26,12 @@ type ControlPanelProps = {
   maxDurationSeconds?: number;
   // Shown under the duration input after a free request is clamped (spec 6.1).
   durationLimitNotice?: string | null;
+  // Label for the inline upgrade CTA shown next to durationLimitNotice.
+  durationUpsellCtaLabel?: string | null;
   uploadedFontName: string | null;
   onDurationChange: (durationSeconds: number) => void;
+  // Opens the Pro paywall with the "duration" trigger when the notice shows.
+  onUnlockPro?: () => void;
   onDisplayFormatChange: (displayFormat: TimerDisplayFormat) => void;
   onResolutionPresetChange: (resolutionPresetId: ResolutionPresetId) => void;
   onBackgroundModeChange: (backgroundMode: BackgroundMode) => void;
@@ -48,8 +52,10 @@ export function ControlPanel({
   ui,
   maxDurationSeconds = GENERATOR_DURATION_LIMIT_SECONDS,
   durationLimitNotice = null,
+  durationUpsellCtaLabel = null,
   uploadedFontName,
   onDurationChange,
+  onUnlockPro,
   onDisplayFormatChange,
   onResolutionPresetChange,
   onBackgroundModeChange,
@@ -105,7 +111,16 @@ export function ControlPanel({
               className="mt-2 text-[12px] leading-5 text-secondary"
               role="status"
             >
-              {durationLimitNotice}
+              {durationLimitNotice}{" "}
+              {onUnlockPro && durationUpsellCtaLabel ? (
+                <button
+                  type="button"
+                  onClick={onUnlockPro}
+                  className="font-medium text-foreground underline underline-offset-2 transition-colors hover:text-tertiary"
+                >
+                  {durationUpsellCtaLabel}
+                </button>
+              ) : null}
             </p>
           ) : null}
           <label className="mt-4 block text-sm font-medium text-foreground">

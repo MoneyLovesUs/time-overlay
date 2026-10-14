@@ -21,6 +21,9 @@ import type {
 
 type ExportPanelProps = {
   settings: GeneratorSettings;
+  isPro?: boolean;
+  proEnabledLabel?: string;
+  fps60Label?: string;
   advisory: ExportAdvisory;
   ui: RootPageContent["generatorUi"]["exportPanel"];
   exportProgress: ExportProgressState;
@@ -111,6 +114,9 @@ function FormatOption({
 
 export function ExportPanel({
   settings,
+  isPro = false,
+  proEnabledLabel = "Pro enabled",
+  fps60Label,
   advisory,
   ui,
   exportProgress,
@@ -167,7 +173,14 @@ export function ExportPanel({
     <section className="cyber-panel cyber-chamfer overflow-hidden">
       <div className="flex items-center justify-between gap-4 border-b border-border/70 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
         <span>{ui.title}</span>
-        <span className="text-primary">{ui.subtitle}</span>
+        <span className="flex items-center gap-2">
+          {isPro ? (
+            <span className="border border-primary/60 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+              {proEnabledLabel}
+            </span>
+          ) : null}
+          <span className="text-primary">{ui.subtitle}</span>
+        </span>
       </div>
 
       <div className="space-y-6 px-5 py-5">
@@ -241,6 +254,7 @@ export function ExportPanel({
             >
               <option value={24}>{ui.fpsOptions[24]}</option>
               <option value={30}>{ui.fpsOptions[30]}</option>
+              <option value={60}>{fps60Label ?? "60 FPS (Pro)"}</option>
             </select>
           </label>
 

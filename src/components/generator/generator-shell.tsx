@@ -13,12 +13,18 @@ import {
 import { ControlPanel } from "@/components/generator/control-panel";
 import { ExportPanel } from "@/components/generator/export-panel";
 import { PreviewPanel } from "@/components/generator/preview-panel";
+import {
+  ProPaywallModal,
+  resolveGeneratorCheckoutContext,
+} from "@/components/generator/pro-paywall-modal";
 import { TemplateGallery } from "@/components/generator/template-gallery";
 import type { RootPageContent } from "@/content/root/types";
 import {
   DEFAULT_EXPORT_PROGRESS_STATE,
   DEFAULT_GENERATOR_SETTINGS,
   GENERATOR_CANVAS_PRESETS,
+  getProExportBlockReason,
+  getProFeatureUsage,
   applyGeneratorTemplate,
   normalizeGeneratorSettings,
   resolveDefaultExportFormat,
@@ -27,7 +33,17 @@ import {
   GENERATOR_TEMPLATES,
   getDefaultTemplateForPreset,
   getGeneratorTemplateById,
+  PRO_SIGNATURE_TEMPLATE_IDS,
 } from "@/lib/generator/templates";
+import {
+  GENERATOR_DURATION_LIMIT_SECONDS,
+} from "@/lib/generator/defaults";
+import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
+import {
+  restorePro,
+  startProCheckout,
+  usePro,
+} from "@/lib/pro/client";
 import {
   createLazyExportRuntime,
   type LazyExportRuntime,
@@ -66,6 +82,7 @@ import type {
   TemplateId,
   TimerDisplayFormat,
 } from "@/lib/generator/types";
+import type { ProTrigger } from "@/lib/pro/entitlements";
 import type { ExportWorkerMessage } from "@/lib/generator/export/job";
 
 type GeneratorShellProps = {
@@ -86,6 +103,14 @@ const WORKER_PACKAGING_WATCHDOG_MS = 120_000;
 // pipeline uses the same English fallbacks as the other runtime messages.
 const DEFAULT_PREPARING_MP4_MESSAGE = "Preparing local MP4 export";
 const DEFAULT_MP4_FAILED_MESSAGE = "MP4 export failed unexpectedly.";
+const DEFAULT_PRO_DURATION_HINT =
+  "That is past the free 5-minute limit. Pro unlocks durations up to 60 minutes.";
+const DEFAULT_PRO_ENABLED_LABEL = "Pro enabled";
+const DEFAULT_PRO_BADGE_LABEL = "Pro";
+
+// One upsell-exposure event per session (spec 6.2): reopening the paywall in
+// the same page session must not inflate pro_upsell_viewed counts.
+let proUpsellExposureReported = false;
 
 function getExportErrorCode(error: unknown, fallback: string): string {
   if (
@@ -110,6 +135,14 @@ function createCodedError(code: string, message: string) {
 }
 
 export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
+  const { status: proStatus } = usePro();
+  const isPro = proStatus === "pro";
+  const [paywallTrigger, setPaywallTrigger] = useState<ProTrigger | null>(
+    null,
+  );
+  const [durationLimitHitSeconds, setDurationLimitHitSeconds] = useState<
+    number | null
+  >(null);
   const [settings, setSettings] = useState<GeneratorSettings>(() => ({
     ...DEFAULT_GENERATOR_SETTINGS,
   }));
@@ -233,9 +266,28 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       setIsTemplateCustomized(true);
     }
     startTransition(() => {
-      setSettings((current) => normalizeGeneratorSettings(updater(current)));
+      setSettings((current) =>
+        normalizeGeneratorSettings(updater(current), { isPro }),
+      );
     });
   };
+
+  const openPaywall = useCallback((trigger: ProTrigger) => {
+    setPaywallTrigger(trigger);
+    if (!proUpsellExposureReported) {
+      proUpsellExposureReported = true;
+      trackEvent("pro_upsell_viewed", { trigger });
+    }
+  }, []);
+
+  // Re-clamp settings when the Pro entitlement resolves or is revoked, so a
+  // Pro user's >300s duration survives the initial "unknown" paint and a
+  // revoked token drops back under the free cap.
+  useEffect(() => {
+    setSettings((current) =>
+      normalizeGeneratorSettings(current, { isPro }),
+    );
+  }, [isPro]);
 
   useEffect(() => {
     setSupport(getLocalExportSupport());
@@ -307,6 +359,19 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleDurationChange = (durationSeconds: number) => {
+    const durationLimit = isPro
+      ? PRO_MAX_DURATION_SECONDS
+      : GENERATOR_DURATION_LIMIT_SECONDS;
+    if (durationSeconds > durationLimit) {
+      if (!isPro) {
+        setDurationLimitHitSeconds(durationSeconds);
+        trackEvent("duration_limit_hit", {
+          requestedSeconds: durationSeconds,
+        });
+      }
+    } else if (durationLimitHitSeconds !== null) {
+      setDurationLimitHitSeconds(null);
+    }
     updateSettings((current) => ({
       ...current,
       timer: {
@@ -393,6 +458,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFpsChange = (fps: number) => {
+    if (!isPro && fps === 60) {
+      // Free users cannot switch to 60fps: open the paywall, leave fps as-is.
+      openPaywall("fps");
+      return;
+    }
     updateSettings((current) => ({
       ...current,
       export: {
@@ -884,6 +954,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     if (isExportingRef.current || exportAdvisory.severity === "error") {
       return;
     }
+    // Free users may select and preview Pro templates, but the export click is
+    // where the paywall intercepts (spec 6.1).
+    if (getProExportBlockReason(settings.templateId, isPro) === "template") {
+      openPaywall("template");
+      return;
+    }
 
     const exportId = activeExportIdRef.current + 1;
     activeExportIdRef.current = exportId;
@@ -913,7 +989,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     setPreview(null);
     setEtaMs(null);
     setIsExporting(true);
-    trackEvent("export_started", telemetry);
+    trackEvent("export_started", { ...telemetry, isPro });
+    if (isPro) {
+      for (const { feature, value } of getProFeatureUsage(exportSettings)) {
+        trackEvent("pro_feature_used", { feature, value });
+      }
+    }
 
     if (exportSettings.export.format === "webm") {
       activeExportKindRef.current = "webm";
@@ -1115,6 +1196,14 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 settings={settings}
                 canvasPresets={GENERATOR_CANVAS_PRESETS}
                 ui={ui.controlPanel}
+                maxDurationSeconds={
+                  isPro ? PRO_MAX_DURATION_SECONDS : GENERATOR_DURATION_LIMIT_SECONDS
+                }
+                durationLimitNotice={
+                  !isPro && durationLimitHitSeconds !== null
+                    ? (ui.pro?.durationUpsellHint ?? DEFAULT_PRO_DURATION_HINT)
+                    : null
+                }
                 uploadedFontName={uploadedFont?.family ?? null}
                 onDurationChange={handleDurationChange}
                 onDisplayFormatChange={handleDisplayFormatChange}
@@ -1130,6 +1219,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             </div>
             <div className="xl:col-start-3 xl:row-start-1 [&>*]:h-full">
               <ExportPanel
+                isPro={isPro}
+                proEnabledLabel={
+                  ui.pro?.proEnabledLabel ?? DEFAULT_PRO_ENABLED_LABEL
+                }
+                fps60Label={ui.pro?.fps60Label}
                 advisory={exportAdvisory}
                 exportProgress={exportProgress}
                 isExporting={isExporting}
@@ -1147,6 +1241,25 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
               />
             </div>
           </div>
+
+          <ProPaywallModal
+            open={paywallTrigger !== null}
+            trigger={paywallTrigger}
+            copy={ui.pro?.paywall}
+            onClose={() => setPaywallTrigger(null)}
+            onCheckout={(trigger) => {
+              trackEvent("pro_checkout_clicked", { trigger });
+              const { locale, returnPath } = resolveGeneratorCheckoutContext(
+                window.location.pathname,
+                window.location.search,
+              );
+              return startProCheckout(trigger, locale, returnPath);
+            }}
+            onRestore={(email) => {
+              trackEvent("pro_restore_clicked", {});
+              return restorePro(email);
+            }}
+          />
         </div>
       </section>
     </main>

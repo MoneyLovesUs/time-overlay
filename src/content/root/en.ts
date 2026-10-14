@@ -238,6 +238,32 @@ const enRootPageContent = {
         },
       },
     },
+    pro: {
+      durationUpsellHint:
+        "That is past the free 5-minute limit. Pro unlocks durations up to 60 minutes.",
+      fps60Label: "60 FPS (Pro)",
+      proEnabledLabel: "Pro enabled",
+      proBadgeLabel: "Pro",
+      paywall: {
+        title: "Unlock Time Overlay Pro",
+        benefitDuration: "Timers up to 60 minutes",
+        benefitFps: "60 FPS exports",
+        benefitTemplates: "12 extra Pro templates",
+        priceNote: "$9 one-time payment — not a subscription.",
+        unlockButton: "Unlock Pro",
+        unavailableMessage:
+          "Payments are temporarily unavailable. Please try again later.",
+        errorMessage: "Something went wrong starting checkout. Please retry.",
+        restoreHeading: "Already purchased? Restore purchase",
+        restoreEmailLabel: "Email used for purchase",
+        restoreEmailPlaceholder: "you@example.com",
+        restoreButton: "Restore purchase",
+        restoreSuccessMessage: "Pro unlocked on this device.",
+        restoreNotFoundMessage:
+          "No Pro purchase found for that email address.",
+        closeLabel: "Close",
+      },
+    },
   },
   seoSection: {
     notesEyebrow: "Tool Notes",

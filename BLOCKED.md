@@ -58,3 +58,33 @@ None.
   the whitelist does not allow adding any; deferred.
 - Purchase receipt emails: no email service is authorized for this lane;
   purchase recovery uses the email-based restore endpoint instead.
+
+---
+
+## Task C — lane C (feat/pro-generator-ui)
+
+### Blockers / awaiting-user
+
+无。No account-resource dialog (quota reset / upgrade / purchase / payment /
+subscription / billing change / payment-method change / account-level OAuth or
+login choice) was encountered; nothing is awaiting user input.
+
+### Interpretation notes (not blockers)
+
+- Pro gating list: the task book's "12 个新 signature 模板" maps exactly to
+  `SIGNATURE_TEMPLATE_IDS` (the 12 ids added by 46d08f7); the older
+  signature-tier templates (e.g. prores-master-look) stay free-exportable,
+  per "原有 48 个模板" behavior parity. Exposed as
+  `PRO_SIGNATURE_TEMPLATE_IDS` + `isProTemplateId()`.
+- "免费用户选不了 60fps" implemented per spec 6.1: the 60 option is visible,
+  clicking it opens the paywall and leaves fps unchanged; the normalizer
+  additionally falls any free 60fps value back to 30 defensively.
+- `duration_limit_hit` fires only for free users crossing the 300s cap (the
+  spec table lists it under the free column); Pro at 3601 silently clamps to
+  3600 per "上限 3600".
+- Locale for `startProCheckout` is derived client-side from the pathname
+  because the shell receives copy objects but no locale prop, and
+  `src/components/site/**` is outside this lane's whitelist.
+- `isPro` / `proEnabledLabel` on ExportPanel are optional props with English
+  defaults so the existing generator-ui-content tests compile unchanged (no
+  assertions were edited).

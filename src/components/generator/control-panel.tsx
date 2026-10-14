@@ -22,6 +22,10 @@ type ControlPanelProps = {
   settings: GeneratorSettings;
   canvasPresets: readonly CanvasPreset[];
   ui: RootPageContent["generatorUi"]["controlPanel"];
+  // Pro raises the input cap to 3600; free sessions keep the historical 300.
+  maxDurationSeconds?: number;
+  // Shown under the duration input after a free request is clamped (spec 6.1).
+  durationLimitNotice?: string | null;
   uploadedFontName: string | null;
   onDurationChange: (durationSeconds: number) => void;
   onDisplayFormatChange: (displayFormat: TimerDisplayFormat) => void;
@@ -42,6 +46,8 @@ export function ControlPanel({
   settings,
   canvasPresets,
   ui,
+  maxDurationSeconds = GENERATOR_DURATION_LIMIT_SECONDS,
+  durationLimitNotice = null,
   uploadedFontName,
   onDurationChange,
   onDisplayFormatChange,
@@ -68,7 +74,7 @@ export function ControlPanel({
     event.target.value = "";
   };
 
-  const durationMax = GENERATOR_DURATION_LIMIT_SECONDS;
+  const durationMax = maxDurationSeconds;
 
   return (
     <section className="cyber-panel cyber-chamfer overflow-hidden">
@@ -94,6 +100,14 @@ export function ControlPanel({
               type="number"
             />
           </label>
+          {durationLimitNotice ? (
+            <p
+              className="mt-2 text-[12px] leading-5 text-secondary"
+              role="status"
+            >
+              {durationLimitNotice}
+            </p>
+          ) : null}
           <label className="mt-4 block text-sm font-medium text-foreground">
             {ui.displayFormatLabel}
             <select

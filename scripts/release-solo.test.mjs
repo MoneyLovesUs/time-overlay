@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync,
-  rmSync, symlinkSync, unlinkSync, writeFileSync,
+  chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync,
+  readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
@@ -170,6 +170,7 @@ function simulation(t, { production = false, failBuild = false, wrongProject = f
   const calls = [];
   let stage;
   let fetches = 0;
+  const seen = { reusedInputs: false, deployEnv: false };
   function execute(command, args, options = {}) {
     calls.push({ command, args });
     if (command === "git") {
@@ -193,7 +194,22 @@ function simulation(t, { production = false, failBuild = false, wrongProject = f
     if (command === "docker") {
       if (args[0] === "run") {
         if (failBuild) throw new Error("simulated build failure");
-        if (!args.at(-1).includes("--verify-only")) artifact(join(stage, ".vercel", "output"));
+        if (args.at(-1).includes("--verify-only")) {
+          // filePathMap inputs were restored from the cache before this run.
+          seen.reusedInputs = existsSync(join(stage, ".next", "package.json"));
+        } else {
+          const out = join(stage, ".vercel", "output");
+          artifact(out);
+          mkdirSync(join(stage, ".next"), { recursive: true });
+          writeFileSync(join(stage, ".next", "package.json"), "{\"type\":\"commonjs\"}");
+          writeFileSync(join(out, "functions", "index.func", ".vc-config.json"), JSON.stringify({
+            filePathMap: {
+              ".next/package.json": ".next/package.json",
+              ".env.production.local": ".env.production.local",
+              "node_modules/example/index.js": "node_modules/example/index.js",
+            },
+          }));
+        }
       }
       return "linux";
     }
@@ -204,10 +220,16 @@ function simulation(t, { production = false, failBuild = false, wrongProject = f
     if (command === "vercel" && args[0] === "api") {
       if (args[1].includes("/projects/")) return JSON.stringify({ ...project, ...(wrongProject ? { accountId: "wrong" } : {}) });
     }
-    if (command === "vercel" && args[0] === "deploy") throw new Error("simulated deployment stop");
+    if (command === "vercel" && args[0] === "deploy") {
+      // CLI 53 hashes every filePathMap source during upload; the merged env
+      // file must exist at the stage root by then.
+      const env = join(stage, ".env.production.local");
+      seen.deployEnv = existsSync(env) && readFileSync(env, "utf8").includes("NEXT_PUBLIC_SITE_URL");
+      throw new Error("simulated deployment stop");
+    }
     throw new Error(`Unexpected command ${command} ${args[0]}`);
   }
-  return { root, cache, calls, execute, stage: () => stage };
+  return { root, cache, calls, execute, seen, stage: () => stage };
 }
 
 test("build-only exercises the pipeline and cache reuse without any deployment or alias writes", async (t) => {
@@ -217,6 +239,7 @@ test("build-only exercises the pipeline and cache reuse without any deployment o
   assert.ok(!existsSync(sim.stage()), "temporary source/env cleaned after build");
   await release(["--build-only", "--reuse-artifact"], sim.execute, sim.root);
   assert.ok(sim.calls.some(({ command, args }) => command === "docker" && args.at(-1).includes("--verify-only")));
+  assert.ok(sim.seen.reusedInputs, "reuse restored filePathMap inputs into the stage");
   assert.ok(!sim.calls.some(({ command, args }) => command === "vercel" && ["deploy", "alias", "promote"].includes(args[0])));
 });
 
@@ -249,5 +272,15 @@ test("production path always uploads prebuilt output, with no fallback after a f
   assert.equal(uploads.length, 1);
   assert.ok(uploads[0].args.includes("--prebuilt"));
   assert.ok(uploads[0].args.includes("--prod"));
+  assert.ok(sim.seen.deployEnv, "deploy ran with .env.production.local restored in the stage");
   assert.ok(!existsSync(sim.stage()));
+});
+
+test("a cache without captured deploy inputs is rejected instead of half-deploying", async (t) => {
+  const sim = simulation(t, { production: true });
+  await assert.rejects(release([], sim.execute, sim.root), /deployment stop/);
+  const cacheDir = readdirSync(sim.cache).find((name) => existsSync(join(sim.cache, name, "artifact.json")));
+  assert.ok(cacheDir, "receipt written before the stopped deploy");
+  rmSync(join(sim.cache, cacheDir, "deploy-inputs"), { recursive: true });
+  await assert.rejects(release(["--reuse-artifact"], sim.execute, sim.root), /predates deploy-input/);
 });

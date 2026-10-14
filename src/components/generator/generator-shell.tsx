@@ -1204,6 +1204,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                     ? (ui.pro?.durationUpsellHint ?? DEFAULT_PRO_DURATION_HINT)
                     : null
                 }
+                durationUpsellCtaLabel={ui.pro?.paywall?.unlockButton ?? null}
+                onUnlockPro={() => openPaywall("duration")}
                 uploadedFontName={uploadedFont?.family ?? null}
                 onDurationChange={handleDurationChange}
                 onDisplayFormatChange={handleDisplayFormatChange}

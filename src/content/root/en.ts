@@ -250,6 +250,11 @@ const enRootPageContent = {
         benefitFps: "60 FPS exports",
         benefitTemplates: "12 extra Pro templates",
         priceNote: "$9 one-time payment — not a subscription.",
+        priceTemplate: "{price} one-time payment — not a subscription.",
+        regionalPriceNote: "Regional pricing applied.",
+        quoteLoading: "Loading price…",
+        quoteRetry: "Retry price",
+        quoteChanged: "Price updated. Please review it and click Unlock Pro again.",
         unlockButton: "Unlock Pro",
         unavailableMessage:
           "Payments are temporarily unavailable. Please try again later.",

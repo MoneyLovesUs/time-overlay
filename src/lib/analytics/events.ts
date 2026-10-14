@@ -27,6 +27,8 @@ export type AnalyticsEventName =
   | "template_filter_changed"
   | "template_selected"
   | "preset_selected"
+  | "pro_price_quoted"
+  | "pro_price_quote_failed"
   | "pro_checkout_redirected"
   | "pro_purchase_verified"
   | "pro_purchase_verify_failed"

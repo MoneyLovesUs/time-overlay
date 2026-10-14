@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 
 import { trackEvent } from "@/lib/analytics/events";
 import type { ProTrigger } from "@/lib/pro/entitlements";
+import { isPriceQuote, quoteAnalytics, type PriceQuote } from "@/lib/pro/regional-pricing";
 
 export type ProStatus = "unknown" | "free" | "pro";
 
@@ -159,11 +160,25 @@ export function usePro(): { status: ProStatus } {
   return { status };
 }
 
+export async function fetchProQuote(signal?: AbortSignal): Promise<PriceQuote | null> {
+  try {
+    const response = await fetch("/api/pro/quote", { cache: "no-store", signal });
+    const payload: unknown = await response.json();
+    if (!response.ok || !isPriceQuote(payload)) throw new Error("invalid_quote");
+    if (!signal?.aborted) trackEvent("pro_price_quoted", quoteAnalytics(payload));
+    return payload;
+  } catch {
+    if (!signal?.aborted) trackEvent("pro_price_quote_failed", { reason: "unavailable" });
+    return null;
+  }
+}
+
 export async function startProCheckout(
   trigger: ProTrigger,
   locale: string,
   returnPath: string,
-): Promise<"redirected" | "unavailable" | "error"> {
+  quote?: PriceQuote,
+): Promise<"redirected" | "unavailable" | "error" | "quote_changed"> {
   if (typeof window === "undefined") {
     return "error";
   }
@@ -171,11 +186,13 @@ export async function startProCheckout(
     const response = await fetch("/api/pro/checkout", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ trigger, locale, returnPath }),
+      body: JSON.stringify({ trigger, locale, returnPath, ...(quote ? { quoteToken: quote.quoteToken } : {}) }),
+      cache: "no-store",
     });
     if (response.status === 503) {
       return "unavailable";
     }
+    if (response.status === 409) return "quote_changed";
     if (!response.ok) {
       return "error";
     }
@@ -183,7 +200,7 @@ export async function startProCheckout(
     if (typeof payload.url !== "string" || !payload.url) {
       return "error";
     }
-    trackEvent("pro_checkout_redirected", { trigger });
+    trackEvent("pro_checkout_redirected", { trigger, ...(quote ? quoteAnalytics(quote) : {}) });
     window.location.assign(payload.url);
     return "redirected";
   } catch {

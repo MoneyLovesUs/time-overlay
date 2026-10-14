@@ -67,6 +67,16 @@ describe("POST /api/pro/restore", () => {
     });
   });
 
+  it.each([900,720,540,360])("restores a paid %i-cent order without relying on the current pricing policy", async (amount) => {
+    stripeMocks.list.mockResolvedValue({ data: [{
+      id: "cs_regional_restore", payment_status: "paid", amount_total: amount,
+      metadata: { product: "time-overlay-pro", pricing_policy: "old-policy" },
+    }] });
+    const response = await POST(makeRequest({ email: "unit-buyer@example.com" }));
+    assert.equal(response.status, 200);
+    assert.equal(verifyProToken((await response.json()).token, "unit-test-license-secret")?.sid, "cs_regional_restore");
+  });
+
   it("returns 404 not_found when no completed purchase matches the email", async () => {
     stripeMocks.list.mockResolvedValue({ data: [] });
 

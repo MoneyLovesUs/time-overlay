@@ -216,6 +216,11 @@ export type RootPageContent = {
         benefitFps: string;
         benefitTemplates: string;
         priceNote: string;
+        priceTemplate: string;
+        regionalPriceNote: string;
+        quoteLoading: string;
+        quoteRetry: string;
+        quoteChanged: string;
         unlockButton: string;
         unavailableMessage: string;
         errorMessage: string;

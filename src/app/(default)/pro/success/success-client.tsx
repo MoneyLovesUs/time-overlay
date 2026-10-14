@@ -52,6 +52,7 @@ export function ProSuccessClient() {
         const payload = (await response.json()) as {
           token?: unknown;
           trigger?: unknown;
+          pricing?: import("@/lib/pro/regional-pricing").VerifiedPricing;
         };
         if (typeof payload.token !== "string" || !payload.token) {
           setOutcome("error");
@@ -63,6 +64,7 @@ export function ProSuccessClient() {
           setOutcome("verified");
         }
         trackEvent("pro_purchase_verified", {
+          ...payload.pricing,
           trigger:
             typeof payload.trigger === "string" ? payload.trigger : undefined,
         });

@@ -3,6 +3,7 @@ import {
   PRO_PRODUCT,
 } from "@/lib/pro/config";
 import { signProToken } from "@/lib/pro/token";
+import { verifiedPricing } from "@/lib/pro/regional-pricing";
 
 function notConfigured(): Response {
   return Response.json({ error: "not_configured" }, { status: 503 });
@@ -62,5 +63,6 @@ export async function GET(request: Request): Promise<Response> {
     token,
     email,
     trigger: session.metadata.trigger,
+    pricing: verifiedPricing(session.metadata, session.amount_total, session.currency),
   });
 }

@@ -80,6 +80,18 @@ describe("GET /api/pro/verify", () => {
     );
   });
 
+  it.each([900,720,540,360])("unlocks a paid %i-cent order with the original Price ID", async (amount) => {
+    stripeMocks.retrieve.mockResolvedValue(paidSessionFixture({ amount_total: amount, currency: "usd",
+      metadata: { product: "time-overlay-pro", pricing_policy: "regional-v1", pricing_base_amount: "900",
+        pricing_amount: String(amount), pricing_country: "IN",
+        pricing_tier: amount === 900 ? "standard" : amount === 720 ? "regional_80" : amount === 540 ? "regional_60" : "regional_40" } }));
+    const response = await GET(makeRequest("cs_unit_paid"));
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.equal(verifyProToken(payload.token, "unit-test-license-secret")?.sid, "cs_unit_paid");
+    assert.equal(payload.pricing.paid_amount, amount);
+  });
+
   it("returns 402 unpaid when the session is not paid yet", async () => {
     stripeMocks.retrieve.mockResolvedValue(
       paidSessionFixture({ payment_status: "unpaid" }),

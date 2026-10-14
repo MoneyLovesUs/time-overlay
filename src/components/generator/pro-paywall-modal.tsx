@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { fetchProQuote } from "@/lib/pro/client";
+import type { PriceQuote } from "@/lib/pro/regional-pricing";
 import { Check, Clock, Gauge, LayoutTemplate, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,11 @@ const DEFAULT_PAYWALL_COPY: ProPaywallCopy = {
   benefitFps: "60 FPS exports",
   benefitTemplates: "12 extra Pro templates",
   priceNote: "$9 one-time payment — not a subscription.",
+  priceTemplate: "{price} one-time payment — not a subscription.",
+  regionalPriceNote: "Regional pricing applied.",
+  quoteLoading: "Loading price…",
+  quoteRetry: "Retry price",
+  quoteChanged: "Price updated. Please review it and click Unlock Pro again.",
   unlockButton: "Unlock Pro",
   unavailableMessage:
     "Payments are temporarily unavailable. Please try again later.",
@@ -36,6 +43,7 @@ const DEFAULT_PAYWALL_COPY: ProPaywallCopy = {
 
 export type CheckoutStartResult =
   | "redirected"
+  | "quote_changed"
   | "unavailable"
   | "error";
 
@@ -50,7 +58,7 @@ type ProPaywallModalProps = {
   trigger: ProTrigger | null;
   copy?: Partial<ProPaywallCopy>;
   onClose: () => void;
-  onCheckout: (trigger: ProTrigger) => Promise<CheckoutStartResult>;
+  onCheckout: (trigger: ProTrigger, quote: PriceQuote) => Promise<CheckoutStartResult>;
   onRestore: (email: string) => Promise<RestoreStartResult>;
 };
 
@@ -73,35 +81,88 @@ export function resolveGeneratorCheckoutContext(
   return { locale, returnPath };
 }
 
-export function ProPaywallModal({
-  open,
-  trigger,
-  copy,
-  onClose,
-  onCheckout,
-  onRestore,
-}: ProPaywallModalProps) {
+export function ProPaywallModal(props: ProPaywallModalProps) {
+  if (!props.open || props.trigger === null) return null;
+  return <PaywallContent key={props.trigger} {...props} />;
+}
+
+export function ProPriceSummary({ quote, copy, locale }: {
+  quote: PriceQuote; copy: ProPaywallCopy; locale: string;
+}) {
+  const price = new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(quote.amount / 100);
+  return <>
+    <p className="mt-3 text-sm font-medium text-foreground">
+      {copy.priceTemplate.replace("{price}", price)}
+    </p>
+    {quote.discountPercent > 0 ? <p className="mt-1 text-xs text-muted-foreground">{copy.regionalPriceNote}</p> : null}
+  </>;
+}
+
+function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPaywallModalProps) {
   const mergedCopy = { ...DEFAULT_PAYWALL_COPY, ...copy };
-  const [checkoutState, setCheckoutState] = useState<
-    "idle" | "pending" | "unavailable" | "error"
-  >("idle");
-  const [restoreState, setRestoreState] = useState<
-    "idle" | "pending" | RestoreFeedback
-  >("idle");
+  const [checkoutState, setCheckoutState] = useState<"idle" | "pending" | "unavailable" | "error" | "quote_changed">("idle");
+  const [quoteState, setQuoteState] = useState<{ quote: PriceQuote | null; loading: boolean }>({ quote: null, loading: true });
+  const [restoreState, setRestoreState] = useState<"idle" | "pending" | RestoreFeedback>("idle");
   const [restoreEmail, setRestoreEmail] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
+  const checkoutPending = useRef(false);
+  const dialog = useRef<HTMLDivElement>(null);
 
-  if (!open || trigger === null) {
-    return null;
-  }
+  const loadQuote = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const quote = await fetchProQuote(controller.signal);
+    if (!controller.signal.aborted) setQuoteState({ quote, loading: false });
+  };
+  useEffect(() => {
+    void loadQuote();
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const panel = dialog.current;
+    panel?.querySelector<HTMLButtonElement>("button")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !panel) return;
+      const elements = [...panel.querySelectorAll<HTMLElement>("button:not(:disabled), input:not(:disabled)")];
+      if (!elements.length) return;
+      const first = elements[0], last = elements.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      abortRef.current?.abort();
+      document.removeEventListener("keydown", onKey);
+      previousFocus?.focus();
+    };
+    // Mount once per opening; an inline callback must not refetch prices.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const handleCheckout = () => {
+  const retryQuote = () => {
+    setQuoteState({ quote: null, loading: true });
+    void loadQuote();
+  };
+  const handleCheckout = async () => {
+    const quote = quoteState.quote;
+    if (!quote || quoteState.loading || trigger === null || checkoutPending.current) return;
+    if (quote.expiresAt !== null && quote.expiresAt <= Math.floor(Date.now() / 1000)) {
+      setCheckoutState("quote_changed");
+      retryQuote();
+      return;
+    }
+    checkoutPending.current = true;
     setCheckoutState("pending");
-    onCheckout(trigger).then((result) => {
-      // "redirected" navigates away; only the failure modes stay on-page.
-      if (result === "unavailable" || result === "error") {
+    try {
+      const result = await onCheckout(trigger, quote);
+      if (result === "quote_changed") {
+        setCheckoutState("quote_changed");
+        retryQuote();
+      } else if (result === "unavailable" || result === "error") {
         setCheckoutState(result);
       }
-    });
+    } catch { setCheckoutState("error"); }
+    finally { checkoutPending.current = false; }
   };
 
   const handleRestore = () => {
@@ -135,6 +196,7 @@ export function ProPaywallModal({
       role="dialog"
       aria-modal="true"
       aria-label={mergedCopy.title}
+      ref={dialog}
     >
       <div className="cyber-panel cyber-chamfer relative w-full max-w-md px-6 py-6">
         <button
@@ -158,13 +220,19 @@ export function ProPaywallModal({
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-sm font-medium text-foreground">
-          {mergedCopy.priceNote}
-        </p>
+        <div aria-live="polite">
+          {quoteState.quote ? <ProPriceSummary quote={quoteState.quote} copy={mergedCopy}
+            locale={typeof window === "undefined" ? defaultLocale : resolveGeneratorCheckoutContext(window.location.pathname, "").locale} />
+            : <p className="mt-3 text-sm" role={quoteState.loading ? "status" : "alert"}>
+              {quoteState.loading ? mergedCopy.quoteLoading : mergedCopy.unavailableMessage}
+            </p>}
+          {!quoteState.loading && !quoteState.quote ? <Button type="button" variant="outline"
+            className="mt-2" onClick={retryQuote}>{mergedCopy.quoteRetry}</Button> : null}
+        </div>
 
         <Button
           className="mt-4 h-11 w-full rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
-          disabled={checkoutState === "pending"}
+          disabled={checkoutState === "pending" || quoteState.loading || !quoteState.quote}
           onClick={handleCheckout}
           type="button"
         >
@@ -172,6 +240,9 @@ export function ProPaywallModal({
             ? "..."
             : mergedCopy.unlockButton}
         </Button>
+        {checkoutState === "quote_changed" ? <p className="mt-2 text-sm" role="status">
+          {mergedCopy.quoteChanged}
+        </p> : null}
         {checkoutState === "unavailable" ? (
           <p className="mt-2 text-sm text-destructive" role="alert">
             {mergedCopy.unavailableMessage}

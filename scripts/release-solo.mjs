@@ -9,7 +9,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   assertDeployment, assertGitState, assertPrivatePath, assertProject, assertReceipt,
-  buildIdentity, BUILDER, DOMAINS, dockerRunArgs, environmentHash, inspectArtifact, ORIGIN,
+  buildIdentity, BUILDER, collectDeployInputs, DOMAINS, dockerRunArgs, environmentHash,
+  hashDeployInputsDirectory, inspectArtifact, ORIGIN,
   parseArgs, parseDeploymentUrl, prebuiltDeployArgs, PROJECT, SCOPE, sha256,
 } from "./lib/release-contract.mjs";
 
@@ -103,20 +104,37 @@ export async function release(argv, execute = run, root = ROOT) {
       assertPrivatePath(receiptPath);
       receipt = JSON.parse(readFileSync(receiptPath, "utf8"));
       const cachedOutput = join(cache, "output");
-      assertReceipt(receipt, identity, inspectArtifact(cachedOutput));
+      const cachedInputs = join(cache, "deploy-inputs");
+      if (!existsSync(cachedInputs)) {
+        throw new Error("Cached artifact predates deploy-input capture; rerun without --reuse-artifact.");
+      }
+      assertPrivatePath(cachedInputs, { directory: true });
+      assertReceipt(receipt, identity, inspectArtifact(cachedOutput), hashDeployInputsDirectory(cachedInputs));
       cpSync(cachedOutput, output, { recursive: true, verbatimSymlinks: true });
+      cpSync(cachedInputs, stage, { recursive: true, verbatimSymlinks: true });
       console.log("[release] reusing verified artifact");
     }
     const started = Date.now();
     execute("docker", [...dockerRunArgs(stage, extraEnvFile), "sh", "-c",
       "pnpm install --frozen-lockfile --prefer-offline && node scripts/release-build.mjs" + (reused ? " --verify-only" : "")]);
     const inventory = inspectArtifact(output);
-    if (reused) assertReceipt(receipt, identity, inventory);
+    // vercel deploy --prebuilt re-reads every root-relative filePathMap source
+    // (.next/** etc.); verify them and keep them in the cache for reuse runs.
+    const inputs = collectDeployInputs(output, stage);
+    if (reused) assertReceipt(receipt, identity, inventory, inputs.inventory);
     else {
-      receipt = { identity, inventory, builtAt: new Date().toISOString(), buildDurationMs: Date.now() - started };
+      receipt = { identity, inventory, inputs: inputs.inventory,
+        builtAt: new Date().toISOString(), buildDurationMs: Date.now() - started };
       const pending = mkdtempSync(join(cacheRoot, ".pending-"));
       try {
         cpSync(output, join(pending, "output"), { recursive: true, verbatimSymlinks: true });
+        const pendingInputs = join(pending, "deploy-inputs");
+        mkdirSync(pendingInputs, { mode: 0o700 });
+        for (const rel of inputs.paths) {
+          const target = join(pendingInputs, rel);
+          mkdirSync(dirname(target), { recursive: true });
+          cpSync(join(stage, rel), target, { verbatimSymlinks: true });
+        }
         writeFileSync(join(pending, "artifact.json"), JSON.stringify(receipt, null, 2) + "\n", { mode: 0o600 });
         if (existsSync(cache)) {
           assertPrivatePath(cache, { directory: true });
@@ -138,6 +156,13 @@ export async function release(argv, execute = run, root = ROOT) {
     if (JSON.stringify(buildIdentity({ project: latestProject }).project) !== JSON.stringify(identity.project)) {
       throw new Error("Project build settings changed during build; rebuild with the new settings.");
     }
+    // vercel deploy --prebuilt (CLI 53) hashes every filePathMap source, which
+    // includes the .env.production.local the build consumed and then removed.
+    // Recreate the merged build env so the upload finds it; the stage cleanup
+    // in finally still removes it afterwards.
+    writeFileSync(join(stage, ".env.production.local"),
+      readFileSync(envPath, "utf8") + "\n" + (extraEnvFile ? readFileSync(resolve(extraEnvFile), "utf8") : "") + "\n",
+      { mode: 0o600 });
     deployedUrl = parseDeploymentUrl(execute("vercel", prebuiltDeployArgs(identity), { cwd: stage, quiet: true }));
     const deployment = api(`/v13/deployments/${new URL(deployedUrl).hostname}`);
     deploymentId = deployment.id;

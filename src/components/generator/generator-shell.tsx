@@ -1,5 +1,7 @@
 "use client";
 
+import { quoteAnalytics } from "@/lib/pro/regional-pricing";
+
 import {
   startTransition,
   useCallback,
@@ -1249,13 +1251,13 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             trigger={paywallTrigger}
             copy={ui.pro?.paywall}
             onClose={() => setPaywallTrigger(null)}
-            onCheckout={(trigger) => {
-              trackEvent("pro_checkout_clicked", { trigger });
+            onCheckout={(trigger, quote) => {
+              trackEvent("pro_checkout_clicked", { trigger, ...quoteAnalytics(quote) });
               const { locale, returnPath } = resolveGeneratorCheckoutContext(
                 window.location.pathname,
                 window.location.search,
               );
-              return startProCheckout(trigger, locale, returnPath);
+              return startProCheckout(trigger, locale, returnPath, quote);
             }}
             onRestore={(email) => {
               trackEvent("pro_restore_clicked", {});

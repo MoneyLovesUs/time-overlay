@@ -63,7 +63,8 @@ describe("ProPaywallModal static render", () => {
     assert.match(markup, /Timers up to 60 minutes/);
     assert.match(markup, /60 FPS exports/);
     assert.match(markup, /12 extra Pro templates/);
-    assert.match(markup, /\$9 one-time payment/);
+    assert.match(markup, /Loading price/);
+    assert.match(markup, /disabled/);
     assert.match(markup, /Restore purchase/);
   });
 });

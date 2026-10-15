@@ -257,4 +257,26 @@ describe("pro client", () => {
     fetchMock.mockRejectedValue(new Error("offline"));
     assert.equal(await client.restorePro("nobody@example.com"), "error");
   });
+  it("fetches an uncached validated quote and excludes its token from analytics", async () => {
+    const q = {currency:"usd", baseAmount:900, amount:540, discountPercent:40, tier:"regional_60",
+      country:"CN", policyVersion:"regional-v1", expiresAt:Math.floor(Date.now()/1000)+900, quoteToken:"private-quote"};
+    fetchMock.mockResolvedValue(new Response(JSON.stringify(q)));
+    const client = await loadClient();
+    expect(await client.fetchProQuote()).toEqual(q);
+    expect(fetchMock.mock.calls[0][1].cache).toBe("no-store");
+    expect(JSON.stringify(windowStub.dataLayer)).not.toContain("private-quote");
+    expect(windowStub.dataLayer).toContainEqual(expect.objectContaining({event:"pro_price_quoted",quoted_amount:540}));
+  });
+  it("does not use malformed quotes, and passes signed quotes to checkout without auto-redirecting on 409", async () => {
+    const client = await loadClient();
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({amount:1})));
+    expect(await client.fetchProQuote()).toBeNull();
+    const q = {currency:"usd" as const, baseAmount:900, amount:360, discountPercent:60, tier:"regional_40" as const,
+      country:"IN", policyVersion:"regional-v1", expiresAt:1234, quoteToken:"signed"};
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({error:"quote_changed"}),{status:409}));
+    expect(await client.startProCheckout("duration","en","/",q)).toBe("quote_changed");
+    expect(windowStub.location.assign).not.toHaveBeenCalled();
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body).quoteToken).toBe("signed");
+  });
+
 });

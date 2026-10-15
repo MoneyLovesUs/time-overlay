@@ -32,7 +32,7 @@ export async function provisionCoupons(stripe, { apply = false, mode, accountId,
   // Check ALL conflicts before any mutation. Never repair/delete an existing object.
   const existing = await Promise.all(COUPONS.map(async (definition) => {
     try {
-      const coupon = await stripe.coupons.retrieve(definition.id);
+      const coupon = await stripe.coupons.retrieve(definition.id, { expand: ["applies_to"] });
       assertCoupon(coupon, definition, productId, live);
       return coupon;
     } catch (error) {
@@ -56,9 +56,9 @@ export async function provisionCoupons(stripe, { apply = false, mode, accountId,
         }, { idempotencyKey: "time-overlay:regional-v1:coupon:" + definition.id });
       } catch {
         // A timeout may have succeeded. Retrieve the SAME id, never retry with a new id.
-        coupon = await stripe.coupons.retrieve(definition.id);
+        coupon = await stripe.coupons.retrieve(definition.id, { expand: ["applies_to"] });
       }
-      coupon = await stripe.coupons.retrieve(definition.id);
+      coupon = await stripe.coupons.retrieve(definition.id, { expand: ["applies_to"] });
       assertCoupon(coupon, definition, productId, live);
       action = "created_or_recovered";
     }

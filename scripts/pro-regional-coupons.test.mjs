@@ -9,7 +9,8 @@ function fixture() {
     products: {retrieve:async()=>({id:"prod_test",active:true,livemode:false,metadata:{product:"time-overlay-pro"}})},
     prices: {retrieve:async()=>({id:"price_test",active:true,livemode:false,currency:"usd",unit_amount:900,type:"one_time",product:"prod_test"})},
     coupons: {
-      retrieve:async(id)=>{
+      retrieve:async(id, params)=>{
+        assert.deepEqual(params, {expand:["applies_to"]}, "restricted products require explicit expansion");
         if (!store.has(id)) throw Object.assign(new Error("missing"),{code:"resource_missing",statusCode:404});
         return store.get(id);
       },

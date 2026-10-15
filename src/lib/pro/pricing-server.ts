@@ -74,7 +74,7 @@ export async function validateRegionalCatalog(base: ProStripeConfig, regional: R
   if (product.deleted || !product.active || product.metadata.product !== "time-overlay-pro" ||
     product.livemode !== (regional.mode === "live")) throw new Error("invalid_regional_product");
   const coupons = await Promise.all(Object.entries(regional.coupons).map(async ([tier, id]) => {
-    const coupon = await base.stripe.coupons.retrieve(id);
+    const coupon = await base.stripe.coupons.retrieve(id, { expand: ["applies_to"] });
     if (!coupon.valid || coupon.livemode !== (regional.mode === "live") ||
       coupon.percent_off !== TIERS[tier as PricingTier].discountPercent || coupon.amount_off !== null ||
       coupon.duration !== "once" || coupon.max_redemptions !== null || coupon.redeem_by !== null ||

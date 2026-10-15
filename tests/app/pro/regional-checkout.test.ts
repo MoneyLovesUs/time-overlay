@@ -39,7 +39,8 @@ describe("regional quote and checkout boundary", () => {
     vi.stubEnv("VERCEL","1");
     mocks.price.mockResolvedValue({ id:"price_pro", active:true, livemode:false, currency:"usd", unit_amount:900, type:"one_time", product:"prod_pro" });
     mocks.product.mockResolvedValue({ id:"prod_pro", active:true, livemode:false, metadata:{product:"time-overlay-pro"} });
-    mocks.coupon.mockImplementation(async (id) => {
+    mocks.coupon.mockImplementation(async (id, params) => {
+      expect(params).toEqual({expand:["applies_to"]});
       const percent_off = Number(id.slice(3));
       return { id, valid:true, livemode:false, percent_off, amount_off:null, duration:"once", max_redemptions:null, redeem_by:null,
         applies_to:{products:["prod_pro"]}, metadata:{product:"time-overlay-pro",purpose:"regional-pricing",policy_version:"regional-v1",
@@ -126,7 +127,7 @@ describe("regional quote and checkout boundary", () => {
   ])("refuses an invalid coupon instead of falling back to full price: %j", async (change) => {
     const q=await quote();
     const get=mocks.coupon.getMockImplementation()!;
-    mocks.coupon.mockImplementation(async (id)=>({...await get(id),...change}));
+    mocks.coupon.mockImplementation(async (id, params)=>({...await get(id, params),...change}));
     expect((await POST(request("checkout","IN",{...body,quoteToken:q.quoteToken}))).status).toBe(503);
     expect(mocks.create).not.toHaveBeenCalled();
   });

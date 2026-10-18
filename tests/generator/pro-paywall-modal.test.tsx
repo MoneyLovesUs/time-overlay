@@ -68,7 +68,7 @@ describe("ProPaywallModal static render", () => {
     assert.match(markup, /Loading price/);
     assert.match(markup, /disabled/);
     assert.match(markup, /Future Pro templates included/);
-    assert.match(markup, /14-day full refund/);
+    assert.match(markup, /7-day full refund/);
     assert.match(markup, /Already purchased\? Restore purchase/);
     assert.doesNotMatch(markup, /type="email"/);
   });

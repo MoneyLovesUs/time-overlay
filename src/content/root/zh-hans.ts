@@ -242,7 +242,7 @@ const zhHansRootPageContent = {
         priceNote: "$9 一次付款，终身使用，无需订阅。",
         priceTemplate: "{price} 一次付款，终身使用，无需订阅。",
         regionalPriceNote: "已应用地区价格。",
-        trustNote: "Stripe 安全支付 · 14 天内可全额退款",
+        trustNote: "Stripe 安全支付 · 7 天内可全额退款",
         quoteLoading: "正在获取价格…",
         quoteRetry: "重新获取价格",
         quoteChanged: "价格已更新，请确认后再次点击解锁。",

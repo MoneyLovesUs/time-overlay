@@ -88,7 +88,7 @@ describe("regional paywall interaction",()=>{
     await render();
     expect(container.querySelector("h2")?.textContent).toBe("Export timers up to 60 minutes");
     expect(container.textContent).toContain("Future Pro templates included");
-    expect(container.textContent).toContain("14-day full refund");
+    expect(container.textContent).toContain("7-day full refund");
   });
   it("keeps restore collapsed until the user asks for it",async()=>{
     await render();

@@ -29,7 +29,7 @@ const DEFAULT_PAYWALL_COPY: ProPaywallCopy = {
   priceNote: "$9 one-time payment · lifetime access, no subscription.",
   priceTemplate: "{price} one-time payment · lifetime access, no subscription.",
   regionalPriceNote: "Regional pricing applied.",
-  trustNote: "Secure checkout by Stripe · 14-day full refund",
+  trustNote: "Secure checkout by Stripe · 7-day full refund",
   quoteLoading: "Loading price…",
   quoteRetry: "Retry price",
   quoteChanged: "Price updated. Please review it and click unlock again.",

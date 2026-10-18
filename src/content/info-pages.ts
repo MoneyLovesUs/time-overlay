@@ -317,7 +317,7 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
             "A purchase can be restored in another browser with the email address used at checkout, so keep that email address accessible.",
             "If Pro does not work as described, contact " +
               email +
-              " within 14 days of purchase for a full refund, no questions asked.",
+              " within 7 days of purchase for a full refund, no questions asked. Purchases made before October 19, 2026 keep the original 14-day window.",
           ],
         },
         {
@@ -581,9 +581,9 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
             "Pro 为终身使用：解锁不会过期，在 Time Overlay 持续运营期间，后续新增的 Pro 模板也无需额外付费。",
             "购买后在完成验证的浏览器中解锁 Pro：单次导出时长上限提升、60fps，以及 signature 模板包。解锁状态保存在该浏览器本地。",
             "可以在其他浏览器中凭付款时使用的邮箱找回 Pro，请保存好付款邮箱。",
-            "如果 Pro 无法按说明使用，可在购买后 14 天内无理由全额退款，联系邮箱：" +
+            "如果 Pro 无法按说明使用，可在购买后 7 天内无理由全额退款，联系邮箱：" +
               email +
-              "。",
+              "。2026 年 10 月 19 日之前的购买仍适用原来的 14 天退款期。",
           ],
         },
         {

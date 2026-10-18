@@ -312,11 +312,12 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
           heading: "Time Overlay Pro one-time purchase",
           paragraphs: [
             "Time Overlay Pro is a single one-time payment of $9 (USD). It is not a subscription and it does not renew.",
+            "Pro is lifetime access: the unlock does not expire, and Pro templates added later are included at no extra cost for as long as Time Overlay is operated.",
             "The purchase unlocks Pro in the browser where the purchase was verified: a longer per-export duration cap, 60 fps, and the signature template pack. The unlock is stored locally in that browser.",
             "A purchase can be restored in another browser with the email address used at checkout, so keep that email address accessible.",
             "If Pro does not work as described, contact " +
               email +
-              " within 14 days of purchase for a full refund, no questions asked.",
+              " within 7 days of purchase for a full refund, no questions asked. Purchases made before October 19, 2026 keep the original 14-day window.",
           ],
         },
         {
@@ -577,11 +578,12 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
           heading: "Time Overlay Pro 一次性买断",
           paragraphs: [
             "Time Overlay Pro 是 9 美元的一次性付款，不是订阅，不会自动续费。",
+            "Pro 为终身使用：解锁不会过期，在 Time Overlay 持续运营期间，后续新增的 Pro 模板也无需额外付费。",
             "购买后在完成验证的浏览器中解锁 Pro：单次导出时长上限提升、60fps，以及 signature 模板包。解锁状态保存在该浏览器本地。",
             "可以在其他浏览器中凭付款时使用的邮箱找回 Pro，请保存好付款邮箱。",
-            "如果 Pro 无法按说明使用，可在购买后 14 天内无理由全额退款，联系邮箱：" +
+            "如果 Pro 无法按说明使用，可在购买后 7 天内无理由全额退款，联系邮箱：" +
               email +
-              "。",
+              "。2026 年 10 月 19 日之前的购买仍适用原来的 14 天退款期。",
           ],
         },
         {

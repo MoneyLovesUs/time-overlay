@@ -211,17 +211,26 @@ export type RootPageContent = {
       // Badge on the 12 Pro-gated templates in the gallery.
       proBadgeLabel: string;
       paywall: {
+        // Generic headline, used for the "direct" trigger.
         title: string;
+        // Headlines matched to the action that opened the paywall.
+        titleDuration: string;
+        titleFps: string;
+        titleTemplate: string;
         benefitDuration: string;
         benefitFps: string;
         benefitTemplates: string;
+        benefitFutureTemplates: string;
         priceNote: string;
         priceTemplate: string;
         regionalPriceNote: string;
+        trustNote: string;
         quoteLoading: string;
         quoteRetry: string;
         quoteChanged: string;
+        // Plain label for CTAs outside the modal and while the price loads.
         unlockButton: string;
+        unlockButtonTemplate: string;
         unavailableMessage: string;
         errorMessage: string;
         restoreHeading: string;

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchProQuote } from "@/lib/pro/client";
 import type { PriceQuote } from "@/lib/pro/regional-pricing";
-import { Check, Clock, Gauge, LayoutTemplate, X } from "lucide-react";
+import { Check, Clock, Gauge, LayoutTemplate, Lock, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
@@ -19,16 +19,22 @@ export type ProPaywallCopy = NonNullable<
 
 const DEFAULT_PAYWALL_COPY: ProPaywallCopy = {
   title: "Unlock Time Overlay Pro",
+  titleDuration: "Export timers up to 60 minutes",
+  titleFps: "Export smooth 60 FPS timers",
+  titleTemplate: "Export with this Pro template",
   benefitDuration: "Timers up to 60 minutes",
   benefitFps: "60 FPS exports",
   benefitTemplates: "12 extra Pro templates",
-  priceNote: "$9 one-time payment — not a subscription.",
-  priceTemplate: "{price} one-time payment — not a subscription.",
+  benefitFutureTemplates: "Future Pro templates included",
+  priceNote: "$9 one-time payment · lifetime access, no subscription.",
+  priceTemplate: "{price} one-time payment · lifetime access, no subscription.",
   regionalPriceNote: "Regional pricing applied.",
+  trustNote: "Secure checkout by Stripe · 14-day full refund",
   quoteLoading: "Loading price…",
   quoteRetry: "Retry price",
-  quoteChanged: "Price updated. Please review it and click Unlock Pro again.",
+  quoteChanged: "Price updated. Please review it and click unlock again.",
   unlockButton: "Unlock Pro",
+  unlockButtonTemplate: "Unlock for {price}",
   unavailableMessage:
     "Payments are temporarily unavailable. Please try again later.",
   errorMessage: "Something went wrong starting checkout. Please retry.",
@@ -86,10 +92,27 @@ export function ProPaywallModal(props: ProPaywallModalProps) {
   return <PaywallContent key={props.trigger} {...props} />;
 }
 
+export function resolvePaywallTitle(trigger: ProTrigger, copy: ProPaywallCopy): string {
+  switch (trigger) {
+    case "duration": return copy.titleDuration;
+    case "fps": return copy.titleFps;
+    case "template": return copy.titleTemplate;
+    default: return copy.title;
+  }
+}
+
+function formatQuotePrice(quote: PriceQuote, locale: string): string {
+  return new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(quote.amount / 100);
+}
+
+function currentLocale(): string {
+  return typeof window === "undefined" ? defaultLocale : resolveGeneratorCheckoutContext(window.location.pathname, "").locale;
+}
+
 export function ProPriceSummary({ quote, copy, locale }: {
   quote: PriceQuote; copy: ProPaywallCopy; locale: string;
 }) {
-  const price = new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(quote.amount / 100);
+  const price = formatQuotePrice(quote, locale);
   return <>
     <p className="mt-3 text-sm font-medium text-foreground">
       {copy.priceTemplate.replace("{price}", price)}
@@ -104,6 +127,8 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
   const [quoteState, setQuoteState] = useState<{ quote: PriceQuote | null; loading: boolean }>({ quote: null, loading: true });
   const [restoreState, setRestoreState] = useState<"idle" | "pending" | RestoreFeedback>("idle");
   const [restoreEmail, setRestoreEmail] = useState("");
+  // Restore stays collapsed so it never competes with the purchase CTA.
+  const [restoreOpen, setRestoreOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const checkoutPending = useRef(false);
   const dialog = useRef<HTMLDivElement>(null);
@@ -188,14 +213,20 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
     { icon: Clock, label: mergedCopy.benefitDuration },
     { icon: Gauge, label: mergedCopy.benefitFps },
     { icon: LayoutTemplate, label: mergedCopy.benefitTemplates },
+    { icon: Sparkles, label: mergedCopy.benefitFutureTemplates },
   ];
+  const title = trigger === null ? mergedCopy.title : resolvePaywallTitle(trigger, mergedCopy);
+  const locale = currentLocale();
+  const unlockLabel = quoteState.quote
+    ? mergedCopy.unlockButtonTemplate.replace("{price}", formatQuotePrice(quoteState.quote, locale))
+    : mergedCopy.unlockButton;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4"
       role="dialog"
       aria-modal="true"
-      aria-label={mergedCopy.title}
+      aria-label={title}
       ref={dialog}
     >
       <div className="cyber-panel cyber-chamfer relative w-full max-w-md px-6 py-6">
@@ -209,7 +240,7 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
         </button>
 
         <h2 className="text-lg font-semibold tracking-[-0.02em] text-foreground">
-          {mergedCopy.title}
+          {title}
         </h2>
         <ul className="mt-4 space-y-2">
           {benefits.map((benefit) => (
@@ -221,8 +252,7 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
           ))}
         </ul>
         <div aria-live="polite">
-          {quoteState.quote ? <ProPriceSummary quote={quoteState.quote} copy={mergedCopy}
-            locale={typeof window === "undefined" ? defaultLocale : resolveGeneratorCheckoutContext(window.location.pathname, "").locale} />
+          {quoteState.quote ? <ProPriceSummary quote={quoteState.quote} copy={mergedCopy} locale={locale} />
             : <p className="mt-3 text-sm" role={quoteState.loading ? "status" : "alert"}>
               {quoteState.loading ? mergedCopy.quoteLoading : mergedCopy.unavailableMessage}
             </p>}
@@ -238,8 +268,12 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
         >
           {checkoutState === "pending"
             ? "..."
-            : mergedCopy.unlockButton}
+            : unlockLabel}
         </Button>
+        <p className="mt-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Lock className="size-3" />
+          <span>{mergedCopy.trustNote}</span>
+        </p>
         {checkoutState === "quote_changed" ? <p className="mt-2 text-sm" role="status">
           {mergedCopy.quoteChanged}
         </p> : null}
@@ -254,32 +288,45 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
           </p>
         ) : null}
 
-        <div className="mt-5 border-t border-border/70 pt-4">
-          <p className="text-sm font-medium text-foreground">
-            {mergedCopy.restoreHeading}
-          </p>
-          <label className="mt-3 block text-sm text-muted-foreground">
-            {mergedCopy.restoreEmailLabel}
-            <input
-              className="mt-2 h-10 w-full rounded-none border border-border/80 bg-background/65 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-tertiary"
-              onChange={(event) => setRestoreEmail(event.target.value)}
-              placeholder={mergedCopy.restoreEmailPlaceholder}
-              type="email"
-              value={restoreEmail}
-            />
-          </label>
-          <Button
-            className="mt-3 h-10 w-full justify-between rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
-            disabled={
-              restoreState === "pending" || restoreEmail.trim().length === 0
-            }
-            onClick={handleRestore}
-            type="button"
-            variant="outline"
-          >
-            <span>{mergedCopy.restoreButton}</span>
-            <Check className="size-4" />
-          </Button>
+        <div className="mt-5 border-t border-border/70 pt-3">
+          {!restoreOpen ? (
+            <button
+              className="w-full text-center text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              onClick={() => setRestoreOpen(true)}
+              type="button"
+            >
+              {mergedCopy.restoreHeading}
+            </button>
+          ) : (
+            <>
+              <p className="text-sm font-medium text-foreground">
+                {mergedCopy.restoreHeading}
+              </p>
+              <label className="mt-3 block text-sm text-muted-foreground">
+                {mergedCopy.restoreEmailLabel}
+                <input
+                  autoFocus
+                  className="mt-2 h-10 w-full rounded-none border border-border/80 bg-background/65 px-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-tertiary"
+                  onChange={(event) => setRestoreEmail(event.target.value)}
+                  placeholder={mergedCopy.restoreEmailPlaceholder}
+                  type="email"
+                  value={restoreEmail}
+                />
+              </label>
+              <Button
+                className="mt-3 h-10 w-full justify-between rounded-none font-mono text-[11px] uppercase tracking-[0.28em]"
+                disabled={
+                  restoreState === "pending" || restoreEmail.trim().length === 0
+                }
+                onClick={handleRestore}
+                type="button"
+                variant="outline"
+              >
+                <span>{mergedCopy.restoreButton}</span>
+                <Check className="size-4" />
+              </Button>
+            </>
+          )}
           {restoreState === "success" ? (
             <p className="mt-2 text-sm text-primary" role="status">
               {mergedCopy.restoreSuccessMessage}

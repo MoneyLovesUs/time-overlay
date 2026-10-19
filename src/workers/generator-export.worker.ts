@@ -9,6 +9,16 @@ import {
   resolveMp4FrameBackground,
 } from "@/lib/generator/encode/mp4-encoder";
 import {
+  estimateMp4Bytes,
+  MP4_IN_MEMORY_BUDGET_BYTES,
+} from "@/lib/generator/encode/mp4-budget";
+import {
+  createMemoryMp4Sink,
+  createOpfsMp4Sink,
+  Mp4SinkError,
+  type Mp4Sink,
+} from "@/lib/generator/encode/mp4-sink";
+import {
   createExportJobPlan,
   type ExportWorkerMessage,
   type ExportWorkerRequest,
@@ -322,17 +332,56 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
   });
 }
 
+/**
+ * Exports that fit the original in-memory budget keep that proven path. Longer
+ * ones stream to OPFS; if OPFS is unavailable, desktop falls back to memory
+ * while phones fail fast instead of risking an out-of-memory tab crash.
+ */
+async function openMp4Sink(
+  estimatedBytes: number,
+  allowInMemoryFallback: boolean,
+): Promise<Mp4Sink> {
+  if (estimatedBytes <= MP4_IN_MEMORY_BUDGET_BYTES) {
+    return createMemoryMp4Sink();
+  }
+  try {
+    return await createOpfsMp4Sink(estimatedBytes);
+  } catch (error) {
+    if (
+      allowInMemoryFallback &&
+      error instanceof Mp4SinkError &&
+      error.code === "mp4StorageUnavailable"
+    ) {
+      return createMemoryMp4Sink();
+    }
+    throw error;
+  }
+}
+
 async function handleMp4Export(request: Mp4Request) {
-  const { settings, uploadedFont, enablePreview = true } = request.payload;
+  const {
+    settings,
+    uploadedFont,
+    enablePreview = true,
+    allowInMemoryFallback = true,
+  } = request.payload;
 
   if (uploadedFont) {
     await loadFontIntoWorker(uploadedFont);
   }
 
-  const audioBuffer = await synthesizeAudioCues({
+  const audioCues = {
     durationSeconds: settings.timer.durationSeconds,
     variant: settings.audio.variant,
-  });
+  };
+  const sink = await openMp4Sink(
+    estimateMp4Bytes({
+      quality: settings.export.quality,
+      durationSeconds: settings.timer.durationSeconds,
+      hasAudio: settings.audio.variant !== "none",
+    }),
+    allowInMemoryFallback,
+  );
   const plan = createExportJobPlan({
     durationSeconds: settings.timer.durationSeconds,
     fps: settings.export.fps,
@@ -347,8 +396,10 @@ async function handleMp4Export(request: Mp4Request) {
     height: settings.canvas.height,
     fps: settings.export.fps,
     totalFrames: plan.totalFrames,
+    durationSeconds: settings.timer.durationSeconds,
     quality: settings.export.quality,
-    audioBuffer,
+    audioCues,
+    sink,
     drawFrame(canvas, frameIndex) {
       const context = canvas.getContext("2d");
       if (!context) {
@@ -411,7 +462,9 @@ self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
     }
   } catch (error) {
     const code =
-      event.data.kind === "export-mp4"
+      error instanceof Mp4SinkError
+        ? error.code
+        : event.data.kind === "export-mp4"
         ? "mp4FailedUnexpectedly"
         : event.data.kind === "export-alpha-video"
           ? "alphaVideoFailedUnexpectedly"

@@ -52,6 +52,7 @@ import {
 } from "@/lib/generator/export/runtime";
 import { validateExportArtifact } from "@/lib/generator/export/artifact";
 import { downloadBlob } from "@/lib/generator/export/png-sequence";
+import { holdScreenWakeLock } from "@/lib/generator/export/wake-lock";
 import { estimateRemainingMs } from "@/lib/generator/export/progress";
 import { buildExportFunnelTelemetry } from "@/lib/generator/export/telemetry";
 import {
@@ -105,6 +106,10 @@ const WORKER_PACKAGING_WATCHDOG_MS = 120_000;
 // pipeline uses the same English fallbacks as the other runtime messages.
 const DEFAULT_PREPARING_MP4_MESSAGE = "Preparing local MP4 export";
 const DEFAULT_MP4_FAILED_MESSAGE = "MP4 export failed unexpectedly.";
+const DEFAULT_MP4_STORAGE_UNAVAILABLE_MESSAGE =
+  "This browser blocked the local storage that long MP4 exports need (private browsing can do this). Use a regular browser window, or keep the timer to 5 minutes or less.";
+const DEFAULT_MP4_STORAGE_FULL_MESSAGE =
+  "Not enough free storage on this device for this export. Free up some space, or shorten the timer or lower the quality.";
 const DEFAULT_PRO_DURATION_HINT =
   "That is past the free 5-minute limit. Pro unlocks durations up to 60 minutes.";
 const DEFAULT_PRO_ENABLED_LABEL = "Pro enabled";
@@ -178,6 +183,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     null,
   );
   const isExportingRef = useRef(false);
+  const releaseWakeLockRef = useRef<(() => void) | null>(null);
   const webmAbortControllerRef = useRef<AbortController | null>(null);
   const workerWatchdogRef = useRef<number | null>(null);
 
@@ -288,6 +294,13 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     [],
   );
 
+  useEffect(
+    () => () => {
+      releaseWakeLockRef.current?.();
+    },
+    [],
+  );
+
   // Re-clamp settings when the Pro entitlement resolves or is revoked, so a
   // Pro user's >300s duration survives the initial "unknown" paint and a
   // revoked token drops back under the free cap.
@@ -367,14 +380,14 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   // Most free users who hit the duration cap never clicked the small inline
-  // CTA, so surface the paywall once they finish editing the field. Desktop
-  // only: mobile exports stay capped at 300s even with Pro.
+  // CTA, so surface the paywall once they finish editing the field. Phones
+  // without MP4 stay capped at 60s whatever the plan, so skip them.
   const handleDurationCommit = () => {
     if (
       isPro ||
       durationLimitHitSeconds === null ||
       durationPaywallAutoOpened ||
-      isMobileDevice
+      (isMobileDevice && support.supportsMp4 !== true)
     ) {
       return;
     }
@@ -632,6 +645,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       activeExportKindRef.current = null;
       activeExportSettingsRef.current = null;
       isExportingRef.current = false;
+      releaseWakeLockRef.current?.();
+      releaseWakeLockRef.current = null;
       abandonFiredRef.current = true;
       setIsExporting(false);
       setPreview(null);
@@ -743,6 +758,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       trackEvent("export_download_requested", outputTelemetry);
       trackEvent("export_completed", outputTelemetry);
       isExportingRef.current = false;
+      releaseWakeLockRef.current?.();
+      releaseWakeLockRef.current = null;
       activeExportKindRef.current = null;
       activeExportSettingsRef.current = null;
       activeExportTelemetryRef.current = {};
@@ -837,6 +854,21 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       }
 
       const code = event.data.payload.code;
+      if (code === "mp4StorageUnavailable" || code === "mp4StorageFull") {
+        // Storage problems have their own localized advice; switching formats
+        // would not help, so skip the generic message and suggestion.
+        finishExportFailure(
+          exportId,
+          code,
+          code === "mp4StorageFull"
+            ? (ui.exportPanel.runtimeMessages.mp4StorageFull ??
+                DEFAULT_MP4_STORAGE_FULL_MESSAGE)
+            : (ui.exportPanel.runtimeMessages.mp4StorageUnavailable ??
+                DEFAULT_MP4_STORAGE_UNAVAILABLE_MESSAGE),
+          true,
+        );
+        return;
+      }
       const fallback =
         code === "alphaVideoFailedUnexpectedly"
           ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
@@ -1010,6 +1042,8 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     activeExportTelemetryRef.current = telemetry;
     abandonFiredRef.current = false;
     isExportingRef.current = true;
+    releaseWakeLockRef.current?.();
+    releaseWakeLockRef.current = holdScreenWakeLock();
     setPreview(null);
     setEtaMs(null);
     setIsExporting(true);
@@ -1134,6 +1168,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             settings: exportSettings,
             uploadedFont: uploadedFont ?? undefined,
             enablePreview,
+            allowInMemoryFallback: !isMobileDevice,
           },
         });
         return;

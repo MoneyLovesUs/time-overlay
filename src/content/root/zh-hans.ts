@@ -182,6 +182,8 @@ const zhHansRootPageContent = {
           "当前浏览器不支持 WebM VP9 + alpha。请尝试 Chrome、Edge 或 Firefox 130+ 来导出透明视频。",
         hevcAlphaUnavailableError:
           "MOV HEVC + alpha 需要 macOS 上的 Safari 17.4+。其他平台请使用 WebM VP9 + alpha。",
+        mobileExportLimitError:
+          "这个导出任务太大，手机或平板无法稳定完成。MP4 最高 1080p 可以导出长计时器；PNG 序列和 WebM 在手机上最长 60 秒（720p）。4K 请在电脑上导出。",
         heavyExportWarning:
           "这次导出可能会占用较多内存和 CPU。如果浏览器吃力，建议改用 720p、30 秒以内或 PNG 序列。",
         pngSequenceInfo:
@@ -201,6 +203,10 @@ const zhHansRootPageContent = {
         webmFailedUnexpectedly: "WebM 导出意外失败。",
         alphaVideoFailedUnexpectedly: "透明视频导出意外失败。",
         mp4FailedUnexpectedly: "MP4 导出意外失败。",
+        mp4StorageUnavailable:
+          "浏览器禁止了长 MP4 导出需要的本地存储（无痕模式可能会这样）。请换成普通浏览器窗口，或把时长控制在 5 分钟以内。",
+        mp4StorageFull:
+          "设备剩余存储空间不足，无法完成这次导出。请清理一些空间，或缩短时长、降低画质。",
         pngSequenceFailedUnexpectedly: "PNG 序列导出意外失败。",
       },
       progress: {
@@ -214,7 +220,7 @@ const zhHansRootPageContent = {
           "透明导出可直接叠到素材上，不需要绿幕抠像。",
         ],
         desktopNote:
-          "提示：导出在桌面浏览器上最稳定。手机端建议使用 PNG 序列，或在电脑上打开这个页面。",
+          "手机和平板上请导出 MP4（最高 1080p），长计时器也能导出。导出时请保持页面打开、屏幕常亮，直到开始下载。PNG 序列和 WebM 在手机上最长 60 秒（720p）。",
         fallbackSuggestionTemplate: "建议：改试 {format}。",
         stageLabels: {
           validating: "正在准备导出",

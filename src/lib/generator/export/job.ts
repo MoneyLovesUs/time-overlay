@@ -29,6 +29,9 @@ export type ExportWorkerRequest =
         settings: GeneratorSettings;
         uploadedFont?: UploadedFont;
         enablePreview?: boolean;
+        // When OPFS is unavailable for a long export: desktop may buffer it in
+        // memory; phones get mp4StorageUnavailable instead of crashing.
+        allowInMemoryFallback?: boolean;
       };
     }
   | {
@@ -78,6 +81,8 @@ export type ExportWorkerMessage =
       payload: {
         code?:
           | "mp4FailedUnexpectedly"
+          | "mp4StorageUnavailable"
+          | "mp4StorageFull"
           | "pngSequenceFailedUnexpectedly"
           | "alphaVideoFailedUnexpectedly";
         message?: string;

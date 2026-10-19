@@ -177,6 +177,8 @@ export type RootPageContent = {
         webmFailedUnexpectedly: string;
         alphaVideoFailedUnexpectedly: string;
         mp4FailedUnexpectedly?: string;
+        mp4StorageUnavailable?: string;
+        mp4StorageFull?: string;
         pngSequenceFailedUnexpectedly: string;
       };
       // Optional perceived-wait copy for the live export progress view. Optional

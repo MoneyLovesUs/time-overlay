@@ -84,7 +84,7 @@ describe("localized generator ui", () => {
       "This job is too large for a reliable phone or tablet export.",
     );
     expect(limitedMarkup).toContain(
-      "On phones and tablets, use 720p for up to 60 seconds",
+      "On phones and tablets, export MP4 (up to 1080p) for long timers",
     );
 
     const exportingMarkup = renderToStaticMarkup(

@@ -113,6 +113,9 @@ const DEFAULT_PRO_BADGE_LABEL = "Pro";
 // One upsell-exposure event per session (spec 6.2): reopening the paywall in
 // the same page session must not inflate pro_upsell_viewed counts.
 let proUpsellExposureReported = false;
+// Auto-open the duration paywall at most once per page session; after that the
+// inline CTA under the duration input is the only way back in.
+let durationPaywallAutoOpened = false;
 
 function getExportErrorCode(error: unknown, fallback: string): string {
   if (
@@ -274,13 +277,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     });
   };
 
-  const openPaywall = useCallback((trigger: ProTrigger) => {
-    setPaywallTrigger(trigger);
-    if (!proUpsellExposureReported) {
-      proUpsellExposureReported = true;
-      trackEvent("pro_upsell_viewed", { trigger });
-    }
-  }, []);
+  const openPaywall = useCallback(
+    (trigger: ProTrigger, source: "click" | "auto" = "click") => {
+      setPaywallTrigger(trigger);
+      if (!proUpsellExposureReported) {
+        proUpsellExposureReported = true;
+        trackEvent("pro_upsell_viewed", { trigger, source });
+      }
+    },
+    [],
+  );
 
   // Re-clamp settings when the Pro entitlement resolves or is revoked, so a
   // Pro user's >300s duration survives the initial "unknown" paint and a
@@ -358,6 +364,22 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const getExportRuntime = () => {
     exportRuntimeRef.current ??= createLazyExportRuntime();
     return exportRuntimeRef.current;
+  };
+
+  // Most free users who hit the duration cap never clicked the small inline
+  // CTA, so surface the paywall once they finish editing the field. Desktop
+  // only: mobile exports stay capped at 300s even with Pro.
+  const handleDurationCommit = () => {
+    if (
+      isPro ||
+      durationLimitHitSeconds === null ||
+      durationPaywallAutoOpened ||
+      isMobileDevice
+    ) {
+      return;
+    }
+    durationPaywallAutoOpened = true;
+    openPaywall("duration", "auto");
   };
 
   const handleDurationChange = (durationSeconds: number) => {
@@ -1210,6 +1232,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 onUnlockPro={() => openPaywall("duration")}
                 uploadedFontName={uploadedFont?.family ?? null}
                 onDurationChange={handleDurationChange}
+                onDurationCommit={handleDurationCommit}
                 onDisplayFormatChange={handleDisplayFormatChange}
                 onResolutionPresetChange={handleResolutionPresetChange}
                 onBackgroundModeChange={handleBackgroundModeChange}

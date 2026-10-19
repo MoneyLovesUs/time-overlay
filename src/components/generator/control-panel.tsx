@@ -30,6 +30,8 @@ type ControlPanelProps = {
   durationUpsellCtaLabel?: string | null;
   uploadedFontName: string | null;
   onDurationChange: (durationSeconds: number) => void;
+  // Fires when the user finishes editing the duration (blur or Enter).
+  onDurationCommit?: () => void;
   // Opens the Pro paywall with the "duration" trigger when the notice shows.
   onUnlockPro?: () => void;
   onDisplayFormatChange: (displayFormat: TimerDisplayFormat) => void;
@@ -55,6 +57,7 @@ export function ControlPanel({
   durationUpsellCtaLabel = null,
   uploadedFontName,
   onDurationChange,
+  onDurationCommit,
   onUnlockPro,
   onDisplayFormatChange,
   onResolutionPresetChange,
@@ -99,6 +102,10 @@ export function ControlPanel({
             <input
               className={fieldClassName}
               onChange={(event) => onDurationChange(Number(event.target.value))}
+              onBlur={onDurationCommit}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") onDurationCommit?.();
+              }}
               value={settings.timer.durationSeconds}
               min={GENERATOR_MIN_DURATION_SECONDS}
               max={durationMax}

@@ -1,17 +1,33 @@
 import {
-  AudioBufferSource,
-  BufferTarget,
+  AudioSample,
+  AudioSampleSource,
   canEncodeAudio,
   CanvasSource,
   Mp4OutputFormat,
   Output,
 } from "mediabunny";
 
+import {
+  AUDIO_CUE_SAMPLE_RATE,
+  getAudioCueTotalSamples,
+  renderAudioCueChunk,
+  type SynthesizeAudioCuesOptions,
+} from "@/lib/generator/encode/audio-cues";
+import {
+  MP4_AUDIO_BITRATE,
+  resolveMp4VideoBitrate,
+} from "@/lib/generator/encode/mp4-budget";
+import {
+  createMemoryMp4Sink,
+  type Mp4Sink,
+} from "@/lib/generator/encode/mp4-sink";
 import type {
   CanvasSettings,
   ExportProgressState,
   ExportQualityPreset,
 } from "@/lib/generator/types";
+
+export { MP4_VIDEO_BITRATE_BY_QUALITY } from "@/lib/generator/encode/mp4-budget";
 
 /**
  * MP4 cannot store alpha, so transparent canvases are composited over a pure
@@ -19,13 +35,9 @@ import type {
  */
 export const MP4_CHROMA_KEY_BACKGROUND_COLOR = "#00FF00";
 
-export const MP4_VIDEO_BITRATE_BY_QUALITY: Record<
-  ExportQualityPreset,
-  number
-> = {
-  standard: 4_000_000,
-  high: 8_000_000,
-};
+// Audio is fed in one-second chunks alongside the video frames, so neither the
+// raw cue track nor the encoded packets pile up in memory on long timers.
+const AUDIO_CHUNK_SECONDS = 1;
 
 export function resolveMp4FrameBackground(
   canvas: Pick<CanvasSettings, "backgroundMode" | "backgroundColor">,
@@ -40,10 +52,12 @@ export type Mp4VideoEncoderOptions = {
   height: number;
   fps: number;
   totalFrames: number;
+  durationSeconds: number;
   quality: ExportQualityPreset;
   drawFrame: (canvas: OffscreenCanvas, frameIndex: number) => void;
   onProgress?: (progress: ExportProgressState) => void;
-  audioBuffer?: AudioBuffer | null;
+  audioCues?: SynthesizeAudioCuesOptions | null;
+  sink?: Mp4Sink;
 };
 
 export type Mp4VideoEncoderResult = {
@@ -82,28 +96,32 @@ export async function encodeMp4Video(
   options: Mp4VideoEncoderOptions,
 ): Promise<Mp4VideoEncoderResult> {
   const canvas = new OffscreenCanvas(options.width, options.height);
-  const target = new BufferTarget();
+  const sink = options.sink ?? createMemoryMp4Sink();
   const output = new Output({
     format: new Mp4OutputFormat(),
-    target,
+    target: sink.target,
   });
 
   const videoSource = new CanvasSource(canvas, {
     codec: "avc",
-    bitrate: MP4_VIDEO_BITRATE_BY_QUALITY[options.quality],
+    bitrate: resolveMp4VideoBitrate(options.quality, options.durationSeconds),
     keyFrameInterval: 2,
   });
   output.addVideoTrack(videoSource, { frameRate: options.fps });
 
   // Audio cues ride along as AAC when the browser can encode it; otherwise the
   // MP4 ships silent instead of failing the export.
-  let audioSource: AudioBufferSource | null = null;
-  if (options.audioBuffer) {
+  const audioCues =
+    options.audioCues && options.audioCues.variant !== "none"
+      ? options.audioCues
+      : null;
+  let audioSource: AudioSampleSource | null = null;
+  if (audioCues) {
     try {
       if (await canEncodeAudio("aac")) {
-        audioSource = new AudioBufferSource({
+        audioSource = new AudioSampleSource({
           codec: "aac",
-          bitrate: 96_000,
+          bitrate: MP4_AUDIO_BITRATE,
         });
         output.addAudioTrack(audioSource);
       }
@@ -112,49 +130,82 @@ export async function encodeMp4Video(
     }
   }
 
-  await output.start();
-
-  const audioWritePromise =
-    audioSource && options.audioBuffer
-      ? audioSource.add(options.audioBuffer)
-      : Promise.resolve();
+  const totalAudioSamples = audioCues
+    ? getAudioCueTotalSamples(audioCues.durationSeconds)
+    : 0;
+  const audioChunkSamples = AUDIO_CHUNK_SECONDS * AUDIO_CUE_SAMPLE_RATE;
+  let nextAudioSample = 0;
+  const addAudioUntil = async (seconds: number) => {
+    if (!audioSource || !audioCues) {
+      return;
+    }
+    const untilSample = Math.min(
+      totalAudioSamples,
+      Math.ceil(seconds * AUDIO_CUE_SAMPLE_RATE),
+    );
+    while (nextAudioSample < untilSample) {
+      const length = Math.min(
+        audioChunkSamples,
+        totalAudioSamples - nextAudioSample,
+      );
+      const sample = new AudioSample({
+        data: renderAudioCueChunk(audioCues, nextAudioSample, length),
+        format: "f32-planar",
+        numberOfChannels: 1,
+        sampleRate: AUDIO_CUE_SAMPLE_RATE,
+        timestamp: nextAudioSample / AUDIO_CUE_SAMPLE_RATE,
+      });
+      try {
+        await audioSource.add(sample);
+      } finally {
+        sample.close();
+      }
+      nextAudioSample += length;
+    }
+  };
 
   const frameDuration = 1 / options.fps;
 
-  for (let frameIndex = 0; frameIndex < options.totalFrames; frameIndex += 1) {
-    options.drawFrame(canvas, frameIndex);
-    const timestamp = frameIndex / options.fps;
+  try {
+    await output.start();
 
-    await videoSource.add(timestamp, frameDuration);
+    for (let frameIndex = 0; frameIndex < options.totalFrames; frameIndex += 1) {
+      options.drawFrame(canvas, frameIndex);
+      const timestamp = frameIndex / options.fps;
 
-    if (shouldEmitTick(frameIndex, options.totalFrames)) {
-      emitProgress(
-        options.onProgress,
-        frameIndex + 1,
-        options.totalFrames,
-        "encoding",
-      );
+      await videoSource.add(timestamp, frameDuration);
+      await addAudioUntil(timestamp + frameDuration + AUDIO_CHUNK_SECONDS);
+
+      if (shouldEmitTick(frameIndex, options.totalFrames)) {
+        emitProgress(
+          options.onProgress,
+          frameIndex + 1,
+          options.totalFrames,
+          "encoding",
+        );
+      }
     }
+
+    await addAudioUntil(Number.POSITIVE_INFINITY);
+
+    emitProgress(
+      options.onProgress,
+      options.totalFrames,
+      options.totalFrames,
+      "packaging",
+    );
+
+    await output.finalize();
+  } catch (error) {
+    await output.cancel().catch(() => undefined);
+    await sink.abort();
+    throw sink.writeError ?? error;
   }
 
-  await audioWritePromise;
-
-  emitProgress(
-    options.onProgress,
-    options.totalFrames,
-    options.totalFrames,
-    "packaging",
-  );
-
-  await output.finalize();
-
-  const buffer = target.buffer;
-  if (!buffer) {
-    throw new Error("Encoder finalized without producing a buffer.");
-  }
+  const blob = await sink.finish();
 
   return {
-    blob: new Blob([buffer], { type: "video/mp4" }),
+    blob,
     mimeType: "video/mp4",
     fileExtension: "mp4",
   };

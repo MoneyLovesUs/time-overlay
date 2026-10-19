@@ -1,6 +1,14 @@
 import type { GeneratorSettings } from "@/lib/generator/types";
 import type { ClientDeviceType } from "@/lib/analytics/environment";
-import { PRO_PNG_SEQUENCE_MAX_SECONDS } from "@/lib/pro/entitlements";
+import {
+  PRO_MAX_DURATION_SECONDS,
+  PRO_PNG_SEQUENCE_MAX_SECONDS,
+} from "@/lib/pro/entitlements";
+import {
+  estimateMp4Bytes,
+  MP4_IN_MEMORY_BUDGET_BYTES,
+  MP4_MOBILE_MAX_FRAMES,
+} from "@/lib/generator/encode/mp4-budget";
 import {
   ALPHA_WEBM_VIDEO_MIME_TYPES,
   getPreferredAlphaWebmMimeType as selectAlphaWebmMimeType,
@@ -19,6 +27,12 @@ export type LocalExportSupport = {
    * the probe is in flight so mp4 is neither offered nor disabled yet.
    */
   supportsMp4?: boolean | null;
+  /**
+   * OPFS is present, so the worker can stream long MP4 exports to disk
+   * instead of memory. Sync access handles only exist inside workers, so this
+   * checks for the directory API; the worker still falls back if it fails.
+   */
+  supportsStreamingMp4?: boolean;
 };
 
 export type ExportAdvisory = {
@@ -109,6 +123,13 @@ async function detectAlphaCodec(codec: string) {
   }
 }
 
+export function detectOpfs(): boolean {
+  return (
+    typeof navigator !== "undefined" &&
+    typeof navigator.storage?.getDirectory === "function"
+  );
+}
+
 export function getLocalExportSupport(): LocalExportSupport {
   const hasWorkerSupport = typeof Worker !== "undefined";
   const supportsPngSequence =
@@ -128,7 +149,37 @@ export function getLocalExportSupport(): LocalExportSupport {
       selectAlphaWebmMimeType(true) !== null,
     supportsVp9Alpha: null,
     supportsHevcAlpha: null,
+    supportsStreamingMp4: hasWorkerSupport && detectOpfs(),
   };
+}
+
+/**
+ * Phone MP4 limits. Up to 300s keeps the original rules; longer timers need
+ * either OPFS streaming or a scaled-down bitrate that still fits the
+ * in-memory budget. Frames are capped separately to bound encode time.
+ */
+export function exceedsMobileMp4Limits(
+  settings: GeneratorSettings,
+  supportsStreamingMp4: boolean,
+): boolean {
+  const canvasPixels = settings.canvas.width * settings.canvas.height;
+  const projectedFrames = settings.timer.durationSeconds * settings.export.fps;
+  if (canvasPixels > 1920 * 1080 || projectedFrames > MP4_MOBILE_MAX_FRAMES) {
+    return true;
+  }
+  if (settings.timer.durationSeconds <= 300) {
+    return false;
+  }
+  if (supportsStreamingMp4) {
+    return settings.timer.durationSeconds > PRO_MAX_DURATION_SECONDS;
+  }
+  return (
+    estimateMp4Bytes({
+      quality: settings.export.quality,
+      durationSeconds: settings.timer.durationSeconds,
+      hasAudio: settings.audio.variant !== "none",
+    }) > MP4_IN_MEMORY_BUDGET_BYTES
+  );
 }
 
 export async function probeAlphaExportSupport(): Promise<{
@@ -274,13 +325,8 @@ export function getExportAdvisory(
 
   if (isMobileDevice) {
     if (settings.export.format === "mp4") {
-      // MP4 streams frames straight into the encoder instead of buffering a
-      // whole archive in memory, so phones get higher limits — bounded at
-      // 300s, 1080p, and 9000 total frames for device memory safety.
       if (
-        settings.timer.durationSeconds > 300 ||
-        canvasPixels > 1920 * 1080 ||
-        projectedFrames > 9000
+        exceedsMobileMp4Limits(settings, support.supportsStreamingMp4 === true)
       ) {
         return {
           disabledFormats,

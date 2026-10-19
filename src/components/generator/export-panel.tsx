@@ -40,10 +40,10 @@ type ExportPanelProps = {
 };
 
 const DEFAULT_DESKTOP_NOTE =
-  "On phones and tablets, use 720p for up to 60 seconds or keep 1080p near 30 seconds, and keep this page visible while exporting. Use desktop for 4K or longer jobs.";
+  "On phones and tablets, export MP4 (up to 1080p) for long timers, and keep this page open with the screen on until the download starts. PNG sequence and WebM stay limited to 60 seconds at 720p.";
 
 const DEFAULT_MOBILE_EXPORT_LIMIT_ERROR =
-  "This job is too large for a reliable phone or tablet export. Use 720p for up to 60 seconds, keep 1080p near 30 seconds, and move 4K or longer work to desktop.";
+  "This job is too large for a reliable phone or tablet export. MP4 at up to 1080p handles long timers; PNG sequence and WebM are limited to 60 seconds at 720p. Move 4K work to desktop.";
 
 const DEFAULT_WEBM_REALTIME_WARNING =
   "WebM records in real time. This export will take at least as long as the timer, and you must keep this tab in the foreground until the download starts.";

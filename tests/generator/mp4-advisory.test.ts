@@ -73,10 +73,24 @@ describe("mobile mp4 export limits", () => {
     expect(advisory.code).toBeNull();
   });
 
-  it("blocks mobile mp4 at 301s with mobileExportLimitError", () => {
+  it("lets a phone without OPFS go past 300s while the file fits in memory", () => {
     const advisory = getExportAdvisory(
       withOverrides({
-        durationSeconds: 301,
+        durationSeconds: 900,
+        format: "mp4",
+        resolutionPresetId: "landscape-1080",
+      }),
+      support,
+      "mobile",
+    );
+
+    expect(advisory.severity).not.toBe("error");
+  });
+
+  it("blocks a phone without OPFS once the scaled file exceeds the memory budget", () => {
+    const advisory = getExportAdvisory(
+      withOverrides({
+        durationSeconds: 1300,
         format: "mp4",
         resolutionPresetId: "landscape-1080",
       }),
@@ -88,6 +102,42 @@ describe("mobile mp4 export limits", () => {
       code: "mobileExportLimitError",
       severity: "error",
     });
+  });
+
+  it("allows a 60-minute 30fps mobile mp4 when OPFS streaming is available", () => {
+    const advisory = getExportAdvisory(
+      withOverrides({
+        durationSeconds: 3600,
+        format: "mp4",
+        resolutionPresetId: "landscape-1080",
+      }),
+      { ...support, supportsStreamingMp4: true },
+      "mobile",
+    );
+
+    expect(advisory.severity).not.toBe("error");
+  });
+
+  it("still caps streamed mobile mp4 at 3600s and at 108k frames", () => {
+    const streaming = { ...support, supportsStreamingMp4: true };
+    const tooLong = withOverrides({
+      durationSeconds: 3601,
+      format: "mp4",
+      resolutionPresetId: "landscape-1080",
+    });
+    const tooManyFrames = withOverrides({
+      durationSeconds: 3600,
+      format: "mp4",
+      resolutionPresetId: "landscape-1080",
+    });
+    tooManyFrames.export = { ...tooManyFrames.export, fps: 60 };
+
+    expect(getExportAdvisory(tooLong, streaming, "mobile").code).toBe(
+      "mobileExportLimitError",
+    );
+    expect(getExportAdvisory(tooManyFrames, streaming, "mobile").code).toBe(
+      "mobileExportLimitError",
+    );
   });
 
   it("keeps the existing mobile png-sequence limit: 61s is still blocked", () => {

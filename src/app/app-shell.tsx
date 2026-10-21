@@ -86,11 +86,26 @@ function resolveRootDefaultTitle(title: Metadata["title"]): string {
   return siteConfig.name;
 }
 
+const siteOwnershipVerification = {
+  "saashub-verification": "2zilwxy48gfz",
+  "toolfound-verify": "20ff79feceb0cb408baf53eea277b1d5a351c72cbaa47fe4",
+} as const;
+
+export function withSiteOwnershipVerification(metadata: Metadata): Metadata {
+  return {
+    ...metadata,
+    other: {
+      ...metadata.other,
+      ...siteOwnershipVerification,
+    },
+  };
+}
+
 export async function generateDefaultLayoutMetadata(): Promise<Metadata> {
   const localizedMetadata = await createRootPageMetadata(defaultLocale);
   const rootDefaultTitle = resolveRootDefaultTitle(localizedMetadata.title);
 
-  return {
+  return withSiteOwnershipVerification({
     metadataBase: new URL(siteConfig.url),
     ...localizedMetadata,
     verification: {
@@ -103,7 +118,7 @@ export async function generateDefaultLayoutMetadata(): Promise<Metadata> {
       default: rootDefaultTitle,
       template: `%s | ${siteConfig.name}`,
     },
-  };
+  });
 }
 
 export const siteViewport: Viewport = {

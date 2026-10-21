@@ -84,6 +84,10 @@ describe("localized SEO helpers", () => {
         "saashub-verification": "igknz9129ppt",
       },
     });
+    expect(metadata.other).toMatchObject({
+      "saashub-verification": "2zilwxy48gfz",
+      "toolfound-verify": "20ff79feceb0cb408baf53eea277b1d5a351c72cbaa47fe4",
+    });
   });
 
   it("stores search-intent-driven localized homepage metadata under the 160-char description cap", () => {

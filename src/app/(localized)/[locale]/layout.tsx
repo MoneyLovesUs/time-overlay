@@ -5,7 +5,11 @@ import { notFound } from "next/navigation";
 import { CSP_NONCE_HEADER } from "@/lib/content-security-policy";
 import { defaultLocale, isEnabledLocale } from "@/lib/i18n";
 import { createRootPageMetadata } from "@/lib/site";
-import { AppDocument, siteViewport } from "@/app/app-shell";
+import {
+  AppDocument,
+  siteViewport,
+  withSiteOwnershipVerification,
+} from "@/app/app-shell";
 
 import "../../globals.css";
 
@@ -31,7 +35,7 @@ export async function generateMetadata({
     notFound();
   }
 
-  return createRootPageMetadata(locale);
+  return withSiteOwnershipVerification(await createRootPageMetadata(locale));
 }
 
 export const viewport: Viewport = siteViewport;

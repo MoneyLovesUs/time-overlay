@@ -10,6 +10,7 @@ import {
   type AppLocale,
 } from "./i18n.ts";
 import { publicationConfig } from "./publication.ts";
+import { PRESENTER_TOPIC_SLUGS } from "./presenter-topic-slugs.ts";
 
 const defaultSiteUrl = "https://timeoverlay.co";
 
@@ -112,9 +113,9 @@ type SupportingRouteDefinition = {
 
 // English-only product pages (e.g. the presenter-timer waitlist).
 type ProductRouteDefinition = {
-  readonly href: "/presenter-timer";
+  readonly href: "/presenter-timer" | `/presenter-timer/${string}`;
   readonly changeFrequency: "monthly";
-  readonly priority: 0.7;
+  readonly priority: 0.6 | 0.7;
   readonly locales: readonly AppLocale[];
 };
 
@@ -185,6 +186,12 @@ const productRoutes: readonly ProductRouteDefinition[] = [
     priority: 0.7,
     locales: [defaultLocale],
   },
+  ...PRESENTER_TOPIC_SLUGS.map((slug) => ({
+    href: `/presenter-timer/${slug}` as const,
+    changeFrequency: "monthly" as const,
+    priority: 0.6 as const,
+    locales: [defaultLocale],
+  })),
 ];
 
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [

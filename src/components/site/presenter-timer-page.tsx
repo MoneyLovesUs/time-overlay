@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { JsonLd } from "@/components/site/json-ld";
 import { PresenterWaitlistForm } from "@/components/site/presenter-waitlist-form";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -6,6 +8,11 @@ import {
   PRESENTER_TIMER_PATH,
   type PresenterTimerContent,
 } from "@/content/presenter-timer";
+import {
+  buildPresenterTopicPath,
+  getPresenterTopic,
+  PRESENTER_TOPIC_SLUGS,
+} from "@/content/presenter-topics";
 import type { RootPageContent } from "@/content/root/types";
 import { defaultLocale } from "@/lib/i18n";
 import { secondaryContentLocales, siteConfig } from "@/lib/site";
@@ -24,7 +31,7 @@ type PresenterTimerPageProps = {
   content: PresenterTimerContent;
 };
 
-function SectionHeading({ index, children }: { index: number; children: React.ReactNode }) {
+export function SectionHeading({ index, children }: { index: number; children: React.ReactNode }) {
   return (
     <>
       <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-tertiary/80">
@@ -35,7 +42,7 @@ function SectionHeading({ index, children }: { index: number; children: React.Re
   );
 }
 
-function ScreenMock({
+export function ScreenMock({
   label,
   slideTitle,
   timer,
@@ -220,6 +227,29 @@ export function PresenterTimerPage({ chrome, content }: PresenterTimerPageProps)
                   </div>
                 ))}
               </dl>
+            </section>
+
+            <section className="border-t border-border/70 py-9">
+              <SectionHeading index={8}>{content.topicsHeading}</SectionHeading>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {PRESENTER_TOPIC_SLUGS.map((slug) => {
+                  const topic = getPresenterTopic(slug);
+                  return (
+                    <Link
+                      key={slug}
+                      href={buildPresenterTopicPath(slug)}
+                      className="cyber-panel-muted group px-5 py-5 transition-colors hover:border-primary/60"
+                    >
+                      <h3 className="text-base font-semibold leading-6 text-foreground transition-colors group-hover:text-primary">
+                        {topic.heading}
+                      </h3>
+                      <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                        {topic.metadata.description}
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
             </section>
           </div>
         </div>

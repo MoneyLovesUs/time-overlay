@@ -77,6 +77,7 @@ export const presenterTimerContent = {
     ],
   },
   faqTitle: "Presenter timer questions",
+  topicsHeading: "Private timers in Zoom, Teams, Meet and slide apps",
   faqItems: [
     {
       question: "Is Time Overlay Desktop available now?",

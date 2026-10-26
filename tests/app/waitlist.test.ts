@@ -2,8 +2,13 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it, vi } from "vitest";
 
 import { POST } from "@/app/api/waitlist/route";
+import {
+  buildPresenterTopicPath,
+  getPresenterTopic,
+  PRESENTER_TOPIC_SLUGS,
+} from "@/content/presenter-topics";
 import { buildSitemapEntries } from "@/lib/site";
-import { parseWaitlistSubmission, WAITLIST_EVENT } from "@/lib/waitlist";
+import { parseWaitlistSubmission, WAITLIST_EVENT, WAITLIST_SOURCES } from "@/lib/waitlist";
 
 const validBody = {
   email: "  Speaker@Example.com ",
@@ -41,6 +46,15 @@ describe("parseWaitlistSubmission", () => {
     assert.deepEqual(parseWaitlistSubmission(null), { kind: "invalid", field: "body" });
   });
 
+  it("keeps a known landing-page source and falls back for unknown ones", () => {
+    const fromTeams = parseWaitlistSubmission({ ...validBody, source: "microsoft-teams" });
+    assert.equal(fromTeams.kind === "valid" && fromTeams.value.source, "microsoft-teams");
+    const unknown = parseWaitlistSubmission({ ...validBody, source: "evil<script>" });
+    assert.equal(unknown.kind === "valid" && unknown.value.source, "presenter-timer");
+    const missing = parseWaitlistSubmission(validBody);
+    assert.equal(missing.kind === "valid" && missing.value.source, "presenter-timer");
+  });
+
   it("flags a filled honeypot as spam", () => {
     assert.deepEqual(parseWaitlistSubmission({ ...validBody, company: "Acme" }), { kind: "spam" });
   });
@@ -70,6 +84,7 @@ describe("POST /api/waitlist", () => {
     assert.equal(capture.properties.price_willing_usd, "19");
     assert.equal(capture.properties.$set.email, "speaker@example.com");
     assert.equal(capture.properties.$set.presenter_timer_waitlist, true);
+    assert.equal(capture.properties.source, "presenter-timer");
   });
 
   it("returns 400 with the failing field and does not call PostHog", async () => {
@@ -118,5 +133,42 @@ describe("presenter timer route", () => {
     assert.equal(entries.length, 1);
     assert.equal(entries[0]?.url, "https://timeoverlay.co/presenter-timer");
     assert.equal(entries[0]?.alternates, undefined);
+  });
+});
+
+describe("presenter timer topic pages", () => {
+  it("are each listed once in the sitemap under /presenter-timer", () => {
+    for (const slug of PRESENTER_TOPIC_SLUGS) {
+      const url = `https://timeoverlay.co${buildPresenterTopicPath(slug)}`;
+      const entries = buildSitemapEntries().filter((entry) => entry.url === url);
+      assert.equal(entries.length, 1, url);
+      assert.equal(entries[0]?.alternates, undefined);
+    }
+  });
+
+  it("are all accepted as waitlist sources", () => {
+    for (const slug of PRESENTER_TOPIC_SLUGS) {
+      assert.ok((WAITLIST_SOURCES as readonly string[]).includes(slug), slug);
+    }
+  });
+
+  it("have search-sized metadata, cited sources and valid related links", () => {
+    for (const slug of PRESENTER_TOPIC_SLUGS) {
+      const topic = getPresenterTopic(slug);
+      assert.equal(topic.slug, slug);
+      // The layout appends " | Time Overlay" (15 chars); keep the total near 70.
+      assert.ok(topic.metadata.title.length <= 55, `${slug} title ${topic.metadata.title.length}`);
+      assert.ok(
+        topic.metadata.description.length <= 160,
+        `${slug} description ${topic.metadata.description.length}`,
+      );
+      assert.ok(topic.sources.length > 0, `${slug} sources`);
+      assert.ok(topic.sources.every((source) => source.href.startsWith("https://")));
+      assert.ok(topic.faqItems.length >= 3, `${slug} faq`);
+      for (const related of topic.relatedSlugs) {
+        assert.notEqual(related, slug);
+        assert.ok((PRESENTER_TOPIC_SLUGS as readonly string[]).includes(related));
+      }
+    }
   });
 });

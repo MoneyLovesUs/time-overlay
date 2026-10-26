@@ -11,6 +11,7 @@ export type NavigationItem = {
 };
 
 type NavigationLabels = {
+  presenterTimer: string;
   guides: string;
   formats: string;
   about: string;
@@ -23,6 +24,7 @@ type NavigationLabels = {
 
 const navigationLabels: Record<"en" | "zh-hans", NavigationLabels> = {
   en: {
+    presenterTimer: "Presenter timer",
     guides: "Guides",
     formats: "Formats",
     about: "About",
@@ -33,6 +35,7 @@ const navigationLabels: Record<"en" | "zh-hans", NavigationLabels> = {
     legalTitle: "Trust",
   },
   "zh-hans": {
+    presenterTimer: "演讲者计时器",
     guides: "指南",
     formats: "格式",
     about: "关于",
@@ -123,6 +126,11 @@ export function buildFooterNavigation(
       {
         href: buildSecondaryContentPath("/about", locale),
         label: labels.about,
+      },
+      {
+        // English-only page, linked from every locale.
+        href: buildLocalizedPath("/presenter-timer", "en"),
+        label: labels.presenterTimer,
       },
     ],
     trustItems: [

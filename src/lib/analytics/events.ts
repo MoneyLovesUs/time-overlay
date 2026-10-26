@@ -38,7 +38,10 @@ export type AnalyticsEventName =
   | "pro_upsell_viewed"
   | "pro_checkout_clicked"
   | "pro_restore_clicked"
-  | "pro_feature_used";
+  | "pro_feature_used"
+  | "presenter_waitlist_submitted"
+  | "presenter_waitlist_joined"
+  | "presenter_waitlist_failed";
 
 export function trackEvent(
   event: AnalyticsEventName,

@@ -110,11 +110,20 @@ type SupportingRouteDefinition = {
   readonly locales: readonly AppLocale[];
 };
 
+// English-only product pages (e.g. the presenter-timer waitlist).
+type ProductRouteDefinition = {
+  readonly href: "/presenter-timer";
+  readonly changeFrequency: "monthly";
+  readonly priority: 0.7;
+  readonly locales: readonly AppLocale[];
+};
+
 type PublicRouteDefinition =
   | HomepageRouteDefinition
   | GuideRouteDefinition
   | ComparisonRouteDefinition
-  | SupportingRouteDefinition;
+  | SupportingRouteDefinition
+  | ProductRouteDefinition;
 
 const homepageRoute: HomepageRouteDefinition = {
   href: "/",
@@ -169,9 +178,19 @@ const supportingRoutes: readonly SupportingRouteDefinition[] = SUPPORTING_PATHS.
   }),
 );
 
+const productRoutes: readonly ProductRouteDefinition[] = [
+  {
+    href: "/presenter-timer",
+    changeFrequency: "monthly",
+    priority: 0.7,
+    locales: [defaultLocale],
+  },
+];
+
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
   homepageRoute,
   ...supportingRoutes,
+  ...productRoutes,
   ...guideRoutes,
   ...comparisonRoutes,
 ] as const;

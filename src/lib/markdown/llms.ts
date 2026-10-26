@@ -1,5 +1,6 @@
 import { getComparePageContent } from "@/content/compare";
 import { getGuideLocaleContent } from "@/content/guides";
+import { PRESENTER_TIMER_PATH, presenterTimerContent } from "@/content/presenter-timer";
 import enRootPageContent from "@/content/root/en";
 import zhHansRootPageContent from "@/content/root/zh-hans";
 import {
@@ -49,6 +50,7 @@ export function buildLlmsTxt(locale: EnabledLocale = defaultLocale): string {
     locale === "zh-hans" ? "## 核心页面" : "## Core pages",
     `- [${siteConfig.name} generator](${abs(localized("/"))}): ${root.metadata.description} Markdown: ${abs(localizedMarkdown("/home"))}`,
     `- [${compare.metadata.title}](${abs(localized(`/compare/${compareSlug}`))}): ${compare.metadata.description} Markdown: ${abs(localizedMarkdown(`/compare/${compareSlug}`))}`,
+    `- [${presenterTimerContent.metadata.title}](${abs(PRESENTER_TIMER_PATH)}): ${presenterTimerContent.metadata.description} (English, early-access waitlist)`,
     "",
     locale === "zh-hans" ? "## 剪辑软件指南" : "## Editor guides",
     ...GUIDE_SLUGS.map((slug) => {

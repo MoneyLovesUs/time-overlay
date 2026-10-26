@@ -31,7 +31,7 @@ export type InfoPageContent = {
   sections: readonly InfoPageSection[];
 };
 
-const UPDATED_AT = "2026-08-28";
+const UPDATED_AT = "2026-10-26";
 
 function displayEmail(): string {
   return publicationConfig.contactEmail || "[public contact email pending]";
@@ -172,6 +172,13 @@ function buildEnglishPages(): Record<InfoPageKey, InfoPageContent> {
           paragraphs: [
             "Time Overlay sells optional paid products through Stripe. Payment card details are entered and processed on Stripe's own checkout; Time Overlay does not store card numbers or other payment credentials on its servers.",
             "To verify a purchase or restore it later, Time Overlay asks Stripe about the checkout session using the session reference from your checkout link or the email address used at checkout. That lookup happens at Stripe; Time Overlay does not build a customer database from it.",
+          ],
+        },
+        {
+          heading: "Product waitlists",
+          paragraphs: [
+            "If you join the Time Overlay Desktop waitlist, Time Overlay stores the email address you enter together with your answers (platform, intended use, and price expectation) and an approximate country derived from your network. These are kept in PostHog and used only to announce the beta and to decide what to build first.",
+            "Waitlist emails are not sold or shared for advertising. To be removed from a waitlist, email the privacy contact above.",
           ],
         },
         {
@@ -463,6 +470,13 @@ function buildChinesePages(): Record<InfoPageKey, InfoPageContent> {
           paragraphs: [
             "Time Overlay 的可选付费项目通过 Stripe 销售。银行卡信息在 Stripe 自己的结账页面输入和处理；Time Overlay 的服务器不存储银行卡号或其他支付凭据。",
             "验证或找回购买时，Time Overlay 使用结账链接中的会话引用或付款邮箱向 Stripe 查询对应的 checkout 会话；查询发生在 Stripe 侧，Time Overlay 不会据此建立用户资料库。",
+          ],
+        },
+        {
+          heading: "产品等候名单",
+          paragraphs: [
+            "如果你加入 Time Overlay Desktop 等候名单，Time Overlay 会保存你填写的邮箱和问卷回答（平台、用途、价格预期），以及根据网络推断的大致国家。这些信息保存在 PostHog 中，仅用于通知测试版上线和决定优先开发的功能。",
+            "等候名单邮箱不会被出售，也不会用于广告。如需从名单中移除，请发邮件至上方的隐私联系邮箱。",
           ],
         },
         {

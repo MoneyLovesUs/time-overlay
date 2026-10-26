@@ -168,9 +168,9 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
     ],
   },
   "add-countdown-to-premiere": {
-    title: "How to add a transparent countdown timer in Premiere Pro",
+    title: "Premiere Pro Timer Overlay: Add a Transparent Countdown Timer",
     description:
-      "Add a transparent countdown timer to Adobe Premiere Pro with a numbered Time Overlay PNG sequence, plus an optional ProRes 4444 single-file master.",
+      "Add a transparent countdown timer overlay to Adobe Premiere Pro with a numbered Time Overlay PNG sequence, plus an optional ProRes 4444 single-file master.",
     intro:
       "To add a transparent countdown timer in Premiere Pro, import the numbered Time Overlay PNG frames as one image-sequence clip and place that clip above your footage. PNG is the documented, reliability-first path: every frame is lossless and carries an explicit alpha channel. If the project requires one master file, convert the same frames to ProRes 4444 before import rather than assuming that a WebM file will decode natively.",
     recommendedFormat:
@@ -298,9 +298,9 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
       "ProRes 4444 alpha is large but lossless. Use it as a master, then transcode for delivery if file size matters. Premiere, DaVinci, and Final Cut all import this file as transparent media without further setup.",
   },
   "transparent-overlay-for-twitch": {
-    title: "How to add a transparent countdown overlay for Twitch (OBS/Streamlabs)",
+    title: "Twitch & Streamlabs Timer Overlay: Add a Transparent Countdown",
     description:
-      "Add a transparent countdown timer to a Twitch stream in OBS or Streamlabs: export WebM (with alpha) from Time Overlay and add it as a Media Source.",
+      "Add a transparent countdown timer overlay to Twitch in Streamlabs or OBS: export WebM (with alpha) from Time Overlay and add it as a Media Source.",
     intro:
       "To add a transparent countdown overlay for Twitch, export WebM (with alpha) from Time Overlay and add it as a Media Source in OBS or Streamlabs—the background is already cut out, so it reads over busy gameplay or webcam scenes. Twitch ended support for Twitch Studio after May 30, 2024, so this guide does not recommend it as a current production path. PNG sequence remains the alternate source when maximum visual quality matters.",
     recommendedFormat:

@@ -9,6 +9,8 @@ import { detectAiReferrerSource } from "@/lib/analytics/ai-referrer";
 // in try/catch per the Next.js docs so a tracking failure can never break
 // hydration.
 try {
+  const isLiveOverlay =
+    typeof window !== "undefined" && window.location.pathname === "/live";
   posthog.init(posthogConfig.key, {
     api_host: posthogConfig.apiHost,
     ui_host: posthogConfig.uiHost,
@@ -16,6 +18,14 @@ try {
     // pageview + pageleave tracking via the History API, which covers App Router
     // client-side navigations without any manual route listeners.
     defaults: "2025-05-24",
+    ...(isLiveOverlay
+      ? {
+          autocapture: false,
+          capture_pageview: false,
+          capture_pageleave: false,
+          disable_session_recording: true,
+        }
+      : {}),
   });
 
   // Tag sessions that arrived from an AI answer engine so AI citations can be

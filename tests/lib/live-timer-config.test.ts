@@ -157,6 +157,19 @@ describe("parseLiveTimerParams", () => {
 
     expect(result.warnings).toEqual([]);
   });
+
+  it("warns and disables invalid preview and debug flags", () => {
+    const result = parseLiveTimerParams(
+      new URLSearchParams("preview=yes&debug=2"),
+    );
+
+    expect(result.preview).toBe(false);
+    expect(result.debug).toBe(false);
+    expect(result.warnings).toEqual([
+      'Invalid preview "yes"; preview mode is off.',
+      'Invalid debug "2"; debug mode is off.',
+    ]);
+  });
 });
 
 describe("buildLiveTimerUrl", () => {
@@ -225,6 +238,40 @@ describe("buildLiveTimerUrl", () => {
 
     expect(holdUrl.searchParams.get("message")).toBeNull();
     expect(messageUrl.searchParams.get("message")).toBe("LIVE NOW");
+  });
+
+  it("always writes style parameters using template defaults for null fields", () => {
+    const config: LiveTimerConfig = {
+      ...fullConfig,
+      templateId: DEFAULT_GENERATOR_TEMPLATE_ID,
+      resolutionPresetId: null,
+      displayFormat: null,
+      anchor: null,
+      textColor: null,
+      fontSize: null,
+      background: null,
+    };
+    const defaults = createGeneratorSettings({
+      templateId: DEFAULT_GENERATOR_TEMPLATE_ID,
+    });
+    const url = new URL(buildLiveTimerUrl(origin, config));
+
+    expect(url.searchParams.get("size")).toBe(
+      defaults.canvas.resolutionPresetId,
+    );
+    expect(url.searchParams.get("format")).toBe("mmss");
+    expect(url.searchParams.get("anchor")).toBe(defaults.placement.anchor);
+    expect(url.searchParams.get("color")).toBe(
+      defaults.textStyle.textColor.replace(/^#/, ""),
+    );
+    expect(url.searchParams.get("fontSize")).toBe(
+      String(defaults.textStyle.fontSize),
+    );
+    expect(url.searchParams.get("bg")).toBe(
+      defaults.canvas.backgroundMode === "transparent"
+        ? "transparent"
+        : defaults.canvas.backgroundColor.replace(/^#/, ""),
+    );
   });
 });
 

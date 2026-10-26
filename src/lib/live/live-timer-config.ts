@@ -299,6 +299,18 @@ export function parseLiveTimerParams(params: URLSearchParams): LiveTimerParseRes
   const rawLicense = params.get("license");
   const licenseToken = rawLicense ? rawLicense : null;
 
+  const rawPreview = params.get("preview");
+  const preview = rawPreview === "1";
+  if (rawPreview !== null && !preview) {
+    warnings.push(`Invalid preview "${rawPreview}"; preview mode is off.`);
+  }
+
+  const rawDebug = params.get("debug");
+  const debug = rawDebug === "1";
+  if (rawDebug !== null && !debug) {
+    warnings.push(`Invalid debug "${rawDebug}"; debug mode is off.`);
+  }
+
   return {
     config: {
       mode,
@@ -317,8 +329,8 @@ export function parseLiveTimerParams(params: URLSearchParams): LiveTimerParseRes
       message,
       licenseToken,
     },
-    preview: params.get("preview") === "1",
-    debug: params.get("debug") === "1",
+    preview,
+    debug,
     warnings,
   };
 }
@@ -326,6 +338,21 @@ export function parseLiveTimerParams(params: URLSearchParams): LiveTimerParseRes
 export function buildLiveTimerUrl(origin: string, config: LiveTimerConfig): string {
   const url = new URL("/live", origin);
   const params = url.searchParams;
+  const templateDefaults = createGeneratorSettings({
+    templateId: config.templateId,
+  });
+  const resolutionPresetId =
+    config.resolutionPresetId ?? templateDefaults.canvas.resolutionPresetId;
+  const displayFormat =
+    config.displayFormat ?? templateDefaults.timer.displayFormat;
+  const anchor = config.anchor ?? templateDefaults.placement.anchor;
+  const textColor = config.textColor ?? templateDefaults.textStyle.textColor;
+  const fontSize = config.fontSize ?? templateDefaults.textStyle.fontSize;
+  const background =
+    config.background ??
+    (templateDefaults.canvas.backgroundMode === "transparent"
+      ? "transparent"
+      : templateDefaults.canvas.backgroundColor);
 
   params.set("v", "1");
   params.set("mode", config.mode);
@@ -336,29 +363,17 @@ export function buildLiveTimerUrl(origin: string, config: LiveTimerConfig): stri
     params.set("until", new Date(config.untilEpochMs).toISOString());
   }
   params.set("template", config.templateId);
-  if (config.resolutionPresetId !== null) {
-    params.set("size", config.resolutionPresetId);
-  }
-  if (config.displayFormat !== null) {
-    params.set("format", DISPLAY_FORMAT_TO_PARAM[config.displayFormat]);
-  }
-  if (config.anchor !== null) {
-    params.set("anchor", config.anchor);
-  }
+  params.set("size", resolutionPresetId);
+  params.set("format", DISPLAY_FORMAT_TO_PARAM[displayFormat]);
+  params.set("anchor", anchor);
   params.set("ox", String(config.offsetX));
   params.set("oy", String(config.offsetY));
-  if (config.textColor !== null) {
-    params.set("color", stripHash(config.textColor));
-  }
-  if (config.fontSize !== null) {
-    params.set("fontSize", String(config.fontSize));
-  }
-  if (config.background !== null) {
-    params.set(
-      "bg",
-      config.background === "transparent" ? "transparent" : stripHash(config.background),
-    );
-  }
+  params.set("color", stripHash(textColor));
+  params.set("fontSize", String(fontSize));
+  params.set(
+    "bg",
+    background === "transparent" ? "transparent" : stripHash(background),
+  );
   params.set("end", config.endBehavior);
   if (config.endBehavior === "message") {
     params.set("message", sanitizeMessage(config.message) || LIVE_DEFAULT_MESSAGE);

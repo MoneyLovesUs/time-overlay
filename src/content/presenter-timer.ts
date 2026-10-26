@@ -27,7 +27,7 @@ export const presenterTimerContent = {
   problem: {
     heading: "Share your slides on one laptop and the clock disappears",
     paragraphs: [
-      "Presenter view needs a second monitor. Once the slideshow is shared full screen on a single laptop, the elapsed time and the notes are gone. The meeting app's own timer hides behind the share toolbar, a phone timer pulls your eyes off the camera, and any timer window you can see ends up in the recording.",
+      "Presenter view is built for a second monitor. On a single laptop you can only keep it to yourself by sharing just the slideshow window, and the moment you share your whole screen for a demo, your notes and clock are on camera. Meeting-app timers are tucked into the call controls or shown to everyone, a phone timer pulls your eyes off the camera, and any timer window you can see ends up in the shared picture.",
       "Time Overlay Desktop keeps the countdown on your display but asks the operating system to leave its window out of screen capture, so it never reaches the shared picture.",
     ],
   },
@@ -77,6 +77,7 @@ export const presenterTimerContent = {
     ],
   },
   faqTitle: "Presenter timer questions",
+  topicsHeading: "Private timers in Zoom, Teams, Meet and slide apps",
   faqItems: [
     {
       question: "Is Time Overlay Desktop available now?",

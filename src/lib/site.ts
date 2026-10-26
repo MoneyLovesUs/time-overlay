@@ -10,6 +10,10 @@ import {
   type AppLocale,
 } from "./i18n.ts";
 import { publicationConfig } from "./publication.ts";
+import {
+  PRESENTER_TOPIC_SLUGS,
+  PRESENTER_TOPICS_REVIEWED_AT,
+} from "./presenter-topic-slugs.ts";
 
 const defaultSiteUrl = "https://timeoverlay.co";
 
@@ -112,10 +116,12 @@ type SupportingRouteDefinition = {
 
 // English-only product pages (e.g. the presenter-timer waitlist).
 type ProductRouteDefinition = {
-  readonly href: "/presenter-timer";
+  readonly href: "/presenter-timer" | `/presenter-timer/${string}`;
   readonly changeFrequency: "monthly";
-  readonly priority: 0.7;
+  readonly priority: 0.6 | 0.7;
   readonly locales: readonly AppLocale[];
+  // Overrides SITE_CONTENT_LAST_REVIEWED when the page has its own review date.
+  readonly lastReviewed?: string;
 };
 
 type PublicRouteDefinition =
@@ -185,6 +191,13 @@ const productRoutes: readonly ProductRouteDefinition[] = [
     priority: 0.7,
     locales: [defaultLocale],
   },
+  ...PRESENTER_TOPIC_SLUGS.map((slug) => ({
+    href: `/presenter-timer/${slug}` as const,
+    changeFrequency: "monthly" as const,
+    priority: 0.6 as const,
+    locales: [defaultLocale],
+    lastReviewed: PRESENTER_TOPICS_REVIEWED_AT,
+  })),
 ];
 
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
@@ -316,9 +329,13 @@ export async function createRootPageMetadata(
 }
 
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
-  const lastModified = new Date(SITE_CONTENT_LAST_REVIEWED);
+  const siteLastModified = new Date(SITE_CONTENT_LAST_REVIEWED);
 
   return publicRouteDefinitions.flatMap((route) => {
+    const lastModified =
+      "lastReviewed" in route && route.lastReviewed
+        ? new Date(route.lastReviewed)
+        : siteLastModified;
     return route.locales.map((locale) => {
       const localizedRoutePath = buildLocalizedPath(route.href, locale);
       const entry = {

@@ -6,7 +6,12 @@ import { useId, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import type { PresenterTimerContent } from "@/content/presenter-timer";
 import { trackEvent } from "@/lib/analytics/events";
-import type { WaitlistPlatform, WaitlistPrice, WaitlistUseCase } from "@/lib/waitlist";
+import type {
+  WaitlistPlatform,
+  WaitlistPrice,
+  WaitlistSource,
+  WaitlistUseCase,
+} from "@/lib/waitlist";
 
 type FormCopy = PresenterTimerContent["form"];
 type SubmitState = "idle" | "pending" | "joined" | "invalid_email" | "error";
@@ -63,15 +68,21 @@ function ChoiceGroup<T extends string>({
 export function PresenterWaitlistForm({
   copy,
   privacyHref,
+  source = "presenter-timer",
+  defaultUseCase,
 }: {
   copy: FormCopy;
   privacyHref: string;
+  source?: WaitlistSource;
+  defaultUseCase?: WaitlistUseCase;
 }) {
   const ids = useId();
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [platform, setPlatform] = useState<WaitlistPlatform>(copy.platformOptions[0].value);
-  const [useCase, setUseCase] = useState<WaitlistUseCase>(copy.useCaseOptions[0].value);
+  const [useCase, setUseCase] = useState<WaitlistUseCase>(
+    defaultUseCase ?? copy.useCaseOptions[0].value,
+  );
   const [price, setPrice] = useState<WaitlistPrice>(copy.priceOptions[2].value);
   const [state, setState] = useState<SubmitState>("idle");
 
@@ -79,7 +90,7 @@ export function PresenterWaitlistForm({
     event.preventDefault();
     if (state === "pending") return;
     setState("pending");
-    const payload = { platform, use_case: useCase, price_willing_usd: price };
+    const payload = { platform, use_case: useCase, price_willing_usd: price, source };
     trackEvent("presenter_waitlist_submitted", payload);
 
     try {
@@ -91,6 +102,7 @@ export function PresenterWaitlistForm({
           platform,
           useCase,
           price,
+          source,
           company,
           browserDistinctId: readBrowserDistinctId(),
         }),

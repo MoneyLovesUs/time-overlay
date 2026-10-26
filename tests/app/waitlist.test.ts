@@ -143,6 +143,10 @@ describe("presenter timer topic pages", () => {
       const entries = buildSitemapEntries().filter((entry) => entry.url === url);
       assert.equal(entries.length, 1, url);
       assert.equal(entries[0]?.alternates, undefined);
+      assert.equal(
+        (entries[0]?.lastModified as Date).toISOString().slice(0, 10),
+        getPresenterTopic(slug).reviewedAt,
+      );
     }
   });
 

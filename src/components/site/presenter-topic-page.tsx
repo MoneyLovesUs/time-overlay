@@ -56,8 +56,8 @@ export function PresenterTopicPage({ chrome, topic }: PresenterTopicPageProps) {
     buildFaqJsonLd(topic.faqItems),
     buildBreadcrumbJsonLd([
       { name: "Home", url: new URL("/", siteConfig.url).toString() },
-      { name: presenterTimerContent.metadata.title, url: hubUrl },
-      { name: topic.heading, url: pageUrl },
+      { name: "Presenter timer", url: hubUrl },
+      { name: topic.breadcrumbLabel, url: pageUrl },
     ]),
   ];
 
@@ -79,12 +79,22 @@ export function PresenterTopicPage({ chrome, topic }: PresenterTopicPageProps) {
         <section className="border-b border-border/70 px-4 py-14 sm:px-6 sm:py-20">
           <div className="mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center">
             <div className="min-w-0">
-              <nav aria-label="Breadcrumb" className="font-mono text-[10px] uppercase tracking-[0.3em] text-tertiary">
-                <Link href={PRESENTER_TIMER_PATH} className="hover:text-primary">
-                  Presenter timer
-                </Link>
-                <span aria-hidden="true"> / </span>
-                <span>{topic.breadcrumbLabel}</span>
+              <nav aria-label="Breadcrumb">
+                <ol className="flex flex-wrap gap-x-2 font-mono text-[10px] uppercase tracking-[0.3em] text-tertiary">
+                  <li>
+                    <Link href="/" className="hover:text-primary">
+                      Home
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li>
+                    <Link href={PRESENTER_TIMER_PATH} className="hover:text-primary">
+                      Presenter timer
+                    </Link>
+                  </li>
+                  <li aria-hidden="true">/</li>
+                  <li aria-current="page">{topic.breadcrumbLabel}</li>
+                </ol>
               </nav>
               <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-5xl sm:leading-[1.08]">
                 {topic.heading}
@@ -129,6 +139,7 @@ export function PresenterTopicPage({ chrome, topic }: PresenterTopicPageProps) {
               <p className="mt-4 text-[15px] leading-8 text-muted-foreground">{topic.native.intro}</p>
               <div className="mt-6 overflow-x-auto">
                 <table className="w-full min-w-[34rem] border-collapse text-left text-sm">
+                  <caption className="sr-only">{topic.native.heading}</caption>
                   <thead>
                     <tr className="border-b border-border/80 font-mono text-[10px] uppercase tracking-[0.2em] text-tertiary">
                       <th scope="col" className="py-3 pr-4 font-normal">Option</th>

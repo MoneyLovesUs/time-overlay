@@ -1,5 +1,9 @@
 import { PRESENTER_TIMER_PATH } from "@/content/presenter-timer";
-import { PRESENTER_TOPIC_SLUGS, type PresenterTopicSlug } from "@/lib/presenter-topic-slugs";
+import {
+  PRESENTER_TOPIC_SLUGS,
+  PRESENTER_TOPICS_REVIEWED_AT,
+  type PresenterTopicSlug,
+} from "@/lib/presenter-topic-slugs";
 import type { WaitlistUseCase } from "@/lib/waitlist";
 
 export { PRESENTER_TOPIC_SLUGS, type PresenterTopicSlug } from "@/lib/presenter-topic-slugs";
@@ -33,7 +37,7 @@ export type PresenterTopic = {
   reviewedAt: string;
 };
 
-const REVIEWED_AT = "2026-10-26";
+const REVIEWED_AT = PRESENTER_TOPICS_REVIEWED_AT;
 
 const sharedSources = {
   teamsTimer: {
@@ -84,15 +88,15 @@ const sharedSources = {
 } as const;
 
 const desktopParagraphs = [
-  "Time Overlay Desktop is a small floating countdown for Windows and Mac. It stays on top of your slideshow on your own display and asks the operating system to leave its window out of screen capture, so the people on the call see your slides and not the clock.",
-  "It is in development. Capture exclusion is an operating-system feature, not a guarantee, so the beta includes a share-preview check and we will publish what we find in each meeting app before launch.",
+  "Time Overlay Desktop is a small floating countdown we are building for Windows and Mac. It is designed to stay on top of your slideshow on your own display and to ask the operating system to leave its window out of screen capture, so the people on the call should see your slides and not the clock.",
+  "Capture exclusion is an operating-system feature, not a guarantee. Microsoft says this about the Windows API it relies on, and results vary by meeting app and capture mode. The beta includes a share-preview check, and we will publish what we find in each meeting app before launch.",
 ] as const;
 
 const topics: Record<PresenterTopicSlug, PresenterTopic> = {
   "microsoft-teams": {
     slug: "microsoft-teams",
     metadata: {
-      title: "Teams Presenter Timer Only You Can See (2026)",
+      title: "Teams Presenter Timer Only You Can See",
       description:
         "Teams has a built-in meeting timer, but every presenter can see it and it does not work in webinars or town halls. Here are your options for a private one.",
     },
@@ -119,11 +123,6 @@ const topics: Record<PresenterTopicSlug, PresenterTopic> = {
           option: "PowerPoint Presenter view",
           visibility: "Only you, if you share the slideshow window instead of your whole screen",
           limit: "Its timer counts up, not down. Sharing your entire screen exposes the notes.",
-        },
-        {
-          option: "PowerPoint Live in Teams",
-          visibility: "Only you see the presenter controls",
-          limit: "Microsoft's page does not describe a countdown for the presenter.",
         },
       ],
     },
@@ -174,7 +173,12 @@ const topics: Record<PresenterTopicSlug, PresenterTopic> = {
           "Teams is one of the apps we are testing. Because screen-capture behaviour varies by app version and capture mode, the beta includes a share-preview check and we will publish our results.",
       },
     ],
-    sources: [sharedSources.teamsTimer, sharedSources.teamsQa, sharedSources.pptPresenterView],
+    sources: [
+      sharedSources.teamsTimer,
+      sharedSources.teamsQa,
+      sharedSources.pptPresenterView,
+      sharedSources.windowsAffinity,
+    ],
     relatedSlugs: ["presenter-view-screen-share", "zoom"],
     defaultUseCase: "single-screen-slides",
     reviewedAt: REVIEWED_AT,
@@ -239,7 +243,7 @@ const topics: Record<PresenterTopicSlug, PresenterTopic> = {
       ],
     },
     desktop: {
-      heading: "One private countdown across Zoom, Teams and Meet",
+      heading: "One countdown for Zoom, Teams and Meet (in testing)",
       paragraphs: desktopParagraphs,
     },
     faqTitle: "Zoom timer questions",
@@ -264,7 +268,7 @@ const topics: Record<PresenterTopicSlug, PresenterTopic> = {
           "Probably not. Zoom's Timer app with Show timer to all switched off covers most private-countdown needs. A desktop timer helps if you also present in other apps or want a larger timer above full-screen slides.",
       },
     ],
-    sources: [sharedSources.zoomTimers, sharedSources.zoomTimerApp],
+    sources: [sharedSources.zoomTimers, sharedSources.zoomTimerApp, sharedSources.windowsAffinity],
     relatedSlugs: ["microsoft-teams", "google-meet"],
     defaultUseCase: "webinar-speaker",
     reviewedAt: REVIEWED_AT,
@@ -342,7 +346,7 @@ const topics: Record<PresenterTopicSlug, PresenterTopic> = {
           "Google says you can't use Presenter view and Full screen at the same time with one monitor. Many presenters share only the slides tab and keep Presenter view in a separate window.",
       },
     ],
-    sources: [sharedSources.meetTimer, sharedSources.slidesPresent],
+    sources: [sharedSources.meetTimer, sharedSources.slidesPresent, sharedSources.windowsAffinity],
     relatedSlugs: ["presenter-view-screen-share", "zoom"],
     defaultUseCase: "teaching",
     reviewedAt: REVIEWED_AT,
@@ -406,7 +410,7 @@ const topics: Record<PresenterTopicSlug, PresenterTopic> = {
       ],
     },
     desktop: {
-      heading: "A countdown that stays private when you share everything",
+      heading: "Built to stay private when you share your whole screen",
       paragraphs: desktopParagraphs,
     },
     faqTitle: "Presenter view questions",

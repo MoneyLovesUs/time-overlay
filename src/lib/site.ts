@@ -10,7 +10,10 @@ import {
   type AppLocale,
 } from "./i18n.ts";
 import { publicationConfig } from "./publication.ts";
-import { PRESENTER_TOPIC_SLUGS } from "./presenter-topic-slugs.ts";
+import {
+  PRESENTER_TOPIC_SLUGS,
+  PRESENTER_TOPICS_REVIEWED_AT,
+} from "./presenter-topic-slugs.ts";
 
 const defaultSiteUrl = "https://timeoverlay.co";
 
@@ -117,6 +120,8 @@ type ProductRouteDefinition = {
   readonly changeFrequency: "monthly";
   readonly priority: 0.6 | 0.7;
   readonly locales: readonly AppLocale[];
+  // Overrides SITE_CONTENT_LAST_REVIEWED when the page has its own review date.
+  readonly lastReviewed?: string;
 };
 
 type PublicRouteDefinition =
@@ -191,6 +196,7 @@ const productRoutes: readonly ProductRouteDefinition[] = [
     changeFrequency: "monthly" as const,
     priority: 0.6 as const,
     locales: [defaultLocale],
+    lastReviewed: PRESENTER_TOPICS_REVIEWED_AT,
   })),
 ];
 
@@ -323,9 +329,13 @@ export async function createRootPageMetadata(
 }
 
 export function buildSitemapEntries(): MetadataRoute.Sitemap {
-  const lastModified = new Date(SITE_CONTENT_LAST_REVIEWED);
+  const siteLastModified = new Date(SITE_CONTENT_LAST_REVIEWED);
 
   return publicRouteDefinitions.flatMap((route) => {
+    const lastModified =
+      "lastReviewed" in route && route.lastReviewed
+        ? new Date(route.lastReviewed)
+        : siteLastModified;
     return route.locales.map((locale) => {
       const localizedRoutePath = buildLocalizedPath(route.href, locale);
       const entry = {

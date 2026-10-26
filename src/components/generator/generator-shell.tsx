@@ -14,6 +14,7 @@ import {
 
 import { ControlPanel } from "@/components/generator/control-panel";
 import { ExportPanel } from "@/components/generator/export-panel";
+import { LiveLinkDialog } from "@/components/generator/live-link-dialog";
 import { PreviewPanel } from "@/components/generator/preview-panel";
 import {
   ProPaywallModal,
@@ -165,6 +166,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [etaMs, setEtaMs] = useState<number | null>(null);
   const [previewBitmap, setPreviewBitmap] = useState<ImageBitmap | null>(null);
   const [isTemplateCustomized, setIsTemplateCustomized] = useState(false);
+  const [liveLinkOpen, setLiveLinkOpen] = useState(false);
   // Set on the first manual format pick; the mp4 auto-default must never
   // override a choice the user made themselves.
   const hasUserSelectedFormatRef = useRef(false);
@@ -216,6 +218,13 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const exportAdvisory = useMemo(
     () => getExportAdvisory(settings, support, clientEnvironment.deviceType),
     [settings, support, clientEnvironment.deviceType],
+  );
+  const liveLinkLocale = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? "en"
+        : resolveGeneratorCheckoutContext(window.location.pathname, "").locale,
+    [],
   );
   // Stable context attached to every export funnel event. Without browser/device
   // and capability flags, export_failed is a black box — we cannot tell a Safari
@@ -1300,6 +1309,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 etaMs={etaMs}
                 previewBitmap={previewBitmap}
                 isMobile={isMobileDevice}
+                onOpenLiveLink={() => setLiveLinkOpen(true)}
               />
             </div>
           </div>
@@ -1320,6 +1330,18 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             onRestore={(email) => {
               trackEvent("pro_restore_clicked", {});
               return restorePro(email);
+            }}
+          />
+
+          <LiveLinkDialog
+            open={liveLinkOpen}
+            settings={settings}
+            isPro={isPro}
+            locale={liveLinkLocale}
+            onClose={() => setLiveLinkOpen(false)}
+            onUnlockPro={() => {
+              setLiveLinkOpen(false);
+              openPaywall("template");
             }}
           />
         </div>

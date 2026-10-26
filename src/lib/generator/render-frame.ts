@@ -26,6 +26,7 @@ type RenderFrameStateInput = {
   elapsedSeconds: number;
   textBox: TextBoxSize;
   safeAreaInset: number;
+  textOverride?: string;
 };
 
 type FrameTextStyle = Pick<
@@ -130,6 +131,7 @@ export function createRenderFrameState({
   elapsedSeconds,
   textBox,
   safeAreaInset,
+  textOverride,
 }: RenderFrameStateInput): RenderFrameState {
   const frame = {
     width: settings.canvas.width,
@@ -139,7 +141,9 @@ export function createRenderFrameState({
     settings.timer.durationSeconds,
     elapsedSeconds,
   );
-  const text = formatCountdownTime(remainingSeconds, settings.timer.displayFormat);
+  const text =
+    textOverride ??
+    formatCountdownTime(remainingSeconds, settings.timer.displayFormat);
   const baseStyle: FrameTextStyle = {
     fontFamily: settings.textStyle.fontFamily,
     fontSize: settings.textStyle.fontSize,

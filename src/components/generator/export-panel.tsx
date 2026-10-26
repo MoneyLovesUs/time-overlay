@@ -4,13 +4,17 @@ import {
   FileStack,
   Film,
   MonitorSmartphone,
+  Radio,
   Sparkles,
   X,
 } from "lucide-react";
+import { useSyncExternalStore } from "react";
 
 import { ExportProgressView } from "@/components/generator/export-progress-view";
+import { resolveGeneratorCheckoutContext } from "@/components/generator/pro-paywall-modal";
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
+import { getLiveLinkCopy } from "@/content/live-link";
 import type { ExportAdvisory, LocalExportSupport } from "@/lib/generator/feature-detection";
 import type {
   ExportProgressState,
@@ -37,7 +41,23 @@ type ExportPanelProps = {
   etaMs?: number | null;
   previewBitmap?: ImageBitmap | null;
   isMobile?: boolean;
+  onOpenLiveLink?: () => void;
 };
+
+function subscribeLiveLinkLocale() {
+  return () => undefined;
+}
+
+function getLiveLinkLocaleSnapshot(): string {
+  if (typeof window === "undefined") {
+    return "en";
+  }
+  return resolveGeneratorCheckoutContext(window.location.pathname, "").locale;
+}
+
+function getLiveLinkLocaleServerSnapshot(): string {
+  return "en";
+}
 
 const DEFAULT_DESKTOP_NOTE =
   "On phones and tablets, export MP4 (up to 1080p) for long timers, and keep this page open with the screen on until the download starts. PNG sequence and WebM stay limited to 60 seconds at 720p.";
@@ -130,7 +150,15 @@ export function ExportPanel({
   etaMs = null,
   previewBitmap = null,
   isMobile = false,
+  onOpenLiveLink,
 }: ExportPanelProps) {
+  const liveLinkLocale = useSyncExternalStore(
+    subscribeLiveLinkLocale,
+    getLiveLinkLocaleSnapshot,
+    getLiveLinkLocaleServerSnapshot,
+  );
+  const liveLinkCopy = getLiveLinkCopy(liveLinkLocale);
+
   const advisoryClassName =
     advisory.severity === "error"
       ? "border-destructive/40 bg-destructive/10 text-destructive"
@@ -312,6 +340,24 @@ export function ExportPanel({
           </Button>
         )}
 
+        {!isMobile && onOpenLiveLink ? (
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={onOpenLiveLink}
+              className="flex min-h-11 w-full items-center justify-between gap-3 border border-tertiary/45 bg-tertiary/5 px-4 font-mono text-[11px] uppercase tracking-[0.24em] text-tertiary transition-colors hover:bg-tertiary/12 focus-visible:outline-2 focus-visible:outline-tertiary"
+            >
+              <span className="flex items-center gap-2">
+                <Radio className="size-4" />
+                {liveLinkCopy.liveLinkButton}
+              </span>
+              <span className="border border-primary/60 px-1.5 py-0.5 text-[9px] tracking-[0.2em] text-primary">
+                {liveLinkCopy.liveLinkBadge}
+              </span>
+            </button>
+          </div>
+        ) : null}
+
         <ExportProgressView
           exportProgress={exportProgress}
           isExporting={isExporting}
@@ -321,6 +367,7 @@ export function ExportPanel({
           idleMessage={ui.exportStatusIdle}
           progressCopy={ui.progress}
         />
+
       </div>
     </section>
   );

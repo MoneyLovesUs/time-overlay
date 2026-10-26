@@ -106,7 +106,7 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
     description:
       "Add a transparent countdown timer overlay to OBS Studio with WebM alpha as a Media Source, plus a PNG sequence fallback for precise loops.",
     intro:
-      "To add a timer overlay to OBS, export a transparent countdown from Time Overlay and add the file as a source. Use WebM with alpha as a Media Source for the simplest OBS timer overlay, or use a PNG sequence as an Image Slideshow Source when you want frame-accurate loops. Both routes keep the background already cut out, so you do not need chroma key or a green screen.",
+      "To add a timer overlay to OBS, you have two options. For a live countdown that runs in real time, copy an OBS live link from the Time Overlay generator and paste it into a Browser Source; nothing is exported and the background is transparent. For a designed countdown clip, export WebM with alpha and add it as a Media Source, or use a PNG sequence as an Image Slideshow Source when you want frame-accurate loops. No chroma key or green screen is needed either way.",
     recommendedFormat:
       "WebM (with alpha) for most OBS scenes. PNG sequence when you want frame-accurate loops or maximum quality.",
     steps: [
@@ -146,6 +146,12 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
     faqTitle: "OBS timer overlay questions",
     faqItems: [
       {
+        question:
+          "How do I add a live countdown timer to OBS without a video file?",
+        answer:
+          "Open the Time Overlay generator, pick a template, then choose OBS live link in the export panel. Pick countdown, count down to a time, or count up, copy the link, and in OBS add Sources → + → Browser. Paste the link into URL and set the width and height shown in the dialog. The timer renders live with a transparent background.",
+      },
+      {
         question: "What is the best timer overlay format for OBS?",
         answer:
           "WebM with alpha is the best first choice for OBS because it is a single transparent video file that works as a Media Source. Use a PNG sequence when WebM playback stutters, when you need frame-accurate loops, or when maximum visual quality matters more than convenience.",
@@ -158,7 +164,7 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
       {
         question: "Should an OBS countdown timer be a browser source or a media source?",
         answer:
-          "Use a browser source when you need a live, remote-controlled timer that changes during the stream. Use a media source when you want a designed transparent countdown asset that is predictable, local, and easy to reuse across scenes.",
+          "Use a browser source when the timer should run live, count down to a set time, or restart every time a scene is shown. Time Overlay's OBS live link gives you that without exporting anything. Use a media source when you want a fixed transparent clip that plays the same way every time.",
       },
       {
         question: "Can OBS loop a transparent countdown timer overlay?",
@@ -352,7 +358,7 @@ const zhHansGuides: Record<GuideSlug, GuideBaseContent> = {
     description:
       "为 OBS Studio 场景添加透明倒计时：可把带 alpha 的 WebM 作为媒体源，也可把 PNG 序列作为图片幻灯片源，两种方式都已抠除背景。",
     intro:
-      "要在 OBS Studio 中添加倒计时叠加，先从 Time Overlay 导出透明素材，再把它作为来源添加到场景中，不需要绿幕抠像。最可靠的两条路径是：把带 alpha 的 WebM 作为媒体源用于直播叠加，或把 PNG 序列通过图片幻灯片源载入以获得更精确的循环。两者都能把透明通道从 Time Overlay 保留到 OBS 画布。",
+      "要在 OBS Studio 中添加倒计时叠加，先从 Time Overlay 导出透明素材，再把它作为来源添加到场景中，不需要绿幕抠像。最可靠的两条路径是：把带 alpha 的 WebM 作为媒体源用于直播叠加，或把 PNG 序列通过图片幻灯片源载入以获得更精确的循环。两者都能把透明通道从 Time Overlay 保留到 OBS 画布。如果需要实时走动的倒计时，可以在生成器的导出面板中复制「OBS 直播链接」，粘贴到 OBS 的浏览器源，无需导出文件，背景同样透明。",
     recommendedFormat:
       "快速直播叠加使用 WebM（带 alpha）。需要逐帧循环或最高质量时使用 PNG 序列。",
     steps: [

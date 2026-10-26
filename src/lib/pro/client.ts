@@ -50,6 +50,10 @@ function readStoredState(): StoredProState | null {
   }
 }
 
+export function getStoredProToken(): string | null {
+  return readStoredState()?.token ?? null;
+}
+
 function setStatus(next: ProStatus): void {
   if (cachedStatus === next) {
     return;

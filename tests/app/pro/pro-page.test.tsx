@@ -27,7 +27,7 @@ describe("pro page content", () => {
       const content = await getProPageContent(locale);
       assert.ok(content.metadata.title.trim().length > 0, locale);
       assert.ok(content.heading.trim().length > 0, locale);
-      assert.equal(content.comparisonRows.length, 5, locale);
+      assert.equal(content.comparisonRows.length, 7, locale);
       assert.equal(content.audienceItems.length, 3, locale);
       assert.equal(content.faqItems.length, 4, locale);
 
@@ -44,7 +44,7 @@ describe("pro page content", () => {
     );
   });
 
-  it("keeps the price and the honest free-vs-pro facts in every locale", async () => {
+  it("keeps the price and the Pro-only capability promises in every locale", async () => {
     for (const locale of enabledLocales) {
       const content = await getProPageContent(locale);
       assert.match(content.buyButton, /\$9/, `buyButton: ${locale}`);
@@ -53,11 +53,29 @@ describe("pro page content", () => {
         /\$9/,
         `metadata.description: ${locale}`,
       );
-      // 4K and single-file alpha video are PR 3 scope, not part of this page.
+      // Since PR 3 the page must actually advertise the gated capabilities.
       const copy = JSON.stringify(content);
-      assert.doesNotMatch(copy, /\b4K\b/i, `4K claim leaked into ${locale}`);
-      assert.doesNotMatch(copy, /\b8K\b/i, `8K claim leaked into ${locale}`);
+      assert.match(copy, /4K/, `4K promise missing from ${locale}`);
     }
+  });
+
+  it("states that 4K and one-file transparent video are Pro, not free", async () => {
+    const english = await getProPageContent("en");
+    const resolution = english.comparisonRows.find((row) =>
+      /resolution/i.test(row.feature),
+    );
+    const transparency = english.comparisonRows.find((row) =>
+      /transparent/i.test(row.feature),
+    );
+
+    expect(resolution).toBeDefined();
+    expect(resolution?.free).not.toMatch(/4K/i);
+    expect(resolution?.pro).toMatch(/4K/i);
+
+    expect(transparency).toBeDefined();
+    // PNG sequence stays free so free users keep a transparent export path.
+    expect(transparency?.free).toMatch(/PNG/i);
+    expect(transparency?.pro).toMatch(/VP9|HEVC/i);
   });
 
   it("renders the comparison table, FAQ, and buy box", () => {

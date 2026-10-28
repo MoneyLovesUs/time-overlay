@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const jaProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro - 60分タイマー、60 fps、シグネチャーテンプレートが$9",
+    title: "Time Overlay Pro - 4Kタイマー、60 fps、60分の書き出しが$9",
     description:
-      "$9の一度きりの支払いで、サブスクリプションはありません。Proは5分の上限を60分に延ばし、60 fps、シグネチャーテンプレート12個、OBSライブリンク用のProテンプレートを追加します。",
+      "$9の一度きりの支払いで、サブスクリプションはありません。Proは5分の上限を60分に延ばし、60 fps、4K書き出し、単一ファイルの透過動画、シグネチャーテンプレート12個を追加します。",
   },
   eyebrow: "Time Overlay Pro",
   heading: "一度支払えば、Proのタイマーツールをずっと使えます",
   lead:
-    "無料のジェネレーターは5分までの手早いタイマー向けです。Proは見た目をきちんと仕上げたい仕事のためのものです。1時間の配信、なめらかな60 fpsの動き、OBSやPremiere、DaVinciで使えるシグネチャーテンプレートなどに使えます。",
+    "無料のジェネレーターは1080pで5分までの手早いタイマー向けです。Proは見た目をきちんと仕上げたい仕事のためのものです。1時間の配信、4Kの編集、60 fpsの動き、OBSやPremiereで使える単一ファイルの透過オーバーレイなどに使えます。",
   priceNote: "$9を一度だけ · 永久に利用可能 · サブスクリプションなし",
   compareTitle: "Proに含まれるもの",
   compareColumns: {
@@ -27,6 +27,16 @@ const jaProPageContent: ProPageContent = {
       feature: "フレームレート",
       free: "24または30 fps",
       pro: "最大60 fps",
+    },
+    {
+      feature: "解像度",
+      free: "720p、1080p、正方形",
+      pro: "無料サイズ + 4K (2160p)",
+    },
+    {
+      feature: "透過動画",
+      free: "PNGシーケンス",
+      pro: "PNGシーケンス + VP9/HEVCの単一ファイル",
     },
     {
       feature: "テンプレート",
@@ -54,7 +64,7 @@ const jaProPageContent: ProPageContent = {
     {
       title: "動画編集者",
       body:
-        "シグネチャーテンプレート12個で、カウントダウンを編集のほかの部分に合わせられます。カットに必要なときは60 fpsで書き出せます。",
+        "タイムラインの解像度のまま、透過オーバーレイをPremiereやDaVinciに直接読み込めます。1080pに再レンダリングする必要はありません。",
     },
     {
       title: "講演やイベント",

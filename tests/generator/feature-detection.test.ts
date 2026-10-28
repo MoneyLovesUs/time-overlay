@@ -100,10 +100,14 @@ describe("getExportAdvisory", () => {
 
     expect(
       getExportAdvisory(
-        createGeneratorSettings({
-          timer: { durationSeconds: 3 },
-          canvas: { resolutionPresetId: "landscape-2160" },
-        }),
+        createGeneratorSettings(
+          {
+            timer: { durationSeconds: 3 },
+            canvas: { resolutionPresetId: "landscape-2160" },
+          },
+          // 4K is a Pro-only canvas now, so only a Pro session reaches here.
+          { isPro: true },
+        ),
         support,
         "mobile",
       ),
@@ -175,10 +179,15 @@ describe("getExportAdvisory", () => {
       support,
     );
     const canvasHeavy = getExportAdvisory(
-      createGeneratorSettings({
-        timer: { durationSeconds: 3 },
-        canvas: { resolutionPresetId: "landscape-2160" },
-      }),
+      createGeneratorSettings(
+        {
+          timer: { durationSeconds: 3 },
+          canvas: { resolutionPresetId: "landscape-2160" },
+        },
+        // A 4K canvas is Pro-only, so the heavy-export warning can only apply
+        // to a Pro session now.
+        { isPro: true },
+      ),
       support,
     );
 

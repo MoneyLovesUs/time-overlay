@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const svProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro - timers på 60 minuter, 60 fps och exklusiva mallar för $9",
+    title: "Time Overlay Pro - 4K-timers, 60 fps och exporter på 60 minuter för $9",
     description:
-      "En betalning på $9, inget abonnemang. Pro höjer gränsen från 5 minuter till 60 minuter, lägger till 60 fps och inkluderar de 12 exklusiva mallarna samt Pro-mallar i live-länkar för OBS.",
+      "En betalning på $9, inget abonnemang. Pro höjer gränsen från 5 minuter till 60 minuter, lägger till 60 fps, 4K-export, transparent video som en enda fil och de 12 exklusiva mallarna.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Betala en gång och behåll pro-timerverktygen för alltid",
   lead:
-    "Den kostnadsfria generatorn klarar snabba timers på 5 minuter. Pro är för jobb som ska se bra ut: streams på en timme, mjuk rörelse i 60 fps och de exklusiva mallarna för OBS, Premiere och DaVinci.",
+    "Den kostnadsfria generatorn klarar snabba timers på 5 minuter i 1080p. Pro är för jobb som ska se bra ut: streams på en timme, 4K-klippning, rörelse i 60 fps och transparenta overlays som en enda fil för OBS eller Premiere.",
   priceNote: "$9 en gång · livstidsåtkomst · inget abonnemang",
   compareTitle: "Det här får du med Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const svProPageContent: ProPageContent = {
       feature: "Bildfrekvens",
       free: "24 eller 30 fps",
       pro: "Upp till 60 fps",
+    },
+    {
+      feature: "Upplösning",
+      free: "720p, 1080p, kvadratisk",
+      pro: "Gratis storlekar + 4K (2160p)",
+    },
+    {
+      feature: "Transparent video",
+      free: "PNG-sekvens",
+      pro: "PNG-sekvens + VP9/HEVC som en enda fil",
     },
     {
       feature: "Mallar",
@@ -54,7 +64,7 @@ const svProPageContent: ProPageContent = {
     {
       title: "Videoredigerare",
       body:
-        "Arbeta med de 12 exklusiva mallarna så att nedräkningen matchar resten av din klippning, och exportera i 60 fps när klippet kräver det.",
+        "Dra in en transparent overlay direkt i Premiere eller DaVinci med tidslinjens upplösning, utan ny rendering till 1080p.",
     },
     {
       title: "Tal och evenemang",

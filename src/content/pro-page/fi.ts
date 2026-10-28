@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const fiProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro - 60 minuutin ajastimet, 60 fps ja signature-mallit $9 hintaan",
+    title: "Time Overlay Pro - 4K-ajastimet, 60 fps ja 60 minuutin vienti $9 hintaan",
     description:
-      "Yksi $9 maksu, ei tilausta. Pro nostaa 5 minuutin rajan 60 minuuttiin, lisää 60 fps:n ja sisältää 12 signature-mallia sekä Pro-mallit OBS:n live-linkeissä.",
+      "Yksi $9 maksu, ei tilausta. Pro nostaa 5 minuutin rajan 60 minuuttiin, lisää 60 fps:n, 4K-viennin, yhden tiedoston läpinäkyvän videon ja 12 signature-mallia.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Maksa kerran ja pidä Pro-ajastintyökalut pysyvästi",
   lead:
-    "Ilmainen generaattori hoitaa nopeat 5 minuutin ajastimet. Pro on niitä töitä varten, joiden pitää näyttää hyvältä: tunnin striimit, pehmeä 60 fps:n liike ja signature-mallit OBS:lle, Premierelle ja DaVincille.",
+    "Ilmainen generaattori hoitaa nopeat 5 minuutin ajastimet 1080p:nä. Pro on niitä töitä varten, joiden pitää näyttää hyvältä: tunnin striimit, 4K-leikkaukset, 60 fps:n liike ja yhden tiedoston läpinäkyvät overlays OBS:lle tai Premierelle.",
   priceNote: "$9 kerran · käyttöoikeus pysyvästi · ei tilausta",
   compareTitle: "Mitä Pro sisältää",
   compareColumns: {
@@ -27,6 +27,16 @@ const fiProPageContent: ProPageContent = {
       feature: "Kuvataajuus",
       free: "24 tai 30 fps",
       pro: "Enintään 60 fps",
+    },
+    {
+      feature: "Resoluutio",
+      free: "720p, 1080p, neliö",
+      pro: "Ilmaiset koot + 4K (2160p)",
+    },
+    {
+      feature: "Läpinäkyvä video",
+      free: "PNG-sekvenssi",
+      pro: "PNG-sekvenssi + VP9/HEVC yhtenä tiedostona",
     },
     {
       feature: "Mallit",
@@ -54,7 +64,7 @@ const fiProPageContent: ProPageContent = {
     {
       title: "Videoeditoijat",
       body:
-        "Työskentele 12 signature-mallin kanssa, jotta laskuri sopii muuhun leikkaukseesi, ja vie 60 fps:nä, kun leikkaus sitä vaatii.",
+        "Pudota läpinäkyvä overlay suoraan Premiereen tai DaVinciin aikajanan resoluutiolla, ilman uutta renderöintiä 1080p:hen.",
     },
     {
       title: "Esitykset ja tapahtumat",

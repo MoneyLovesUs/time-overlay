@@ -12,7 +12,7 @@ const zhHansCompareContent = {
   eyebrow: "格式对比",
   h1: `${CONTENT_YEAR} 年各剪辑软件最适合的透明叠加导出格式`,
   leadAnswer:
-    "Premiere Pro 和 DaVinci Resolve 用户可先选 PNG 序列：两者都有图像序列工作流，并能保留导出的 alpha 通道。Final Cut Pro 用户可使用带 HEVC alpha 的 MOV，或把 PNG 帧转换为 ProRes 4444。OBS 和 Streamlabs 更适合使用带 alpha 的 WebM 单文件。CapCut 的支持会随平台和版本变化，长时间导出前请先测试短片段。下表会把已有文档依据的路径与需要在具体环境中验证的格式分开。",
+    "Premiere Pro 和 DaVinci Resolve 用户可先选 PNG 序列：两者都有图像序列工作流，并能保留导出的 alpha 通道。Final Cut Pro 用户可使用带 HEVC alpha 的 MOV（Pro），或把 PNG 帧转换为 ProRes 4444。OBS 和 Streamlabs 更适合使用带 alpha 的 WebM 单文件。单文件透明格式需要 Pro；PNG 序列免费，同样带透明通道。CapCut 的支持会随平台和版本变化，长时间导出前请先测试短片段。下表会把已有文档依据的路径与需要在具体环境中验证的格式分开。",
   tableCaption: `${CONTENT_YEAR} 年透明计时器叠加导出格式的剪辑软件和浏览器支持对比。`,
   columns: {
     format: "格式",
@@ -65,22 +65,22 @@ const zhHansCompareContent = {
         "直播场景的快速单文件路径。用于剪辑时，请选择 PNG 或有明确文档支持的专业编码。",
     },
     "webm-vp9": {
-      name: "WebM（VP9 + alpha）",
+      name: "WebM（VP9 + alpha）· Pro",
       bestFor:
         "适合 OBS，以及已经验证 VP9 alpha 的浏览器工作流；相比 VP8 文件通常更小。",
       weakness:
-        "Safari 无法导出；Premiere Pro、DaVinci Resolve 和 Final Cut Pro 都没有足够的原生 alpha 导入文档可作为可靠承诺。",
+        "Safari 无法导出，且单文件透明视频需要 Pro；Premiere Pro、DaVinci Resolve 和 Final Cut Pro 都没有足够的原生 alpha 导入文档可作为可靠承诺。",
       verdict:
-        "需要控制 OBS 素材体积时可选。交付专业剪辑软件时，使用 PNG 或 ProRes 4444。",
+        "需要控制 OBS 素材体积时可选。免费用户可以用 PNG 序列拿到同样的透明效果。",
     },
     "mov-hevc": {
-      name: "MOV（HEVC + alpha）",
+      name: "MOV（HEVC + alpha）· Pro",
       bestFor:
         "Apple 工作流。Apple 文档明确将带 alpha 的 HEVC 作为 Final Cut Pro 的透明媒体路径。",
       weakness:
-        "只能在 macOS 的 Safari 17.4+ 中导出。Premiere、Resolve 和 CapCut 的兼容性应在本机具体版本中测试。",
+        "需要 Pro，且只能在 macOS 的 Safari 17.4+ 中导出。Premiere、Resolve 和 CapCut 的兼容性应在本机具体版本中测试。",
       verdict:
-        "在受支持 Mac 上用于 Final Cut 时，这是合适的直出单文件。其他场景请选择 PNG，或转换为有文档依据的编码。",
+        "在受支持 Mac 上用于 Final Cut 时，这是合适的直出单文件。免费版可导出 PNG，再转成 ProRes 4444。",
     },
     "prores-4444": {
       name: "ProRes 4444（通过 ffmpeg）",
@@ -105,17 +105,17 @@ const zhHansCompareContent = {
     {
       question: "视频剪辑中最好的透明计时器叠加格式是什么？",
       answer:
-        "PNG 序列是较稳妥的浏览器直出剪辑格式，Premiere Pro 和 DaVinci Resolve 都有图像序列工作流。需要单个专业剪辑文件时，可把帧转换为 ProRes 4444；使用受支持 Mac 的 Final Cut 用户也可选择带 HEVC alpha 的 MOV。",
+        "PNG 序列是较稳妥、也免费的浏览器直出剪辑格式，Premiere Pro 和 DaVinci Resolve 都有图像序列工作流。需要单个专业剪辑文件时，可把帧转换为 ProRes 4444；使用受支持 Mac 的 Final Cut 用户也可选择带 HEVC alpha 的 MOV，该格式需要 Pro。",
     },
     {
       question: "Final Cut Pro 支持哪种透明视频格式？",
       answer:
-        "在受支持的 Mac 上，Final Cut Pro 可使用带 HEVC alpha 的 MOV，或把 PNG 序列转换为 ProRes 4444。Apple 文档明确这两种编码支持 alpha。除非已在你的具体版本中验证，不要依赖 WebM alpha 剪辑流程。",
+        "在受支持的 Mac 上，Final Cut Pro 可使用带 HEVC alpha 的 MOV（Pro），或把 PNG 序列转换为 ProRes 4444。Apple 文档明确这两种编码支持 alpha。除非已在你的具体版本中验证，不要依赖 WebM alpha 剪辑流程。",
     },
     {
       question: "OBS 应该使用哪种透明叠加格式？",
       answer:
-        "OBS 或 Streamlabs 推荐导出 WebM（带 alpha），再作为媒体源添加。如果播放负担较重，可缩短叠加时长，或降低分辨率和帧率，然后在测试场景中检查循环与透明效果。",
+        "OBS 或 Streamlabs 推荐导出 WebM（带 alpha），再作为媒体源添加。VP8 版本免费；体积更小的 VP9 单文件版本需要 Pro。如果播放负担较重，可缩短叠加时长，或降低分辨率和帧率，然后在测试场景中检查循环与透明效果。",
     },
     {
       question: "透明计时器叠加一定需要 ProRes 4444 吗？",

@@ -22,15 +22,18 @@ import {
 } from "@/components/generator/pro-paywall-modal";
 import { TemplateGallery } from "@/components/generator/template-gallery";
 import type { RootPageContent } from "@/content/root/types";
+import { getProGateCopy } from "@/content/pro-gate";
 import {
   DEFAULT_EXPORT_PROGRESS_STATE,
   DEFAULT_GENERATOR_SETTINGS,
   GENERATOR_CANVAS_PRESETS,
   getProExportBlockReason,
+  getProFallbackReasons,
   getProFeatureUsage,
   applyGeneratorTemplate,
   normalizeGeneratorSettings,
   resolveDefaultExportFormat,
+  type ProFallbackReason,
 } from "@/lib/generator/defaults";
 import {
   GENERATOR_TEMPLATES,
@@ -41,7 +44,7 @@ import {
 import {
   GENERATOR_DURATION_LIMIT_SECONDS,
 } from "@/lib/generator/defaults";
-import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
+import { PRO_MAX_DURATION_SECONDS, isProFormat, isProResolution } from "@/lib/pro/entitlements";
 import {
   restorePro,
   setProUpsellSource,
@@ -169,6 +172,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [previewBitmap, setPreviewBitmap] = useState<ImageBitmap | null>(null);
   const [isTemplateCustomized, setIsTemplateCustomized] = useState(false);
   const [liveLinkOpen, setLiveLinkOpen] = useState(false);
+  // Set when a free session loses a Pro-only canvas or format to the fallback,
+  // so the downgrade is visible instead of silent.
+  const [proFallbackReasons, setProFallbackReasons] = useState<
+    ProFallbackReason[]
+  >([]);
   // Set on the first manual format pick; the mp4 auto-default must never
   // override a choice the user made themselves.
   const hasUserSelectedFormatRef = useRef(false);
@@ -287,6 +295,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     if (markTemplateCustomized) {
       setIsTemplateCustomized(true);
     }
+    // The fallback notice describes a downgrade that already happened; the next
+    // edit supersedes it.
+    setProFallbackReasons([]);
     startTransition(() => {
       setSettings((current) =>
         normalizeGeneratorSettings(updater(current), { isPro }),
@@ -317,11 +328,22 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
   // Re-clamp settings when the Pro entitlement resolves or is revoked, so a
   // Pro user's >300s duration survives the initial "unknown" paint and a
-  // revoked token drops back under the free cap.
+  // revoked token drops back under the free cap. A free session that arrives
+  // holding a Pro-only canvas or alpha format gets a short notice rather than
+  // a silent downgrade.
   useEffect(() => {
-    setSettings((current) =>
-      normalizeGeneratorSettings(current, { isPro }),
-    );
+    // Read the reasons before the updater runs: a state updater must stay pure,
+    // and the notice has to describe what the normalize call is about to drop.
+    if (!isPro) {
+      const reasons = getProFallbackReasons(settings);
+      if (reasons.length) {
+        setProFallbackReasons(reasons);
+      }
+    }
+    setSettings((current) => normalizeGeneratorSettings(current, { isPro }));
+    // Only the entitlement transition should re-clamp; settings changes are
+    // already normalized by updateSettings.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPro]);
 
   useEffect(() => {
@@ -339,10 +361,18 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         supportsMp4,
       }));
     });
+  }, []);
 
-    if (typeof window === "undefined") {
+  // Deep links (?template= / ?preset=) apply once the entitlement is known.
+  // Applying them while the status is still "unknown" would normalize a Pro-only
+  // 4K template canvas down to 1080p before the stored token is read.
+  const deepLinkAppliedRef = useRef(false);
+  useEffect(() => {
+    if (proStatus === "unknown" || deepLinkAppliedRef.current) {
       return;
     }
+    deepLinkAppliedRef.current = true;
+
     const params = new URLSearchParams(window.location.search);
     const templateParam = params.get("template");
     if (templateParam) {
@@ -350,7 +380,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         (item) => item.id === templateParam,
       );
       if (template) {
-        setSettings((current) => applyGeneratorTemplate(current, template.id));
+        setSettings((current) =>
+          applyGeneratorTemplate(current, template.id, { isPro }),
+        );
         setIsTemplateCustomized(false);
         return;
       }
@@ -362,10 +394,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     }
     const template = getDefaultTemplateForPreset(presetParam);
     if (template.themePresetId === presetParam) {
-      setSettings((current) => applyGeneratorTemplate(current, template.id));
+      setSettings((current) =>
+        applyGeneratorTemplate(current, template.id, { isPro }),
+      );
       setIsTemplateCustomized(false);
     }
-  }, []);
+  }, [isPro, proStatus]);
 
   // Once the async mp4 capability probe lands, phones that support it switch
   // their default format to mp4 — unless the user already picked a format.
@@ -446,6 +480,18 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleResolutionPresetChange = (resolutionPresetId: ResolutionPresetId) => {
+    const preset = GENERATOR_CANVAS_PRESETS.find(
+      (item) => item.id === resolutionPresetId,
+    );
+    if (
+      !isPro &&
+      preset &&
+      isProResolution(preset.width, preset.height)
+    ) {
+      // Free users cannot switch to 4K: open the paywall, leave canvas as-is.
+      openPaywall("resolution", "feature");
+      return;
+    }
     updateSettings(
       (current) => ({
         ...current,
@@ -498,6 +544,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const handleFormatChange = (format: GeneratorFormat) => {
+    if (!isPro && isProFormat(format)) {
+      // Free users cannot pick single-file alpha video: open the paywall and
+      // leave the format untouched.
+      openPaywall("format", "feature");
+      return;
+    }
     hasUserSelectedFormatRef.current = true;
     updateSettings((current) => ({
       ...current,
@@ -560,7 +612,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     });
 
     startTransition(() => {
-      setSettings((current) => applyGeneratorTemplate(current, template.id));
+      // Pass the session's Pro state so a Pro user switching to a 4K template
+      // keeps the 4K canvas instead of being normalized down to 1080p.
+      setSettings((current) =>
+        applyGeneratorTemplate(current, template.id, { isPro }),
+      );
       setIsTemplateCustomized(false);
     });
   };
@@ -1018,6 +1074,20 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     );
   }, [finishExportFailure]);
 
+  // Localized text for the Pro fallback notice: one line per gated setting that
+  // a free session just lost, in the same order the gates apply them.
+  const proFallbackNotice = useMemo(() => {
+    if (!proFallbackReasons.length) {
+      return null;
+    }
+    const gate = getProGateCopy(liveLinkLocale);
+    return proFallbackReasons
+      .map((reason) =>
+        reason === "resolution" ? gate.fallbackResolution : gate.fallbackFormat,
+      )
+      .join(" ");
+  }, [proFallbackReasons, liveLinkLocale]);
+
   const handleExport = async () => {
     // A synchronous ref closes the tiny gap before React commits disabled=true,
     // so a double click cannot start two jobs against the same worker.
@@ -1278,6 +1348,9 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                     : null
                 }
                 durationUpsellCtaLabel={ui.pro?.paywall?.unlockButton ?? null}
+                proBadgeLabel={
+                  ui.pro?.proBadgeLabel ?? DEFAULT_PRO_BADGE_LABEL
+                }
                 onUnlockPro={() => openPaywall("duration", "inline")}
                 uploadedFontName={uploadedFont?.family ?? null}
                 onDurationChange={handleDurationChange}
@@ -1300,6 +1373,10 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                   ui.pro?.proEnabledLabel ?? DEFAULT_PRO_ENABLED_LABEL
                 }
                 fps60Label={ui.pro?.fps60Label}
+                proBadgeLabel={
+                  ui.pro?.proBadgeLabel ?? DEFAULT_PRO_BADGE_LABEL
+                }
+                fallbackNotice={proFallbackNotice}
                 advisory={exportAdvisory}
                 exportProgress={exportProgress}
                 isExporting={isExporting}

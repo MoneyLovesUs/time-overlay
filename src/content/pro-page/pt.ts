@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const ptProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro: timers de 60 minutos, 60 fps e modelos signature por $9",
+    title: "Time Overlay Pro: timers em 4K, 60 fps e exportações de 60 minutos por $9",
     description:
-      "Um pagamento único de $9, sem assinatura. O Pro sobe o limite de 5 minutos para 60 minutos, adiciona 60 fps e inclui os 12 modelos signature e os modelos Pro nos links ao vivo para OBS.",
+      "Um pagamento único de $9, sem assinatura. O Pro sobe o limite de 5 minutos para 60 minutos, adiciona 60 fps, exportação em 4K, vídeo transparente em um único arquivo e os 12 modelos signature.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Pague uma vez e fique com as ferramentas pro para sempre",
   lead:
-    "O gerador grátis cobre timers rápidos de 5 minutos. O Pro é para os trabalhos que você quer que fiquem bonitos: lives de uma hora, movimento suave a 60 fps e os modelos signature para OBS, Premiere e DaVinci.",
+    "O gerador grátis cobre timers rápidos de 5 minutos em 1080p. O Pro é para os trabalhos que você quer que fiquem bonitos: lives de uma hora, edições em 4K, movimento a 60 fps e overlays transparentes em um único arquivo para OBS ou Premiere.",
   priceNote: "$9 uma vez · acesso vitalício · sem assinatura",
   compareTitle: "O que você recebe com o Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const ptProPageContent: ProPageContent = {
       feature: "Taxa de quadros",
       free: "24 ou 30 fps",
       pro: "Até 60 fps",
+    },
+    {
+      feature: "Resolução",
+      free: "720p, 1080p, quadrado",
+      pro: "Tamanhos grátis + 4K (2160p)",
+    },
+    {
+      feature: "Vídeo transparente",
+      free: "Sequência PNG",
+      pro: "Sequência PNG + VP9/HEVC em um único arquivo",
     },
     {
       feature: "Modelos",
@@ -54,7 +64,7 @@ const ptProPageContent: ProPageContent = {
     {
       title: "Editores de vídeo",
       body:
-        "Trabalhe com os 12 modelos signature para a contagem regressiva combinar com o resto da sua edição, e exporte a 60 fps quando o corte pedir.",
+        "Jogue um overlay transparente direto no Premiere ou no DaVinci na resolução da sua timeline, sem renderizar de novo em 1080p.",
     },
     {
       title: "Palestras e eventos",

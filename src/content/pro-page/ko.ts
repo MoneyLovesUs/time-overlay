@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const koProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro - 60분 타이머, 60 fps, 시그니처 템플릿 $9",
+    title: "Time Overlay Pro - 4K 타이머, 60 fps, 60분 내보내기 $9",
     description:
-      "한 번만 결제하는 $9, 구독 없음. Pro는 5분 제한을 60분으로 늘리고 60 fps와 시그니처 템플릿 12개, OBS 라이브 링크의 Pro 템플릿을 더합니다.",
+      "한 번만 결제하는 $9, 구독 없음. Pro는 5분 제한을 60분으로 늘리고 60 fps, 4K 내보내기, 단일 파일 투명 영상, 시그니처 템플릿 12개를 더합니다.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "한 번 결제하고 Pro 타이머 도구를 계속 쓰세요",
   lead:
-    "무료 생성기는 5분짜리 빠른 타이머에 맞춰져 있어요. Pro는 결과물이 제대로 보여야 하는 작업을 위한 것입니다. 한 시간짜리 스트림, 부드러운 60 fps 움직임, OBS와 Premiere, DaVinci에 넣을 시그니처 템플릿까지요.",
+    "무료 생성기는 1080p로 5분짜리 빠른 타이머에 맞춰져 있어요. Pro는 결과물이 제대로 보여야 하는 작업을 위한 것입니다. 한 시간짜리 스트림, 4K 편집, 60 fps 움직임, OBS나 Premiere에 넣을 단일 파일 투명 오버레이까지요.",
   priceNote: "$9 한 번 · 평생 사용 · 구독 없음",
   compareTitle: "Pro에 포함된 것",
   compareColumns: {
@@ -27,6 +27,16 @@ const koProPageContent: ProPageContent = {
       feature: "프레임 레이트",
       free: "24 또는 30 fps",
       pro: "최대 60 fps",
+    },
+    {
+      feature: "해상도",
+      free: "720p, 1080p, 정사각형",
+      pro: "무료 크기 + 4K (2160p)",
+    },
+    {
+      feature: "투명 영상",
+      free: "PNG 시퀀스",
+      pro: "PNG 시퀀스 + 단일 파일 VP9/HEVC",
     },
     {
       feature: "템플릿",
@@ -54,7 +64,7 @@ const koProPageContent: ProPageContent = {
     {
       title: "비디오 편집자",
       body:
-        "시그니처 템플릿 12개로 작업해서 카운트다운이 나머지 편집과 어울리게 하고, 컷에 필요할 때 60 fps로 내보내세요.",
+        "타임라인 해상도 그대로 투명 오버레이를 Premiere나 DaVinci에 바로 넣으세요. 1080p로 다시 렌더링할 필요가 없어요.",
     },
     {
       title: "발표와 이벤트",

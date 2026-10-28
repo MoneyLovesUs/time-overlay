@@ -44,7 +44,9 @@ import {
 import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
 import {
   restorePro,
+  setProUpsellSource,
   startProCheckout,
+  upsellSourcePayload,
   usePro,
 } from "@/lib/pro/client";
 import {
@@ -86,7 +88,7 @@ import type {
   TemplateId,
   TimerDisplayFormat,
 } from "@/lib/generator/types";
-import type { ProTrigger } from "@/lib/pro/entitlements";
+import type { ProTrigger, ProUpsellSource } from "@/lib/pro/entitlements";
 import type { ExportWorkerMessage } from "@/lib/generator/export/job";
 
 type GeneratorShellProps = {
@@ -293,8 +295,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   };
 
   const openPaywall = useCallback(
-    (trigger: ProTrigger, source: "click" | "auto" = "click") => {
+    (trigger: ProTrigger, source: ProUpsellSource = "inline") => {
       setPaywallTrigger(trigger);
+      // Quote/checkout events inherit this source so an auto-popped paywall and
+      // a self-served one can be told apart later.
+      setProUpsellSource(source);
       if (!proUpsellExposureReported) {
         proUpsellExposureReported = true;
         trackEvent("pro_upsell_viewed", { trigger, source });
@@ -506,7 +511,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const handleFpsChange = (fps: number) => {
     if (!isPro && fps === 60) {
       // Free users cannot switch to 60fps: open the paywall, leave fps as-is.
-      openPaywall("fps");
+      openPaywall("fps", "feature");
       return;
     }
     updateSettings((current) => ({
@@ -1022,7 +1027,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     // Free users may select and preview Pro templates, but the export click is
     // where the paywall intercepts (spec 6.1).
     if (getProExportBlockReason(settings.templateId, isPro) === "template") {
-      openPaywall("template");
+      openPaywall("template", "feature");
       return;
     }
 
@@ -1273,7 +1278,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                     : null
                 }
                 durationUpsellCtaLabel={ui.pro?.paywall?.unlockButton ?? null}
-                onUnlockPro={() => openPaywall("duration")}
+                onUnlockPro={() => openPaywall("duration", "inline")}
                 uploadedFontName={uploadedFont?.family ?? null}
                 onDurationChange={handleDurationChange}
                 onDurationCommit={handleDurationCommit}
@@ -1310,6 +1315,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 previewBitmap={previewBitmap}
                 isMobile={isMobileDevice}
                 onOpenLiveLink={() => setLiveLinkOpen(true)}
+                onUnlockPro={
+                  isPro
+                    ? undefined
+                    : () => openPaywall("direct", "export_complete")
+                }
               />
             </div>
           </div>
@@ -1318,9 +1328,16 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             open={paywallTrigger !== null}
             trigger={paywallTrigger}
             copy={ui.pro?.paywall}
-            onClose={() => setPaywallTrigger(null)}
+            onClose={() => {
+              setPaywallTrigger(null);
+              setProUpsellSource(null);
+            }}
             onCheckout={(trigger, quote) => {
-              trackEvent("pro_checkout_clicked", { trigger, ...quoteAnalytics(quote) });
+              trackEvent("pro_checkout_clicked", {
+                trigger,
+                ...quoteAnalytics(quote),
+                ...upsellSourcePayload(),
+              });
               const { locale, returnPath } = resolveGeneratorCheckoutContext(
                 window.location.pathname,
                 window.location.search,
@@ -1341,7 +1358,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
             onClose={() => setLiveLinkOpen(false)}
             onUnlockPro={() => {
               setLiveLinkOpen(false);
-              openPaywall("template");
+              openPaywall("template", "feature");
             }}
           />
         </div>

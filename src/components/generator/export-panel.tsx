@@ -10,10 +10,12 @@ import {
 } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
+import { ExportCompleteProCta } from "@/components/generator/export-complete-pro-cta";
 import { ExportProgressView } from "@/components/generator/export-progress-view";
 import { resolveGeneratorCheckoutContext } from "@/components/generator/pro-paywall-modal";
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
+import { getProCtaCopy } from "@/content/pro-cta";
 import { getLiveLinkCopy } from "@/content/live-link";
 import type { ExportAdvisory, LocalExportSupport } from "@/lib/generator/feature-detection";
 import type {
@@ -42,6 +44,9 @@ type ExportPanelProps = {
   previewBitmap?: ImageBitmap | null;
   isMobile?: boolean;
   onOpenLiveLink?: () => void;
+  // Opens the paywall with the "direct"/export_complete source after a finished
+  // export. Only wired for free users.
+  onUnlockPro?: () => void;
 };
 
 function subscribeLiveLinkLocale() {
@@ -151,6 +156,7 @@ export function ExportPanel({
   previewBitmap = null,
   isMobile = false,
   onOpenLiveLink,
+  onUnlockPro,
 }: ExportPanelProps) {
   const liveLinkLocale = useSyncExternalStore(
     subscribeLiveLinkLocale,
@@ -367,6 +373,13 @@ export function ExportPanel({
           idleMessage={ui.exportStatusIdle}
           progressCopy={ui.progress}
         />
+
+        {!isPro && exportProgress.stage === "complete" && onUnlockPro ? (
+          <ExportCompleteProCta
+            copy={getProCtaCopy(getLiveLinkLocaleSnapshot())}
+            onUnlockPro={onUnlockPro}
+          />
+        ) : null}
 
       </div>
     </section>

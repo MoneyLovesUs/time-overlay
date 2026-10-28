@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { fetchProQuote } from "@/lib/pro/client";
 import type { PriceQuote } from "@/lib/pro/regional-pricing";
-import { Check, Clock, Gauge, LayoutTemplate, Lock, Sparkles, X } from "lucide-react";
+import { Check, Clock, FileVideo, Gauge, LayoutTemplate, Lock, MonitorPlay, Sparkles, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
+import { getProGateCopy, type ProGateCopy } from "@/content/pro-gate";
 import {
   defaultLocale,
   isEnabledLocale,
@@ -92,11 +93,17 @@ export function ProPaywallModal(props: ProPaywallModalProps) {
   return <PaywallContent key={props.trigger} {...props} />;
 }
 
-export function resolvePaywallTitle(trigger: ProTrigger, copy: ProPaywallCopy): string {
+export function resolvePaywallTitle(
+  trigger: ProTrigger,
+  copy: ProPaywallCopy,
+  gate: ProGateCopy = getProGateCopy(defaultLocale),
+): string {
   switch (trigger) {
     case "duration": return copy.titleDuration;
     case "fps": return copy.titleFps;
     case "template": return copy.titleTemplate;
+    case "resolution": return gate.titleResolution;
+    case "format": return gate.titleFormat;
     default: return copy.title;
   }
 }
@@ -123,6 +130,7 @@ export function ProPriceSummary({ quote, copy, locale }: {
 
 function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPaywallModalProps) {
   const mergedCopy = { ...DEFAULT_PAYWALL_COPY, ...copy };
+  const gate = getProGateCopy(currentLocale());
   const [checkoutState, setCheckoutState] = useState<"idle" | "pending" | "unavailable" | "error" | "quote_changed">("idle");
   const [quoteState, setQuoteState] = useState<{ quote: PriceQuote | null; loading: boolean }>({ quote: null, loading: true });
   const [restoreState, setRestoreState] = useState<"idle" | "pending" | RestoreFeedback>("idle");
@@ -213,9 +221,20 @@ function PaywallContent({ trigger, copy, onClose, onCheckout, onRestore }: ProPa
     { icon: Clock, label: mergedCopy.benefitDuration },
     { icon: Gauge, label: mergedCopy.benefitFps },
     { icon: LayoutTemplate, label: mergedCopy.benefitTemplates },
+    // 4K and single-file alpha video always lead the list; a trigger for one of
+    // them just puts its own line first so the blocked action is answered first.
+    ...(trigger === "format"
+      ? [
+          { icon: FileVideo, label: gate.benefitFormat },
+          { icon: MonitorPlay, label: gate.benefitResolution },
+        ]
+      : [
+          { icon: MonitorPlay, label: gate.benefitResolution },
+          { icon: FileVideo, label: gate.benefitFormat },
+        ]),
     { icon: Sparkles, label: mergedCopy.benefitFutureTemplates },
   ];
-  const title = trigger === null ? mergedCopy.title : resolvePaywallTitle(trigger, mergedCopy);
+  const title = trigger === null ? mergedCopy.title : resolvePaywallTitle(trigger, mergedCopy, gate);
   const locale = currentLocale();
   const unlockLabel = quoteState.quote
     ? mergedCopy.unlockButtonTemplate.replace("{price}", formatQuotePrice(quoteState.quote, locale))

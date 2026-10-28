@@ -30,6 +30,8 @@ type ExportPanelProps = {
   isPro?: boolean;
   proEnabledLabel?: string;
   fps60Label?: string;
+  // Pro badge shown next to formats that need Pro (single-file alpha video).
+  proBadgeLabel?: string;
   advisory: ExportAdvisory;
   ui: RootPageContent["generatorUi"]["exportPanel"];
   exportProgress: ExportProgressState;
@@ -47,6 +49,9 @@ type ExportPanelProps = {
   // Opens the paywall with the "direct"/export_complete source after a finished
   // export. Only wired for free users.
   onUnlockPro?: () => void;
+  // Shown when a free session's Pro-only canvas or format was downgraded to its
+  // free equivalent, so the change is visible instead of silent.
+  fallbackNotice?: string | null;
 };
 
 function subscribeLiveLinkLocale() {
@@ -94,6 +99,8 @@ type FormatOptionProps = {
   label: string;
   description: string;
   unavailableReason?: string;
+  // Renders the small Pro badge next to the label.
+  proBadgeLabel?: string;
   onSelect: () => void;
 };
 
@@ -104,6 +111,7 @@ function FormatOption({
   label,
   description,
   unavailableReason,
+  proBadgeLabel,
   onSelect,
 }: FormatOptionProps) {
   return (
@@ -125,6 +133,11 @@ function FormatOption({
         <span className="flex items-center gap-2 font-medium text-foreground">
           {icon}
           {label}
+          {proBadgeLabel ? (
+            <span className="border border-primary/60 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.2em] text-primary">
+              {proBadgeLabel}
+            </span>
+          ) : null}
         </span>
         <span className="mt-1 block text-muted-foreground">{description}</span>
         {disabled && unavailableReason ? (
@@ -142,6 +155,7 @@ export function ExportPanel({
   isPro = false,
   proEnabledLabel = "Pro enabled",
   fps60Label,
+  proBadgeLabel = "Pro",
   advisory,
   ui,
   exportProgress,
@@ -156,6 +170,7 @@ export function ExportPanel({
   previewBitmap = null,
   isMobile = false,
   onOpenLiveLink,
+  fallbackNotice = null,
   onUnlockPro,
 }: ExportPanelProps) {
   const liveLinkLocale = useSyncExternalStore(
@@ -262,6 +277,7 @@ export function ExportPanel({
                 label={ui.vp9AlphaLabel}
                 description={ui.vp9AlphaDescription}
                 onSelect={() => onFormatChange("webm-vp9-alpha")}
+                proBadgeLabel={proBadgeLabel}
               />
             ) : null}
 
@@ -273,6 +289,7 @@ export function ExportPanel({
                 label={ui.hevcAlphaLabel}
                 description={ui.hevcAlphaDescription}
                 onSelect={() => onFormatChange("mov-hevc-alpha")}
+                proBadgeLabel={proBadgeLabel}
               />
             ) : null}
           </div>
@@ -315,6 +332,16 @@ export function ExportPanel({
             {advisoryMessage ?? ui.launchNoteFallback}
           </p>
         </div>
+
+        {fallbackNotice ? (
+          <div
+            className="flex items-start gap-2 rounded-none border border-secondary/35 bg-secondary/10 px-4 py-3 text-[12px] leading-5 text-foreground"
+            role="status"
+          >
+            <Sparkles className="mt-0.5 size-4 shrink-0 text-secondary" />
+            <span>{fallbackNotice}</span>
+          </div>
+        ) : null}
 
         {isMobile && !isExporting ? (
           <div className="flex items-start gap-2 rounded-none border border-secondary/35 bg-secondary/10 px-4 py-3 text-[12px] leading-5 text-foreground">

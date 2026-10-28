@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const csProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro - 60minutové časovače, 60 fps a exkluzivní šablony za $9",
+    title: "Time Overlay Pro - 4K časovače, 60 fps a exporty až 60 minut za $9",
     description:
-      "Jedna platba $9, žádné předplatné. Pro zvedá limit 5 minut na 60 minut, přidává 60 fps a zahrnuje 12 exkluzivních šablon a Pro šablony v živých odkazech pro OBS.",
+      "Jedna platba $9, žádné předplatné. Pro zvedá limit 5 minut na 60 minut, přidává 60 fps, export v 4K, průhledné video v jednom souboru a 12 exkluzivních šablon.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Zaplaťte jednou a nástroje pro časovač vám zůstanou napořád",
   lead:
-    "Bezplatný generátor zvládne rychlé pětiminutové časovače. Pro je pro práci, která má vypadat dobře: hodinové streamy, plynulý pohyb v 60 fps a exkluzivní šablony pro OBS, Premiere a DaVinci.",
+    "Bezplatný generátor zvládne rychlé pětiminutové časovače v 1080p. Pro je pro práci, která má vypadat dobře: hodinové streamy, 4K střih, plynulý pohyb v 60 fps a průhledné overlaye v jednom souboru pro OBS nebo Premiere.",
   priceNote: "$9 jednou · doživotní přístup · žádné předplatné",
   compareTitle: "Co dostanete s Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const csProPageContent: ProPageContent = {
       feature: "Snímková frekvence",
       free: "24 nebo 30 fps",
       pro: "Až 60 fps",
+    },
+    {
+      feature: "Rozlišení",
+      free: "720p, 1080p, čtverec",
+      pro: "Bezplatné velikosti + 4K (2160p)",
+    },
+    {
+      feature: "Průhledné video",
+      free: "Sekvence PNG",
+      pro: "Sekvence PNG + VP9/HEVC v jednom souboru",
     },
     {
       feature: "Šablony",
@@ -54,7 +64,7 @@ const csProPageContent: ProPageContent = {
     {
       title: "Střihači videa",
       body:
-        "Pracujte s 12 exkluzivními šablonami, aby odpočet ladil se zbytkem vašeho střihu, a exportujte v 60 fps, když to střih vyžaduje.",
+        "Přetáhněte průhledný overlay přímo do Premiere nebo DaVinci v rozlišení vaší časové osy, bez nového renderu do 1080p.",
     },
     {
       title: "Přednášky a akce",

@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const nlProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro - timers van 60 minuten, 60 fps en exclusieve sjablonen voor $9",
+    title: "Time Overlay Pro - 4K-timers, 60 fps en exports van 60 minuten voor $9",
     description:
-      "Eén betaling van $9, geen abonnement. Pro verhoogt de limiet van 5 minuten naar 60 minuten, voegt 60 fps toe en bevat de 12 exclusieve sjablonen en Pro-sjablonen in live-links voor OBS.",
+      "Eén betaling van $9, geen abonnement. Pro verhoogt de limiet van 5 minuten naar 60 minuten, voegt 60 fps, 4K-export, transparante video als één bestand en de 12 exclusieve sjablonen toe.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Betaal één keer en houd de pro-timertools voor altijd",
   lead:
-    "De gratis generator dekt korte timers van 5 minuten. Pro is voor klussen die er goed uit moeten zien: streams van een uur, vloeiende beweging in 60 fps en de exclusieve sjablonen voor OBS, Premiere en DaVinci.",
+    "De gratis generator dekt korte timers van 5 minuten in 1080p. Pro is voor klussen die er goed uit moeten zien: streams van een uur, 4K-montages, beweging in 60 fps en transparante overlays als één bestand voor OBS of Premiere.",
   priceNote: "$9 eenmalig · levenslange toegang · geen abonnement",
   compareTitle: "Wat je krijgt met Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const nlProPageContent: ProPageContent = {
       feature: "Framesnelheid",
       free: "24 of 30 fps",
       pro: "Tot 60 fps",
+    },
+    {
+      feature: "Resolutie",
+      free: "720p, 1080p, vierkant",
+      pro: "Gratis formaten + 4K (2160p)",
+    },
+    {
+      feature: "Transparante video",
+      free: "PNG-reeks",
+      pro: "PNG-reeks + VP9/HEVC als één bestand",
     },
     {
       feature: "Sjablonen",
@@ -54,7 +64,7 @@ const nlProPageContent: ProPageContent = {
     {
       title: "Video-editors",
       body:
-        "Werk met de 12 exclusieve sjablonen zodat de countdown bij de rest van je montage past, en exporteer in 60 fps wanneer de cut dat nodig heeft.",
+        "Sleep een transparante overlay direct in Premiere of DaVinci op de resolutie van je tijdlijn, zonder opnieuw te renderen naar 1080p.",
     },
     {
       title: "Lezingen en evenementen",

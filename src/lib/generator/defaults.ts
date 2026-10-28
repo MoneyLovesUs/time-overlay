@@ -13,7 +13,7 @@ import {
   getGeneratorTemplateById,
   isProTemplateId,
 } from "@/lib/generator/templates";
-import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
+import { PRO_MAX_DURATION_SECONDS, isProFormat, isProResolution } from "@/lib/pro/entitlements";
 
 export const GENERATOR_DURATION_LIMIT_SECONDS = 300;
 
@@ -356,10 +356,61 @@ function getThemePresetById(themePresetId: GeneratorSettings["themePresetId"]) {
 export type NormalizeGeneratorSettingsOptions = {
   /**
    * Pro raises the duration cap to PRO_MAX_DURATION_SECONDS and unlocks the
-   * 60 fps entry. Omitted/false keeps the historical free-tier fallback.
+   * 60 fps entry, 4K canvases and single-file alpha video. Omitted/false keeps
+   * the historical free-tier fallback.
    */
   isPro?: boolean;
 };
+
+/**
+ * The free-tier equivalent of a Pro-only 4K preset: same orientation, 1080p.
+ * Falls back to the first preset if the id is unknown.
+ */
+export function getFreeResolutionPresetId(
+  presetId: GeneratorSettings["canvas"]["resolutionPresetId"],
+): GeneratorSettings["canvas"]["resolutionPresetId"] {
+  const preset = GENERATOR_CANVAS_PRESETS.find((item) => item.id === presetId);
+  if (!preset || !isProResolution(preset.width, preset.height)) {
+    return presetId;
+  }
+
+  const fallbackId = preset.height > preset.width ? "portrait-1080" : "landscape-1080";
+  return (
+    GENERATOR_CANVAS_PRESETS.find((item) => item.id === fallbackId)?.id ??
+    DEFAULT_GENERATOR_SETTINGS.canvas.resolutionPresetId
+  );
+}
+
+/**
+ * The free-tier equivalent of a Pro-only alpha video format: a PNG sequence,
+ * which still carries transparency and imports into every editor.
+ */
+export function getFreeExportFormat(
+  format: GeneratorSettings["export"]["format"],
+): GeneratorSettings["export"]["format"] {
+  return isProFormat(format) ? "png-sequence" : format;
+}
+
+export type ProFallbackReason = "resolution" | "format";
+
+/**
+ * Which parts of a settings object a free session is not allowed to keep.
+ * Callers check this before normalizeGeneratorSettings so the downgrade can be
+ * shown to the user instead of happening silently.
+ */
+export function getProFallbackReasons(
+  settings: GeneratorSettings,
+): ProFallbackReason[] {
+  const reasons: ProFallbackReason[] = [];
+  const preset = getCanvasPresetById(settings.canvas.resolutionPresetId);
+  if (isProResolution(preset.width, preset.height)) {
+    reasons.push("resolution");
+  }
+  if (isProFormat(settings.export.format)) {
+    reasons.push("format");
+  }
+  return reasons;
+}
 
 export function normalizeGeneratorSettings(
   settings: GeneratorSettings,
@@ -372,12 +423,20 @@ export function normalizeGeneratorSettings(
   const allowedFpsList: readonly number[] = isPro
     ? GENERATOR_PRO_ALLOWED_FPS
     : GENERATOR_ALLOWED_FPS;
-  const canvasPreset = getCanvasPresetById(settings.canvas.resolutionPresetId);
+  // Free sessions fall back from Pro-only canvases and alpha video formats to
+  // their free equivalents. This is the safety net behind the UI gates: a
+  // settings object hydrated from an old localStorage or a shared URL still
+  // exports something a free user is allowed to make.
+  const requestedPreset = getCanvasPresetById(settings.canvas.resolutionPresetId);
+  const canvasPreset = isPro
+    ? requestedPreset
+    : getCanvasPresetById(getFreeResolutionPresetId(requestedPreset.id));
   const themePreset = getThemePresetById(settings.themePresetId);
   const template = getGeneratorTemplateById(settings.templateId);
-  const allowedFormat = GENERATOR_SUPPORTED_FORMATS.includes(settings.export.format)
+  const supportedFormat = GENERATOR_SUPPORTED_FORMATS.includes(settings.export.format)
     ? settings.export.format
     : DEFAULT_GENERATOR_SETTINGS.export.format;
+  const allowedFormat = isPro ? supportedFormat : getFreeExportFormat(supportedFormat);
   const allowedFps = allowedFpsList.includes(settings.export.fps)
     ? settings.export.fps
     : DEFAULT_GENERATOR_SETTINGS.export.fps;
@@ -588,7 +647,7 @@ export function getProExportBlockReason(
 }
 
 export type ProFeatureUsage = {
-  feature: "duration" | "fps60" | "template";
+  feature: "duration" | "fps60" | "template" | "resolution" | "format";
   value: string | number;
 };
 
@@ -611,6 +670,12 @@ export function getProFeatureUsage(
   }
   if (isProTemplateId(settings.templateId)) {
     usage.push({ feature: "template", value: settings.templateId });
+  }
+  if (isProResolution(settings.canvas.width, settings.canvas.height)) {
+    usage.push({ feature: "resolution", value: settings.canvas.resolutionPresetId });
+  }
+  if (isProFormat(settings.export.format)) {
+    usage.push({ feature: "format", value: settings.export.format });
   }
   return usage;
 }

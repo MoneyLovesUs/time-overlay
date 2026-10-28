@@ -17,6 +17,7 @@ import {
   GENERATOR_DURATION_LIMIT_SECONDS,
   GENERATOR_MIN_DURATION_SECONDS,
 } from "@/lib/generator/defaults";
+import { isProResolution } from "@/lib/pro/entitlements";
 
 type ControlPanelProps = {
   settings: GeneratorSettings;
@@ -28,6 +29,8 @@ type ControlPanelProps = {
   durationLimitNotice?: string | null;
   // Label for the inline upgrade CTA shown next to durationLimitNotice.
   durationUpsellCtaLabel?: string | null;
+  // Pro badge shown on resolution presets that need Pro (4K).
+  proBadgeLabel?: string;
   uploadedFontName: string | null;
   onDurationChange: (durationSeconds: number) => void;
   // Fires when the user finishes editing the duration (blur or Enter).
@@ -55,6 +58,7 @@ export function ControlPanel({
   maxDurationSeconds = GENERATOR_DURATION_LIMIT_SECONDS,
   durationLimitNotice = null,
   durationUpsellCtaLabel = null,
+  proBadgeLabel = "Pro",
   uploadedFontName,
   onDurationChange,
   onDurationCommit,
@@ -162,6 +166,9 @@ export function ControlPanel({
               {canvasPresets.map((preset) => (
                 <option key={preset.id} value={preset.id}>
                   {ui.resolutionPresetOptions[preset.id]}
+                  {isProResolution(preset.width, preset.height)
+                    ? ` (${proBadgeLabel})`
+                    : ""}
                 </option>
               ))}
             </select>

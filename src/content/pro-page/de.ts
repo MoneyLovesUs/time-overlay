@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const deProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro: Timer bis 60 Minuten, 60 fps und Signature-Vorlagen für $9",
+    title: "Time Overlay Pro: 4K-Timer, 60 fps und Exporte bis 60 Minuten für $9",
     description:
-      "Einmal $9 zahlen, kein Abo. Pro hebt das Limit von 5 auf 60 Minuten an, ergänzt 60 fps und enthält die 12 Signature-Vorlagen sowie Pro-Vorlagen in Live-Links für OBS.",
+      "Einmal $9 zahlen, kein Abo. Pro hebt das Limit von 5 auf 60 Minuten an, ergänzt 60 fps, 4K-Export, transparentes Video als einzelne Datei und die 12 Signature-Vorlagen.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Einmal zahlen und die Pro-Timer-Tools dauerhaft behalten",
   lead:
-    "Der kostenlose Generator deckt schnelle 5-Minuten-Timer ab. Pro ist für die Jobs gedacht, die gut aussehen sollen: einstündige Streams, flüssige Bewegung mit 60 fps und die Signature-Vorlagen für OBS, Premiere und DaVinci.",
+    "Der kostenlose Generator deckt schnelle 5-Minuten-Timer in 1080p ab. Pro ist für die Jobs gedacht, die gut aussehen sollen: einstündige Streams, 4K-Schnitte, Bewegung mit 60 fps und transparente Overlays als eine Datei für OBS oder Premiere.",
   priceNote: "$9 einmalig · lebenslanger Zugriff · kein Abo",
   compareTitle: "Das bekommst du mit Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const deProPageContent: ProPageContent = {
       feature: "Bildrate",
       free: "24 oder 30 fps",
       pro: "Bis zu 60 fps",
+    },
+    {
+      feature: "Auflösung",
+      free: "720p, 1080p, quadratisch",
+      pro: "Kostenlose Größen + 4K (2160p)",
+    },
+    {
+      feature: "Transparentes Video",
+      free: "PNG-Sequenz",
+      pro: "PNG-Sequenz + VP9/HEVC als eine Datei",
     },
     {
       feature: "Vorlagen",
@@ -54,7 +64,7 @@ const deProPageContent: ProPageContent = {
     {
       title: "Video-Editoren",
       body:
-        "Arbeite mit den 12 Signature-Vorlagen, damit der Countdown zum Rest deines Schnitts passt, und exportiere mit 60 fps, wenn der Cut es braucht.",
+        "Zieh ein transparentes Overlay direkt in Premiere oder DaVinci, in der Auflösung deiner Timeline, ohne erneutes Rendern auf 1080p.",
     },
     {
       title: "Talks und Events",

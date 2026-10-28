@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const frProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro : des timers de 60 minutes, du 60 fps et les modèles signature pour $9",
+    title: "Time Overlay Pro : des timers en 4K, du 60 fps et des exports de 60 minutes pour $9",
     description:
-      "Un seul paiement de $9, sans abonnement. Pro fait passer la limite de 5 minutes à 60 minutes, ajoute le 60 fps et inclut les 12 modèles signature ainsi que les modèles Pro dans les liens live pour OBS.",
+      "Un seul paiement de $9, sans abonnement. Pro fait passer la limite de 5 minutes à 60 minutes, ajoute le 60 fps, l'export 4K, la vidéo transparente en un seul fichier et les 12 modèles signature.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Payez une fois et gardez les outils pro pour de bon",
   lead:
-    "Le générateur gratuit couvre les timers rapides de 5 minutes. Pro est fait pour les projets que vous voulez soignés : des lives d'une heure, un mouvement fluide à 60 fps et les modèles signature pour OBS, Premiere et DaVinci.",
+    "Le générateur gratuit couvre les timers rapides de 5 minutes en 1080p. Pro est fait pour les projets que vous voulez soignés : des lives d'une heure, des montages en 4K, un mouvement à 60 fps et des incrustations transparentes en un seul fichier pour OBS ou Premiere.",
   priceNote: "$9 une fois · accès à vie · sans abonnement",
   compareTitle: "Ce que vous obtenez avec Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const frProPageContent: ProPageContent = {
       feature: "Fréquence d'images",
       free: "24 ou 30 fps",
       pro: "Jusqu'à 60 fps",
+    },
+    {
+      feature: "Résolution",
+      free: "720p, 1080p, carré",
+      pro: "Tailles gratuites + 4K (2160p)",
+    },
+    {
+      feature: "Vidéo transparente",
+      free: "Séquence PNG",
+      pro: "Séquence PNG + VP9/HEVC en un seul fichier",
     },
     {
       feature: "Modèles",
@@ -54,7 +64,7 @@ const frProPageContent: ProPageContent = {
     {
       title: "Monteurs vidéo",
       body:
-        "Travaillez avec les 12 modèles signature pour que le compte à rebours s'accorde au reste de votre montage, et exportez en 60 fps quand le cut le demande.",
+        "Déposez une incrustation transparente directement dans Premiere ou DaVinci à la résolution de votre timeline, sans re-render en 1080p.",
     },
     {
       title: "Conférences et événements",

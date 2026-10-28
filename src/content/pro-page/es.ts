@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const esProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro: temporizadores de 60 minutos, 60 fps y plantillas signature por $9",
+    title: "Time Overlay Pro: temporizadores en 4K, 60 fps y exportaciones de 60 minutos por $9",
     description:
-      "Un solo pago de $9, sin suscripción. Pro sube el límite de 5 minutos a 60 minutos, añade 60 fps e incluye las 12 plantillas signature y las plantillas Pro en los enlaces en vivo para OBS.",
+      "Un solo pago de $9, sin suscripción. Pro sube el límite de 5 minutos a 60 minutos, añade 60 fps, exportación en 4K, vídeo transparente en un solo archivo y las 12 plantillas signature.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Paga una vez y quédate con las herramientas pro para siempre",
   lead:
-    "El generador gratis cubre temporizadores rápidos de 5 minutos. Pro es para los trabajos que quieres que se vean bien: directos de una hora, movimiento fluido a 60 fps y las plantillas signature para OBS, Premiere y DaVinci.",
+    "El generador gratis cubre temporizadores rápidos de 5 minutos en 1080p. Pro es para los trabajos que quieres que se vean bien: directos de una hora, montajes en 4K, movimiento a 60 fps y superposiciones transparentes en un solo archivo para OBS o Premiere.",
   priceNote: "$9 una vez · acceso de por vida · sin suscripción",
   compareTitle: "Qué incluye Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const esProPageContent: ProPageContent = {
       feature: "Fotogramas por segundo",
       free: "24 o 30 fps",
       pro: "Hasta 60 fps",
+    },
+    {
+      feature: "Resolución",
+      free: "720p, 1080p, cuadrado",
+      pro: "Tamaños gratis + 4K (2160p)",
+    },
+    {
+      feature: "Vídeo transparente",
+      free: "Secuencia PNG",
+      pro: "Secuencia PNG + VP9/HEVC en un solo archivo",
     },
     {
       feature: "Plantillas",
@@ -54,7 +64,7 @@ const esProPageContent: ProPageContent = {
     {
       title: "Editores de vídeo",
       body:
-        "Trabaja con las 12 plantillas signature para que la cuenta regresiva combine con el resto de tu montaje, y exporta a 60 fps cuando el corte lo pida.",
+        "Arrastra una superposición transparente directamente a Premiere o DaVinci con la resolución de tu línea de tiempo, sin volver a renderizar a 1080p.",
     },
     {
       title: "Charlas y eventos",

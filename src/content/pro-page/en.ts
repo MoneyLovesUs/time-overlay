@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const enProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro: 60-minute timers, 60 fps and signature templates for $9",
+    title: "Time Overlay Pro: 4K timers, 60 fps and 60-minute exports for $9",
     description:
-      "One $9 payment, no subscription. Pro lifts the 5-minute cap to 60 minutes, adds 60 fps, and includes the 12 signature templates and Pro templates in OBS live links.",
+      "One $9 payment, no subscription. Pro lifts the 5-minute cap to 60 minutes, adds 60 fps, 4K export, single-file transparent video and the 12 signature templates.",
   },
   eyebrow: "Time Overlay Pro",
   heading: "Pay once, keep the pro timer tools for good",
   lead:
-    "The free generator covers quick 5-minute timers. Pro is for the jobs you want to look right: hour-long streams, smooth 60 fps motion, and the signature templates for OBS, Premiere and DaVinci.",
+    "The free generator covers quick 5-minute timers at 1080p. Pro is for the jobs you want to look right: hour-long streams, 4K edits, 60 fps motion and one-file transparent overlays for OBS or Premiere.",
   priceNote: "$9 once · lifetime access · no subscription",
   compareTitle: "What you get with Pro",
   compareColumns: {
@@ -27,6 +27,16 @@ const enProPageContent: ProPageContent = {
       feature: "Frame rate",
       free: "24 or 30 fps",
       pro: "Up to 60 fps",
+    },
+    {
+      feature: "Resolution",
+      free: "720p, 1080p, square",
+      pro: "Free sizes + 4K (2160p)",
+    },
+    {
+      feature: "Transparent video",
+      free: "PNG sequence",
+      pro: "PNG sequence + one-file VP9/HEVC",
     },
     {
       feature: "Templates",
@@ -54,7 +64,7 @@ const enProPageContent: ProPageContent = {
     {
       title: "Video editors",
       body:
-        "Work with the 12 signature templates so the countdown matches the rest of your edit, and export at 60 fps when the cut needs it.",
+        "Drop a transparent overlay straight into Premiere or DaVinci at the resolution of your timeline, no re-render to 1080p.",
     },
     {
       title: "Talks and events",

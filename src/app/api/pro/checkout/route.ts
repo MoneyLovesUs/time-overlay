@@ -6,7 +6,7 @@ import { allowedOrigin, logPricingFailure, checkoutIdempotency, pricingResponse,
   requestCountry, validateRegionalCatalog, validRegionalSession } from "@/lib/pro/pricing-server";
 import type Stripe from "stripe";
 
-const PRO_TRIGGERS: readonly ProTrigger[] = ["duration", "fps", "template", "direct"];
+const PRO_TRIGGERS: readonly ProTrigger[] = ["duration", "fps", "template", "resolution", "format", "direct"];
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<Response> {

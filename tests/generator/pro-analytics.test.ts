@@ -28,7 +28,8 @@ describe("pro_feature_used detection", () => {
       createGeneratorSettings(
         {
           timer: { durationSeconds: 1800 },
-          export: { fps: 60 },
+          canvas: { resolutionPresetId: "landscape-2160" },
+          export: { fps: 60, format: "webm-vp9-alpha" },
           templateId: "editor-amber-timecode",
         },
         { isPro: true },
@@ -38,6 +39,8 @@ describe("pro_feature_used detection", () => {
       { feature: "duration", value: 1800 },
       { feature: "fps60", value: 60 },
       { feature: "template", value: "editor-amber-timecode" },
+      { feature: "resolution", value: "landscape-2160" },
+      { feature: "format", value: "webm-vp9-alpha" },
     ]);
   });
 

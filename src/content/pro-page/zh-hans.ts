@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const zhHansProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro：60 分钟计时器、60 FPS、签名模板，一次 $9",
+    title: "Time Overlay Pro：4K 计时器、60 FPS，最长可导出 60 分钟，只要 $9",
     description:
-      "一次付款 $9，不用订阅。Pro 把 5 分钟上限提到 60 分钟，加入 60 FPS，还有 12 款签名模板和 OBS 直播链接里的 Pro 模板。",
+      "一次付款 $9，不用订阅。Pro 把 5 分钟上限提到 60 分钟，加入 60 FPS、4K 导出、单文件透明视频，还有 12 款签名模板。",
   },
   eyebrow: "Time Overlay Pro",
   heading: "付一次钱，Pro 计时器工具长期可用",
   lead:
-    "免费生成器能搞定 5 分钟以内的快速计时器。Pro 面向那些要拿得出手的活：一小时的直播、60 FPS 的流畅画面，还有给 OBS、Premiere 和 DaVinci 用的签名模板。",
+    "免费生成器能搞定 1080p、5 分钟以内的快速计时器。Pro 面向那些要拿得出手的活：一小时的直播、4K 剪辑、60 FPS 的流畅画面，还有给 OBS 或 Premiere 用的单文件透明叠加。",
   priceNote: "$9 一次付款 · 终身使用 · 不用订阅",
   compareTitle: "Pro 包含什么",
   compareColumns: {
@@ -27,6 +27,16 @@ const zhHansProPageContent: ProPageContent = {
       feature: "帧率",
       free: "24 或 30 FPS",
       pro: "最高 60 FPS",
+    },
+    {
+      feature: "分辨率",
+      free: "720p、1080p、方形",
+      pro: "免费尺寸 + 4K（2160p）",
+    },
+    {
+      feature: "透明视频",
+      free: "PNG 序列",
+      pro: "PNG 序列 + 单文件 VP9/HEVC",
     },
     {
       feature: "模板",
@@ -54,7 +64,7 @@ const zhHansProPageContent: ProPageContent = {
     {
       title: "剪辑师",
       body:
-        "用 12 款签名模板，让倒计时和你其余剪辑的部分搭得上，需要的时候按 60 FPS 导出。",
+        "把透明叠加直接拖进 Premiere 或 DaVinci，分辨率跟你时间线一致，不用再压回 1080p。",
     },
     {
       title: "演讲和活动",

@@ -2,14 +2,14 @@ import type { ProPageContent } from "./types";
 
 const zhHantProPageContent: ProPageContent = {
   metadata: {
-    title: "Time Overlay Pro：60 分鐘計時器、60 FPS、簽名範本，一次 $9",
+    title: "Time Overlay Pro：4K 計時器、60 FPS，最長可匯出 60 分鐘，只要 $9",
     description:
-      "一次付款 $9，不需訂閱。Pro 把 5 分鐘上限提高到 60 分鐘，加入 60 FPS，以及 12 款簽名範本和 OBS 直播連結裡的 Pro 範本。",
+      "一次付款 $9，不需訂閱。Pro 把 5 分鐘上限提高到 60 分鐘，加入 60 FPS、4K 匯出、單一檔案透明影片，以及 12 款簽名範本。",
   },
   eyebrow: "Time Overlay Pro",
   heading: "付一次，Pro 計時器工具長期可用",
   lead:
-    "免費產生器可以處理 5 分鐘以內的快速計時器。Pro 是給比較講究的案子：一小時的直播、60 FPS 的流暢畫面，還有給 OBS、Premiere 和 DaVinci 用的簽名範本。",
+    "免費產生器可以處理 1080p、5 分鐘以內的快速計時器。Pro 是給比較講究的案子：一小時的直播、4K 剪輯、60 FPS 的流暢畫面，還有給 OBS 或 Premiere 用的單一檔案透明疊加。",
   priceNote: "$9 一次付款 · 終身使用 · 不需訂閱",
   compareTitle: "Pro 包含什麼",
   compareColumns: {
@@ -27,6 +27,16 @@ const zhHantProPageContent: ProPageContent = {
       feature: "影格率",
       free: "24 或 30 FPS",
       pro: "最高 60 FPS",
+    },
+    {
+      feature: "解析度",
+      free: "720p、1080p、方形",
+      pro: "免費尺寸 + 4K（2160p）",
+    },
+    {
+      feature: "透明影片",
+      free: "PNG 序列",
+      pro: "PNG 序列 + 單一檔案 VP9/HEVC",
     },
     {
       feature: "範本",
@@ -54,7 +64,7 @@ const zhHantProPageContent: ProPageContent = {
     {
       title: "剪輯師",
       body:
-        "用 12 款簽名範本，讓倒數計時和你其餘剪輯的部分搭得上，需要的時候用 60 FPS 匯出。",
+        "把透明疊加直接拖進 Premiere 或 DaVinci，解析度跟你時間軸一致，不用再壓回 1080p。",
     },
     {
       title: "演講與活動",

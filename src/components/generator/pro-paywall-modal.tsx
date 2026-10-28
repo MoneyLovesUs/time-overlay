@@ -17,7 +17,7 @@ export type ProPaywallCopy = NonNullable<
   RootPageContent["generatorUi"]["pro"]
 >["paywall"];
 
-const DEFAULT_PAYWALL_COPY: ProPaywallCopy = {
+export const DEFAULT_PAYWALL_COPY: ProPaywallCopy = {
   title: "Unlock Time Overlay Pro",
   titleDuration: "Export timers up to 60 minutes",
   titleFps: "Export smooth 60 FPS timers",

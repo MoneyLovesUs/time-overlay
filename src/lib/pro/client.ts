@@ -3,13 +3,32 @@
 import { useSyncExternalStore } from "react";
 
 import { trackEvent } from "@/lib/analytics/events";
-import type { ProTrigger } from "@/lib/pro/entitlements";
+import type { ProTrigger, ProUpsellSource } from "@/lib/pro/entitlements";
 import { isPriceQuote, quoteAnalytics, type PriceQuote } from "@/lib/pro/regional-pricing";
 
 export type ProStatus = "unknown" | "free" | "pro";
 
 const STORAGE_KEY = "timeoverlay.pro.v1";
 const VALIDATE_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+
+// The surface that opened the paywall. Quote and checkout events carry it so
+// auto-popped and self-served conversations can be told apart in analytics.
+let activeUpsellSource: ProUpsellSource | null = null;
+
+export function setProUpsellSource(source: ProUpsellSource | null): void {
+  activeUpsellSource = source;
+}
+
+export function getProUpsellSource(): ProUpsellSource | null {
+  return activeUpsellSource;
+}
+
+/** `source` for the quote/checkout events; empty while no paywall is open. */
+export function upsellSourcePayload(
+  source: ProUpsellSource | null = activeUpsellSource,
+): { source?: ProUpsellSource } {
+  return source ? { source } : {};
+}
 
 type StoredProState = {
   token: string;
@@ -169,7 +188,12 @@ export async function fetchProQuote(signal?: AbortSignal): Promise<PriceQuote | 
     const response = await fetch("/api/pro/quote", { cache: "no-store", signal });
     const payload: unknown = await response.json();
     if (!response.ok || !isPriceQuote(payload)) throw new Error("invalid_quote");
-    if (!signal?.aborted) trackEvent("pro_price_quoted", quoteAnalytics(payload));
+    if (!signal?.aborted) {
+      trackEvent("pro_price_quoted", {
+        ...quoteAnalytics(payload),
+        ...upsellSourcePayload(),
+      });
+    }
     return payload;
   } catch {
     if (!signal?.aborted) trackEvent("pro_price_quote_failed", { reason: "unavailable" });

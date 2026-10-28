@@ -114,6 +114,15 @@ type SupportingRouteDefinition = {
   readonly locales: readonly AppLocale[];
 };
 
+// The Pro sales page is translated for every enabled locale, so it is listed
+// once per language. The post-checkout /pro/success utility page stays out.
+type ProRouteDefinition = {
+  readonly href: "/pro";
+  readonly changeFrequency: "monthly";
+  readonly priority: 0.8;
+  readonly locales: readonly AppLocale[];
+};
+
 // English-only product pages (e.g. the presenter-timer waitlist).
 type ProductRouteDefinition = {
   readonly href: "/presenter-timer" | `/presenter-timer/${string}`;
@@ -129,7 +138,8 @@ type PublicRouteDefinition =
   | GuideRouteDefinition
   | ComparisonRouteDefinition
   | SupportingRouteDefinition
-  | ProductRouteDefinition;
+  | ProductRouteDefinition
+  | ProRouteDefinition;
 
 const homepageRoute: HomepageRouteDefinition = {
   href: "/",
@@ -184,6 +194,13 @@ const supportingRoutes: readonly SupportingRouteDefinition[] = SUPPORTING_PATHS.
   }),
 );
 
+const proRoute: ProRouteDefinition = {
+  href: "/pro",
+  changeFrequency: "monthly",
+  priority: 0.8,
+  locales: enabledLocales,
+};
+
 const productRoutes: readonly ProductRouteDefinition[] = [
   {
     href: "/presenter-timer",
@@ -202,6 +219,7 @@ const productRoutes: readonly ProductRouteDefinition[] = [
 
 export const publicRouteDefinitions: readonly PublicRouteDefinition[] = [
   homepageRoute,
+  proRoute,
   ...supportingRoutes,
   ...productRoutes,
   ...guideRoutes,

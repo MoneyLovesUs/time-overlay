@@ -109,9 +109,10 @@ describe("localized SEO helpers", () => {
 
   it("emits localized homepage, trust, guide, and comparison entries", () => {
     const entries = buildSitemapEntries();
-    // homepage × 17 locales + (5 supporting + 6 guides + 1 comparison) × 2 locales
+    // homepage × 17 locales + /pro sales page × 17 locales
+    // + (5 supporting + 6 guides + 1 comparison) × 2 locales
     // + 1 English-only product page (/presenter-timer) and its 4 topic pages.
-    expect(entries.length).toBe(17 + (5 + 6 + 1) * 2 + 1 + 4);
+    expect(entries.length).toBe(17 + 17 + (5 + 6 + 1) * 2 + 1 + 4);
 
     const homepageRoots = entries.filter((entry) => {
       const path = entry.url.replace(/^https?:\/\/[^/]+/, "");

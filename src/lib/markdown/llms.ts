@@ -8,6 +8,8 @@ import {
 } from "@/content/presenter-topics";
 import enRootPageContent from "@/content/root/en";
 import zhHansRootPageContent from "@/content/root/zh-hans";
+import enProPageContent from "@/content/pro-page/en";
+import zhHansProPageContent from "@/content/pro-page/zh-hans";
 import {
   buildLocalizedPath,
   defaultLocale,
@@ -18,6 +20,11 @@ import { COMPARE_SLUGS, GUIDE_SLUGS, siteConfig } from "@/lib/site";
 const llmsRootContent = {
   en: enRootPageContent,
   "zh-hans": zhHansRootPageContent,
+} as const;
+
+const llmsProPageContent = {
+  en: enProPageContent,
+  "zh-hans": zhHansProPageContent,
 } as const;
 
 type LlmsLocale = keyof typeof llmsRootContent;
@@ -42,6 +49,7 @@ export function buildLlmsTxt(locale: EnabledLocale = defaultLocale): string {
   const localizedMarkdown = (path: string) =>
     locale === defaultLocale ? `/md${path}` : `/${locale}/md${path}`;
   const root = llmsRootContent[locale];
+  const proPageContent = llmsProPageContent[locale];
 
   const compare = getComparePageContent(locale);
   const compareSlug = COMPARE_SLUGS[0];
@@ -54,6 +62,7 @@ export function buildLlmsTxt(locale: EnabledLocale = defaultLocale): string {
     "",
     locale === "zh-hans" ? "## 核心页面" : "## Core pages",
     `- [${siteConfig.name} generator](${abs(localized("/"))}): ${root.metadata.description} Markdown: ${abs(localizedMarkdown("/home"))}`,
+    `- [Time Overlay Pro](${abs(localized("/pro"))}): ${proPageContent.metadata.description}`,
     `- [${compare.metadata.title}](${abs(localized(`/compare/${compareSlug}`))}): ${compare.metadata.description} Markdown: ${abs(localizedMarkdown(`/compare/${compareSlug}`))}`,
     `- [${presenterTimerContent.metadata.title}](${abs(PRESENTER_TIMER_PATH)}): ${presenterTimerContent.metadata.description} (English, early-access waitlist)`,
     ...PRESENTER_TOPIC_SLUGS.map((slug) => {

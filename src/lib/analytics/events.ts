@@ -40,6 +40,8 @@ export type AnalyticsEventName =
   | "live_link_pro_locked"
   | "duration_limit_hit"
   | "pro_upsell_viewed"
+  | "pro_cta_clicked"
+  | "pro_page_viewed"
   | "pro_checkout_clicked"
   | "pro_restore_clicked"
   | "pro_feature_used"

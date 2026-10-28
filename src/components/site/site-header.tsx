@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BrandMark } from "@/components/site/brand-mark";
+import { ProHeaderLink } from "@/components/site/pro-header-link";
 import {
   buildLocalizedPath,
   enabledLocales,
@@ -83,6 +84,7 @@ export function SiteHeader({
                     </Link>
                   </div>
                 ))}
+                <ProHeaderLink locale={locale} />
               </nav>
             </div>
           </div>

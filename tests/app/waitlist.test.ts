@@ -8,7 +8,7 @@ import {
   PRESENTER_TOPIC_SLUGS,
 } from "@/content/presenter-topics";
 import { buildSitemapEntries } from "@/lib/site";
-import { parseWaitlistSubmission, WAITLIST_EVENT, WAITLIST_SOURCES } from "@/lib/waitlist";
+import { parseWaitlistSubmission, UPDATES_EVENT, WAITLIST_EVENT, WAITLIST_SOURCES } from "@/lib/waitlist";
 
 const validBody = {
   email: "  Speaker@Example.com ",
@@ -31,7 +31,7 @@ describe("parseWaitlistSubmission", () => {
   it("normalizes the email and keeps the survey answers", () => {
     const result = parseWaitlistSubmission(validBody);
     assert.equal(result.kind, "valid");
-    if (result.kind !== "valid") return;
+    if (result.kind !== "valid" || result.value.list !== "presenter-timer") return;
     assert.equal(result.value.email, "speaker@example.com");
     assert.equal(result.value.platform, "mac");
     assert.equal(result.value.useCase, "webinar-speaker");
@@ -47,16 +47,64 @@ describe("parseWaitlistSubmission", () => {
   });
 
   it("keeps a known landing-page source and falls back for unknown ones", () => {
-    const fromTeams = parseWaitlistSubmission({ ...validBody, source: "microsoft-teams" });
-    assert.equal(fromTeams.kind === "valid" && fromTeams.value.source, "microsoft-teams");
-    const unknown = parseWaitlistSubmission({ ...validBody, source: "evil<script>" });
-    assert.equal(unknown.kind === "valid" && unknown.value.source, "presenter-timer");
-    const missing = parseWaitlistSubmission(validBody);
-    assert.equal(missing.kind === "valid" && missing.value.source, "presenter-timer");
+    const sourceOf = (body: unknown) => {
+      const result = parseWaitlistSubmission(body);
+      if (result.kind !== "valid" || result.value.list !== "presenter-timer") {
+        throw new Error("expected a presenter-timer submission");
+      }
+      return result.value.source;
+    };
+
+    assert.equal(sourceOf({ ...validBody, source: "microsoft-teams" }), "microsoft-teams");
+    assert.equal(sourceOf({ ...validBody, source: "evil<script>" }), "presenter-timer");
+    assert.equal(sourceOf(validBody), "presenter-timer");
   });
 
   it("flags a filled honeypot as spam", () => {
     assert.deepEqual(parseWaitlistSubmission({ ...validBody, company: "Acme" }), { kind: "spam" });
+  });
+
+  it("accepts an email-only signup for the updates list", () => {
+    const result = parseWaitlistSubmission({
+      list: "time-overlay-updates",
+      placement: "export_complete",
+      email: "  Reader@Example.com ",
+    });
+
+    assert.equal(result.kind, "valid");
+    if (result.kind !== "valid" || result.value.list !== "time-overlay-updates") return;
+    assert.equal(result.value.email, "reader@example.com");
+    assert.equal(result.value.placement, "export_complete");
+  });
+
+  it("defaults the updates placement and keeps the presenter form mandatory", () => {
+    const updates = parseWaitlistSubmission({
+      list: "time-overlay-updates",
+      email: "reader@example.com",
+    });
+    assert.equal(
+      updates.kind === "valid" && updates.value.list === "time-overlay-updates"
+        ? updates.value.placement
+        : null,
+      "export_complete",
+    );
+
+    // Missing survey answers still fail without the updates list flag.
+    assert.deepEqual(
+      parseWaitlistSubmission({ email: "reader@example.com" }),
+      { kind: "invalid", field: "platform" },
+    );
+  });
+
+  it("applies the honeypot and email checks to the updates list too", () => {
+    assert.deepEqual(
+      parseWaitlistSubmission({ list: "time-overlay-updates", email: "bad" }),
+      { kind: "invalid", field: "email" },
+    );
+    assert.deepEqual(
+      parseWaitlistSubmission({ list: "time-overlay-updates", email: "a@b.co", company: "bot" }),
+      { kind: "spam" },
+    );
   });
 });
 
@@ -84,7 +132,34 @@ describe("POST /api/waitlist", () => {
     assert.equal(capture.properties.price_willing_usd, "19");
     assert.equal(capture.properties.$set.email, "speaker@example.com");
     assert.equal(capture.properties.$set.presenter_timer_waitlist, true);
+    assert.equal(capture.properties.$set.time_overlay_updates, undefined);
     assert.equal(capture.properties.source, "presenter-timer");
+  });
+
+  it("forwards an updates signup as its own event, without the survey fields", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await POST(
+      makeRequest({
+        list: "time-overlay-updates",
+        placement: "export_complete",
+        email: "reader@example.com",
+      }),
+    );
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { ok: true });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const capture = JSON.parse(String(init.body));
+    assert.equal(capture.event, UPDATES_EVENT);
+    assert.equal(capture.distinct_id, "reader@example.com");
+    assert.equal(capture.properties.placement, "export_complete");
+    assert.equal(capture.properties.$set.email, "reader@example.com");
+    assert.equal(capture.properties.$set.time_overlay_updates, true);
+    assert.equal(capture.properties.$set.presenter_timer_waitlist, undefined);
+    assert.equal(capture.properties.platform, undefined);
+    assert.equal(capture.properties.$set_once.time_overlay_updates_joined_at.length > 0, true);
   });
 
   it("returns 400 with the failing field and does not call PostHog", async () => {

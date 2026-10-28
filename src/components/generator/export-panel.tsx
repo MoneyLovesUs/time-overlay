@@ -11,12 +11,15 @@ import {
 import { useSyncExternalStore } from "react";
 
 import { ExportCompleteProCta } from "@/components/generator/export-complete-pro-cta";
+import { ExportEmailCapture } from "@/components/generator/export-email-capture";
 import { ExportProgressView } from "@/components/generator/export-progress-view";
 import { resolveGeneratorCheckoutContext } from "@/components/generator/pro-paywall-modal";
 import { Button } from "@/components/ui/button";
 import type { RootPageContent } from "@/content/root/types";
+import { getExportCaptureCopy } from "@/content/export-capture";
 import { getProCtaCopy } from "@/content/pro-cta";
 import { getLiveLinkCopy } from "@/content/live-link";
+import { buildLocalizedPath, isEnabledLocale, defaultLocale } from "@/lib/i18n";
 import type { ExportAdvisory, LocalExportSupport } from "@/lib/generator/feature-detection";
 import type {
   ExportProgressState,
@@ -405,6 +408,16 @@ export function ExportPanel({
           <ExportCompleteProCta
             copy={getProCtaCopy(getLiveLinkLocaleSnapshot())}
             onUnlockPro={onUnlockPro}
+          />
+        ) : null}
+
+        {exportProgress.stage === "complete" ? (
+          <ExportEmailCapture
+            copy={getExportCaptureCopy(liveLinkLocale)}
+            privacyHref={buildLocalizedPath(
+              "/privacy",
+              isEnabledLocale(liveLinkLocale) ? liveLinkLocale : defaultLocale,
+            )}
           />
         ) : null}
 

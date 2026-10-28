@@ -47,7 +47,8 @@ export type AnalyticsEventName =
   | "pro_feature_used"
   | "presenter_waitlist_submitted"
   | "presenter_waitlist_joined"
-  | "presenter_waitlist_failed";
+  | "presenter_waitlist_failed"
+  | "email_captured";
 
 export function trackEvent(
   event: AnalyticsEventName,

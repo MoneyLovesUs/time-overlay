@@ -44,6 +44,10 @@ import {
 import {
   GENERATOR_DURATION_LIMIT_SECONDS,
 } from "@/lib/generator/defaults";
+import {
+  resolveDurationLimitState,
+  type DurationLimitState,
+} from "@/lib/generator/duration-limit";
 import { PRO_MAX_DURATION_SECONDS, isProFormat, isProResolution } from "@/lib/pro/entitlements";
 import {
   restorePro,
@@ -159,6 +163,11 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const [durationLimitHitSeconds, setDurationLimitHitSeconds] = useState<
     number | null
   >(null);
+  // Whether the last requested duration was above the free cap, so
+  // duration_limit_hit fires on the crossing instead of every keystroke.
+  const durationLimitStateRef = useRef<DurationLimitState>({
+    aboveLimit: false,
+  });
   const [settings, setSettings] = useState<GeneratorSettings>(() => ({
     ...DEFAULT_GENERATOR_SETTINGS,
   }));
@@ -447,12 +456,22 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     const durationLimit = isPro
       ? PRO_MAX_DURATION_SECONDS
       : GENERATOR_DURATION_LIMIT_SECONDS;
+    // The field is not clamped, so a free user sits "above" the cap until they
+    // type back under it. Only the crossing itself is a signal of intent.
+    const { state: limitState, crossedUp } = resolveDurationLimitState(
+      durationLimitStateRef.current,
+      durationSeconds,
+      durationLimit,
+    );
+    durationLimitStateRef.current = limitState;
     if (durationSeconds > durationLimit) {
       if (!isPro) {
         setDurationLimitHitSeconds(durationSeconds);
-        trackEvent("duration_limit_hit", {
-          requestedSeconds: durationSeconds,
-        });
+        if (crossedUp) {
+          trackEvent("duration_limit_hit", {
+            requestedSeconds: durationSeconds,
+          });
+        }
       }
     } else if (durationLimitHitSeconds !== null) {
       setDurationLimitHitSeconds(null);

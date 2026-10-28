@@ -17,7 +17,6 @@ import {
   buildWebSiteJsonLd,
 } from "@/lib/seo/jsonld";
 import { JsonLd } from "@/components/site/json-ld";
-import { AdsterraSocialBar } from "@/components/site/adsterra-ads";
 import { publicationConfig } from "@/lib/publication";
 
 const geistSans = Geist({
@@ -211,7 +210,6 @@ export function AppDocument({
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: clarityBootstrapScript }}
         />
-        <AdsterraSocialBar />
       </body>
     </html>
   );

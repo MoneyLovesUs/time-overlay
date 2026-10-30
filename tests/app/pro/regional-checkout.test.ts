@@ -66,7 +66,7 @@ describe("regional quote and checkout boundary", () => {
     expect(response.status).toBe(200);
     const params = mocks.create.mock.calls[0][0];
     expect(params.currency).toBe("usd");
-    expect(params.adaptive_pricing).toEqual({enabled:false});
+    expect(params.adaptive_pricing).toEqual({enabled:true});
     if (coupon) {
       expect(params.discounts).toEqual([{coupon}]);
       expect(params).not.toHaveProperty("allow_promotion_codes");

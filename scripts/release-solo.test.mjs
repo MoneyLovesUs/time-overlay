@@ -9,7 +9,8 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   assertDeployment, assertGitState, assertPrivatePath, assertProject, assertReceipt,
-  buildIdentity, BUILD_MODE, environmentHash, inspectArtifact, parseArgs, PROJECT, sha256,
+  buildIdentity, BUILD_MODE, environmentHash, findReleaseDeployment, inspectArtifact, parseArgs,
+  parseDeploymentUrl, PROJECT, sha256,
 } from "./lib/release-contract.mjs";
 import { release, run } from "./release-solo.mjs";
 
@@ -283,4 +284,25 @@ test("a cache without captured deploy inputs is rejected instead of half-deployi
   assert.ok(cacheDir, "receipt written before the stopped deploy");
   rmSync(join(sim.cache, cacheDir, "deploy-inputs"), { recursive: true });
   await assert.rejects(release(["--reuse-artifact"], sim.execute, sim.root), /predates deploy-input/);
+});
+
+test("deploy URL comes from CLI output, or from the release metadata when the CLI prints none", () => {
+  const host = "time-overlay-abc123-sean-lius-projects-484b037e.vercel.app";
+  assert.equal(parseDeploymentUrl(`Inspect: https://vercel.com/x\nhttps://${host}\n`), `https://${host}`);
+  assert.equal(parseDeploymentUrl("https://evil.example/\n"), null);
+  assert.equal(parseDeploymentUrl(""), null);
+
+  const identity = { sha: SHA, tree: "b".repeat(40) };
+  const meta = { releaseBuildMode: BUILD_MODE, releaseGitSha: SHA, releaseGitTree: "b".repeat(40) };
+  const since = 1_000;
+  const deployments = [
+    { url: "time-overlay-old111-sean-lius-projects-484b037e.vercel.app", created: 500, meta },
+    { url: "time-overlay-other1-sean-lius-projects-484b037e.vercel.app", created: 3_000, meta: { ...meta, releaseGitSha: "c".repeat(40) } },
+    { url: "evil.example", created: 4_000, meta },
+    { url: "time-overlay-new111-sean-lius-projects-484b037e.vercel.app", created: 2_000, meta },
+  ];
+  assert.equal(findReleaseDeployment(deployments, identity, since),
+    "https://time-overlay-new111-sean-lius-projects-484b037e.vercel.app");
+  assert.throws(() => findReleaseDeployment(deployments.slice(0, 3), identity, since), /no Time Overlay deployment URL/);
+  assert.throws(() => findReleaseDeployment(undefined, identity, since), /no Time Overlay deployment URL/);
 });

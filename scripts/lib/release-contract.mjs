@@ -165,11 +165,25 @@ export function prebuiltDeployArgs(identity) {
     "--meta", `releaseGitTree=${identity.tree}`];
 }
 
+const DEPLOYMENT_HOST = /^time-overlay-[a-z0-9]+-sean-lius-projects-[a-z0-9]+\.vercel\.app$/;
+
+/** Returns null when the CLI printed no deployment URL; callers fall back to the API. */
 export function parseDeploymentUrl(stdout) {
-  const lines = stdout.trim().split(/\s+/);
-  const url = lines.findLast((line) => /^https:\/\/time-overlay-[a-z0-9]+-sean-lius-projects-[a-z0-9]+\.vercel\.app\/?$/.test(line));
-  if (!url) throw new Error("Deploy returned no Time Overlay deployment URL.");
-  return new URL(url).origin;
+  const lines = String(stdout ?? "").trim().split(/\s+/);
+  const url = lines.findLast((line) => /^https:\/\/[^/]+\/?$/.test(line) && DEPLOYMENT_HOST.test(new URL(line).hostname));
+  return url ? new URL(url).origin : null;
+}
+
+// The CLI does not always print the URL when stdout is piped, so find the
+// deployment it just created by the release metadata passed with --meta.
+export function findReleaseDeployment(deployments, identity, since) {
+  const match = (deployments ?? [])
+    .filter((deployment) => deployment.meta?.releaseBuildMode === BUILD_MODE &&
+      deployment.meta?.releaseGitSha === identity.sha && deployment.meta?.releaseGitTree === identity.tree &&
+      deployment.created >= since && DEPLOYMENT_HOST.test(deployment.url ?? ""))
+    .sort((a, b) => b.created - a.created)[0];
+  if (!match) throw new Error("Deploy returned no Time Overlay deployment URL.");
+  return `https://${match.url}`;
 }
 
 export function assertDeployment(deployment, identity) {

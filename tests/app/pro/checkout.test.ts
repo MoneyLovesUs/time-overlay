@@ -65,6 +65,7 @@ describe("POST /api/pro/checkout", () => {
       { price: "price_pro_unit", quantity: 1 },
     ]);
     assert.equal(params.customer_creation, "always");
+    assert.deepEqual(params.payment_intent_data, { description: "Time Overlay Pro (one-time)" });
     assert.equal(params.allow_promotion_codes, true);
     assert.deepEqual(params.metadata, {
       product: "time-overlay-pro",

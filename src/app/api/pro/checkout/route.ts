@@ -53,6 +53,8 @@ export async function POST(request: Request): Promise<Response> {
     mode: "payment",
     line_items: [{ price: config.priceId, quantity: 1 }],
     customer_creation: "always",
+    // Without a description the Stripe dashboard lists the payment by its pi_ id.
+    payment_intent_data: { description: "Time Overlay Pro (one-time)" },
     currency: "usd",
     adaptive_pricing: { enabled: false },
     ...(couponId ? { discounts: [{ coupon: couponId }] } : { allow_promotion_codes: true }),

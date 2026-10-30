@@ -56,7 +56,8 @@ export async function POST(request: Request): Promise<Response> {
     // Without a description the Stripe dashboard lists the payment by its pi_ id.
     payment_intent_data: { description: "Time Overlay Pro (one-time)" },
     currency: "usd",
-    adaptive_pricing: { enabled: false },
+    // Stripe shows the local currency; the session and its amounts stay in USD.
+    adaptive_pricing: { enabled: true },
     ...(couponId ? { discounts: [{ coupon: couponId }] } : { allow_promotion_codes: true }),
     metadata: {
       product: PRO_PRODUCT, trigger, locale,

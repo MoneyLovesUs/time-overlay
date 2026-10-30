@@ -163,12 +163,11 @@ export async function release(argv, execute = run, root = ROOT) {
     writeFileSync(join(stage, ".env.production.local"),
       readFileSync(envPath, "utf8") + "\n" + (extraEnvFile ? readFileSync(resolve(extraEnvFile), "utf8") : "") + "\n",
       { mode: 0o600 });
-    // Allow for clock skew between this machine and Vercel's created timestamps.
-    const deployStartedAt = Date.now() - 5 * 60_000;
+    const listDeployments = () =>
+      api(`/v6/deployments?projectId=${PROJECT.projectId}&target=production&limit=20`).deployments;
+    const before = listDeployments();
     const deployOutput = execute("vercel", prebuiltDeployArgs(identity), { cwd: stage, quiet: true });
-    deployedUrl = parseDeploymentUrl(deployOutput) ?? findReleaseDeployment(
-      api(`/v6/deployments?projectId=${PROJECT.projectId}&target=production&limit=20`).deployments,
-      identity, deployStartedAt);
+    deployedUrl = parseDeploymentUrl(deployOutput) ?? findReleaseDeployment(listDeployments(), identity, before);
     const deployment = api(`/v13/deployments/${new URL(deployedUrl).hostname}`);
     deploymentId = deployment.id;
     const releases = join(cacheRoot, "releases");

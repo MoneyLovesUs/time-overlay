@@ -9,7 +9,8 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   assertDeployment, assertGitState, assertPrivatePath, assertProject, assertReceipt,
-  buildIdentity, BUILD_MODE, environmentHash, inspectArtifact, parseArgs, PROJECT, sha256,
+  buildIdentity, BUILD_MODE, environmentHash, findReleaseDeployment, inspectArtifact, parseArgs,
+  parseDeploymentUrl, PROJECT, sha256,
 } from "./lib/release-contract.mjs";
 import { release, run } from "./release-solo.mjs";
 
@@ -154,7 +155,8 @@ test("binary Git archives are not decoded as UTF-8", () => {
   assert.deepEqual(result, Buffer.from([0, 255, 128, 10]));
 });
 
-function simulation(t, { production = false, failBuild = false, wrongProject = false, dirty = false, movedRemote = false } = {}) {
+function simulation(t, { production = false, failBuild = false, wrongProject = false, dirty = false, movedRemote = false,
+  deployPrintsUrl = true } = {}) {
   const root = temporary(t);
   const cache = temporary(t);
   const previous = process.env.TIME_OVERLAY_RELEASE_CACHE;
@@ -171,6 +173,7 @@ function simulation(t, { production = false, failBuild = false, wrongProject = f
   let stage;
   let fetches = 0;
   const seen = { reusedInputs: false, deployEnv: false };
+  let listed = [];
   function execute(command, args, options = {}) {
     calls.push({ command, args });
     if (command === "git") {
@@ -219,13 +222,18 @@ function simulation(t, { production = false, failBuild = false, wrongProject = f
     }
     if (command === "vercel" && args[0] === "api") {
       if (args[1].includes("/projects/")) return JSON.stringify({ ...project, ...(wrongProject ? { accountId: "wrong" } : {}) });
+      if (args[1].startsWith("/v6/deployments?")) return JSON.stringify({ deployments: listed });
+      if (args[1].startsWith("/v13/deployments/")) throw new Error(`simulated lookup ${args[1].split("/").at(-1)}`);
     }
     if (command === "vercel" && args[0] === "deploy") {
       // CLI 53 hashes every filePathMap source during upload; the merged env
       // file must exist at the stage root by then.
       const env = join(stage, ".env.production.local");
       seen.deployEnv = existsSync(env) && readFileSync(env, "utf8").includes("NEXT_PUBLIC_SITE_URL");
-      throw new Error("simulated deployment stop");
+      if (deployPrintsUrl) throw new Error("simulated deployment stop");
+      const meta = Object.fromEntries(args.filter((_, i) => args[i - 1] === "--meta").map((pair) => pair.split("=")));
+      listed = [...listed, { uid: "dpl_new", url: "time-overlay-new111-sean-lius-projects-484b037e.vercel.app", meta }];
+      return "Deploying...\n";
     }
     throw new Error(`Unexpected command ${command} ${args[0]}`);
   }
@@ -283,4 +291,32 @@ test("a cache without captured deploy inputs is rejected instead of half-deployi
   assert.ok(cacheDir, "receipt written before the stopped deploy");
   rmSync(join(sim.cache, cacheDir, "deploy-inputs"), { recursive: true });
   await assert.rejects(release(["--reuse-artifact"], sim.execute, sim.root), /predates deploy-input/);
+});
+
+test("when the CLI prints no URL, the release looks up the deployment it just created", async (t) => {
+  const sim = simulation(t, { production: true, deployPrintsUrl: false });
+  await assert.rejects(release([], sim.execute, sim.root), /simulated lookup time-overlay-new111-/);
+  const lists = sim.calls.filter(({ args }) => args[0] === "api" && args[1].startsWith("/v6/deployments?"));
+  assert.equal(lists.length, 2, "listed once before and once after the upload");
+});
+
+test("deploy URL comes from CLI output, or from the release metadata when the CLI prints none", () => {
+  const host = "time-overlay-abc123-sean-lius-projects-484b037e.vercel.app";
+  assert.equal(parseDeploymentUrl(`Inspect: https://vercel.com/x\nhttps://${host}\n`), `https://${host}`);
+  assert.equal(parseDeploymentUrl(`https://${host}:8443`), null);
+  assert.equal(parseDeploymentUrl("https://[ https://evil.example/\n"), null);
+  assert.equal(parseDeploymentUrl(""), null);
+
+  const identity = { sha: SHA, tree: "b".repeat(40) };
+  const meta = { releaseBuildMode: BUILD_MODE, releaseGitSha: SHA, releaseGitTree: "b".repeat(40) };
+  const earlier = { uid: "dpl_old", url: "time-overlay-old111-sean-lius-projects-484b037e.vercel.app", meta };
+  const fresh = { uid: "dpl_new", url: "time-overlay-new111-sean-lius-projects-484b037e.vercel.app", meta };
+  const other = { uid: "dpl_other", url: "time-overlay-oth111-sean-lius-projects-484b037e.vercel.app",
+    meta: { ...meta, releaseGitSha: "c".repeat(40) } };
+  const foreign = { uid: "dpl_evil", url: "evil.example", meta };
+  // A re-run of the same SHA must pick the new upload, not the earlier one.
+  assert.equal(findReleaseDeployment([fresh, other, foreign, earlier], identity, [earlier]), `https://${fresh.url}`);
+  assert.throws(() => findReleaseDeployment([earlier, other], identity, [earlier]), /no Time Overlay deployment URL/);
+  assert.throws(() => findReleaseDeployment([fresh, { ...fresh, uid: "dpl_twin" }], identity, []), /no Time Overlay deployment URL/);
+  assert.throws(() => findReleaseDeployment(undefined, identity, []), /no Time Overlay deployment URL/);
 });

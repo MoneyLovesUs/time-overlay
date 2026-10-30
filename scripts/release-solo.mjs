@@ -11,7 +11,7 @@ import {
   assertDeployment, assertGitState, assertPrivatePath, assertProject, assertReceipt,
   buildIdentity, BUILDER, collectDeployInputs, DOMAINS, dockerRunArgs, environmentHash,
   hashDeployInputsDirectory, inspectArtifact, ORIGIN,
-  parseArgs, parseDeploymentUrl, prebuiltDeployArgs, PROJECT, SCOPE, sha256,
+  findReleaseDeployment, parseArgs, parseDeploymentUrl, prebuiltDeployArgs, PROJECT, SCOPE, sha256,
 } from "./lib/release-contract.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -163,7 +163,11 @@ export async function release(argv, execute = run, root = ROOT) {
     writeFileSync(join(stage, ".env.production.local"),
       readFileSync(envPath, "utf8") + "\n" + (extraEnvFile ? readFileSync(resolve(extraEnvFile), "utf8") : "") + "\n",
       { mode: 0o600 });
-    deployedUrl = parseDeploymentUrl(execute("vercel", prebuiltDeployArgs(identity), { cwd: stage, quiet: true }));
+    const listDeployments = () =>
+      api(`/v6/deployments?projectId=${PROJECT.projectId}&target=production&limit=20`).deployments;
+    const before = listDeployments();
+    const deployOutput = execute("vercel", prebuiltDeployArgs(identity), { cwd: stage, quiet: true });
+    deployedUrl = parseDeploymentUrl(deployOutput) ?? findReleaseDeployment(listDeployments(), identity, before);
     const deployment = api(`/v13/deployments/${new URL(deployedUrl).hostname}`);
     deploymentId = deployment.id;
     const releases = join(cacheRoot, "releases");

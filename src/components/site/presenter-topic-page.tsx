@@ -16,7 +16,7 @@ import {
 } from "@/content/presenter-topics";
 import type { RootPageContent } from "@/content/root/types";
 import { defaultLocale } from "@/lib/i18n";
-import { secondaryContentLocales, siteConfig } from "@/lib/site";
+import { siteConfig } from "@/lib/site";
 import {
   buildFooterNavigation,
   buildPrimaryNavigation,
@@ -72,7 +72,7 @@ export function PresenterTopicPage({ chrome, topic }: PresenterTopicPageProps) {
         languagePickerLabel={chrome.siteChrome.header.languagePickerLabel}
         primaryNavAriaLabel={chrome.siteChrome.header.primaryNavAriaLabel}
         currentPath={path}
-        localizedLocales={secondaryContentLocales}
+        localizedLocales={[defaultLocale]}
       />
 
       <main className="bg-background text-foreground">

@@ -1,3 +1,5 @@
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import assert from "node:assert/strict";
 import { afterEach, describe, it, vi } from "vitest";
 
@@ -7,6 +9,10 @@ import {
   getPresenterTopic,
   PRESENTER_TOPIC_SLUGS,
 } from "@/content/presenter-topics";
+import enRootPageContent from "@/content/root/en";
+import { PresenterTimerPage } from "@/components/site/presenter-timer-page";
+import { PresenterTopicPage } from "@/components/site/presenter-topic-page";
+import { presenterTimerContent } from "@/content/presenter-timer";
 import { buildSitemapEntries } from "@/lib/site";
 import { parseWaitlistSubmission, UPDATES_EVENT, WAITLIST_EVENT, WAITLIST_SOURCES } from "@/lib/waitlist";
 
@@ -209,6 +215,18 @@ describe("presenter timer route", () => {
     assert.equal(entries[0]?.url, "https://timeoverlay.co/presenter-timer");
     assert.equal(entries[0]?.alternates, undefined);
   });
+
+  it("keeps the language picker on English instead of a missing locale page", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(PresenterTimerPage, {
+        chrome: enRootPageContent,
+        content: presenterTimerContent,
+      }),
+    );
+
+    assert.equal(markup.includes("/zh-hans/presenter-timer"), false);
+    assert.match(markup, /href="\/zh-hans"/);
+  });
 });
 
 describe("presenter timer topic pages", () => {
@@ -249,5 +267,17 @@ describe("presenter timer topic pages", () => {
         assert.ok((PRESENTER_TOPIC_SLUGS as readonly string[]).includes(related));
       }
     }
+  });
+
+  it("keeps topic language links on English too", () => {
+    const markup = renderToStaticMarkup(
+      React.createElement(PresenterTopicPage, {
+        chrome: enRootPageContent,
+        topic: getPresenterTopic("google-meet"),
+      }),
+    );
+
+    assert.equal(markup.includes("zh-hans/presenter-timer"), false);
+    assert.match(markup, /href="\/zh-hans"/);
   });
 });

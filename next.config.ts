@@ -1,14 +1,19 @@
 import type { NextConfig } from "next";
-import type { Redirect } from "next/dist/load-custom-routes";
 
 import { enabledLocales } from "./src/lib/i18n";
 import { PRESENTER_TOPIC_SLUGS } from "./src/lib/presenter-topic-slugs";
+
+export type EnglishOnlyPresenterRedirect = {
+  source: string;
+  destination: string;
+  permanent: true;
+};
 
 // Presenter pages are English-only. The language picker used to prefix the
 // current path for zh-hans, and Ahrefs crawled those 404s. Send each known
 // path back to its English page; do not wildcard, or a future localized page
 // would be swallowed.
-export function buildEnglishOnlyPresenterRedirects(): Redirect[] {
+export function buildEnglishOnlyPresenterRedirects(): EnglishOnlyPresenterRedirect[] {
   const paths = [
     "/presenter-timer",
     ...PRESENTER_TOPIC_SLUGS.map((slug) => `/presenter-timer/${slug}`),

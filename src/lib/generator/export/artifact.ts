@@ -52,6 +52,27 @@ function isZipSignature(header: Uint8Array) {
   );
 }
 
+const ZIP_EOCD_SIGNATURE = [0x50, 0x4b, 0x05, 0x06] as const;
+const ZIP_EOCD_SEARCH_BYTES = 65_557;
+
+/**
+ * Bounded tail read: the ZIP comment can be up to 64 KiB, but the whole
+ * archive is never loaded. An empty archive or a missing EOCD is rejected.
+ */
+async function hasZipEndOfCentralDirectory(blob: Blob): Promise<boolean> {
+  const start = Math.max(0, blob.size - ZIP_EOCD_SEARCH_BYTES);
+  const tail = new Uint8Array(await blob.slice(start).arrayBuffer());
+  for (let offset = tail.length - 22; offset >= 0; offset -= 1) {
+    if (
+      hasBytes(tail, ZIP_EOCD_SIGNATURE, offset) &&
+      (tail[offset + 10] | (tail[offset + 11] << 8)) > 0
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function invalidArtifact(format: string): never {
   throw new ArtifactValidationError(
     `The generated ${format} file is invalid. Please try exporting again.`,
@@ -73,7 +94,7 @@ export async function validateExportArtifact(
 
   switch (inferArtifactKind(mimeType, fileName)) {
     case "zip":
-      if (!isZipSignature(header)) {
+      if (!isZipSignature(header) || !(await hasZipEndOfCentralDirectory(blob))) {
         invalidArtifact("ZIP");
       }
       return;

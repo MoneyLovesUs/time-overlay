@@ -76,42 +76,47 @@ describe("getExportAdvisory", () => {
     });
   });
 
-  it("blocks mobile and tablet jobs above the duration, canvas, or pixel-frame limits", () => {
+  it("turns the old mobile PNG hard limits into advice without disabling export", () => {
     const support = getInitialLocalExportSupport();
-
-    expect(
-      getExportAdvisory(
-        createGeneratorSettings({ timer: { durationSeconds: 61 } }),
-        support,
-        "mobile",
+    const cases = [
+      createGeneratorSettings({ timer: { durationSeconds: 61 } }),
+      createGeneratorSettings({
+        timer: { durationSeconds: 31 },
+        canvas: { resolutionPresetId: "landscape-1080" },
+      }),
+      createGeneratorSettings(
+        {
+          timer: { durationSeconds: 3 },
+          canvas: { resolutionPresetId: "landscape-2160" },
+        },
+        // 4K is a Pro-only canvas now, so only a Pro session reaches here.
+        { isPro: true },
       ),
-    ).toMatchObject({ code: "mobileExportLimitError", severity: "error" });
+    ];
 
-    expect(
-      getExportAdvisory(
-        createGeneratorSettings({
-          timer: { durationSeconds: 31 },
-          canvas: { resolutionPresetId: "landscape-1080" },
-        }),
-        support,
-        "tablet",
-      ),
-    ).toMatchObject({ code: "mobileExportLimitError", severity: "error" });
+    for (const settings of cases) {
+      const advisory = getExportAdvisory(settings, support, "mobile");
+      expect(advisory).toMatchObject({
+        code: "pngSequenceInfo",
+        severity: "info",
+      });
+      expect(advisory.disabledFormats).not.toContain("png-sequence");
+    }
+  });
 
-    expect(
-      getExportAdvisory(
-        createGeneratorSettings(
-          {
-            timer: { durationSeconds: 3 },
-            canvas: { resolutionPresetId: "landscape-2160" },
-          },
-          // 4K is a Pro-only canvas now, so only a Pro session reaches here.
-          { isPro: true },
-        ),
-        support,
-        "mobile",
-      ),
-    ).toMatchObject({ code: "mobileExportLimitError", severity: "error" });
+  it("keeps the other mobile format limits unchanged", () => {
+    const advisory = getExportAdvisory(
+      createGeneratorSettings({
+        timer: { durationSeconds: 61 },
+        export: { format: "webm" },
+      }),
+      getInitialLocalExportSupport(),
+      "mobile",
+    );
+    expect(advisory).toMatchObject({
+      code: "mobileExportLimitError",
+      severity: "error",
+    });
   });
 
   it("warns that long desktop WebM exports run in real time", () => {
@@ -175,6 +180,7 @@ describe("getExportAdvisory", () => {
       createGeneratorSettings({
         timer: { durationSeconds: 65 },
         canvas: { resolutionPresetId: "landscape-1080" },
+        export: { format: "mp4" },
       }),
       support,
     );
@@ -183,6 +189,7 @@ describe("getExportAdvisory", () => {
         {
           timer: { durationSeconds: 3 },
           canvas: { resolutionPresetId: "landscape-2160" },
+          export: { format: "mp4" },
         },
         // A 4K canvas is Pro-only, so the heavy-export warning can only apply
         // to a Pro session now.
@@ -198,6 +205,19 @@ describe("getExportAdvisory", () => {
     expect(canvasHeavy).toMatchObject({
       code: "heavyExportWarning",
       severity: "warning",
+    });
+
+    // PNG handles the same thresholds in its one-time preparation step.
+    const pngHeavy = getExportAdvisory(
+      createGeneratorSettings({
+        timer: { durationSeconds: 65 },
+        canvas: { resolutionPresetId: "landscape-1080" },
+      }),
+      support,
+    );
+    expect(pngHeavy).toMatchObject({
+      code: "pngSequenceInfo",
+      severity: "info",
     });
   });
 });

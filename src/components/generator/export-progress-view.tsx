@@ -74,15 +74,23 @@ function useRotatingTip(tips: readonly string[], active: boolean): string {
 function PreviewSurface({
   bitmap,
   label,
+  onDrawn,
+  onCleared,
 }: {
   bitmap: ImageBitmap | null;
   label: string;
+  onDrawn?: (bitmap: ImageBitmap) => void;
+  onCleared?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
+    if (!bitmap) {
+      onCleared?.();
+      return;
+    }
     const canvas = canvasRef.current;
-    if (!canvas || !bitmap) {
+    if (!canvas) {
       return;
     }
     if (canvas.width !== bitmap.width || canvas.height !== bitmap.height) {
@@ -94,8 +102,11 @@ function PreviewSurface({
       return;
     }
     context.clearRect(0, 0, canvas.width, canvas.height);
+    // Ownership is settled by the parent only after this succeeds. Do not
+    // catch: a detached bitmap is a lifecycle bug, not a decorative failure.
     context.drawImage(bitmap, 0, 0);
-  }, [bitmap]);
+    onDrawn?.(bitmap);
+  }, [bitmap, onDrawn, onCleared]);
 
   if (!bitmap) {
     return null;
@@ -123,6 +134,8 @@ type ExportProgressViewProps = {
   statusTitle: string;
   idleMessage: string;
   progressCopy?: ProgressCopy;
+  onPreviewDrawn?: (bitmap: ImageBitmap) => void;
+  onPreviewCleared?: () => void;
 };
 
 export function ExportProgressView({
@@ -133,6 +146,8 @@ export function ExportProgressView({
   statusTitle,
   idleMessage,
   progressCopy,
+  onPreviewDrawn,
+  onPreviewCleared,
 }: ExportProgressViewProps) {
   const copy = progressCopy ?? DEFAULT_PROGRESS_COPY;
   const active = isExporting && isActiveExportStage(exportProgress.stage);
@@ -210,7 +225,12 @@ export function ExportProgressView({
         ) : null}
       </div>
 
-      <PreviewSurface bitmap={previewBitmap} label={copy.previewLabel} />
+      <PreviewSurface
+        bitmap={previewBitmap}
+        label={copy.previewLabel}
+        onCleared={onPreviewCleared}
+        onDrawn={onPreviewDrawn}
+      />
 
       {tip ? (
         <p className="text-[11px] leading-5 text-muted-foreground">{tip}</p>

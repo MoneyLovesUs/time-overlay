@@ -65,37 +65,43 @@ describe("pro-aware settings fallback", () => {
     expect(free60.export.fps).not.toBe(60);
   });
 
-  it("flags pro png-sequence jobs over 600s with pngSequenceTooLongError (spec 6.5 #6)", () => {
-    const settings = normalizeGeneratorSettings(
-      {
-        ...withDuration(601),
-        export: { ...baseSettings.export, format: "png-sequence" as const },
-      },
-      { isPro: true },
-    );
-    const advisory = getExportAdvisory(
-      settings,
-      getInitialLocalExportSupport(),
-      "desktop",
-    );
-    expect(advisory.code).toBe("pngSequenceTooLongError");
-    expect(advisory.severity).toBe("error");
+  it("keeps pro PNG sequences exportable past the old 600s block", () => {
+    for (const durationSeconds of [600, 601, 1500, 3600]) {
+      const settings = normalizeGeneratorSettings(
+        {
+          ...withDuration(durationSeconds),
+          export: { ...baseSettings.export, format: "png-sequence" as const },
+        },
+        { isPro: true },
+      );
+      const advisory = getExportAdvisory(
+        settings,
+        getInitialLocalExportSupport(),
+        "desktop",
+      );
+      expect(settings.timer.durationSeconds).toBe(durationSeconds);
+      expect(advisory.severity).toBe("info");
+      expect(advisory.disabledFormats).not.toContain("png-sequence");
+    }
   });
 
-  it("does not flag pro png-sequence jobs at exactly 600s", () => {
-    const settings = normalizeGeneratorSettings(
+  it("clamps a pro PNG request above 3600s and a free request above 300s", () => {
+    const overPro = normalizeGeneratorSettings(
       {
-        ...withDuration(600),
+        ...withDuration(3601),
         export: { ...baseSettings.export, format: "png-sequence" as const },
       },
       { isPro: true },
     );
-    const advisory = getExportAdvisory(
-      settings,
-      getInitialLocalExportSupport(),
-      "desktop",
+    const overFree = normalizeGeneratorSettings(
+      {
+        ...withDuration(301),
+        export: { ...baseSettings.export, format: "png-sequence" as const },
+      },
+      { isPro: false },
     );
-    expect(advisory.code).not.toBe("pngSequenceTooLongError");
+    expect(overPro.timer.durationSeconds).toBe(3600);
+    expect(overFree.timer.durationSeconds).toBe(300);
   });
 });
 

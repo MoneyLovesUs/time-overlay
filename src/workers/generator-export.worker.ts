@@ -1,7 +1,5 @@
 /// <reference lib="webworker" />
 
-import { Zip, ZipPassThrough, strToU8 } from "fflate";
-
 import { encodeAlphaVideo } from "@/lib/generator/encode/alpha-video-encoder";
 import { synthesizeAudioCues } from "@/lib/generator/encode/audio-cues";
 import {
@@ -23,18 +21,16 @@ import {
   type ExportWorkerMessage,
   type ExportWorkerRequest,
 } from "@/lib/generator/export/job";
+import { drawExportFrame } from "@/lib/generator/export/frame-drawer";
+import type { PngPartDescriptor } from "@/lib/generator/export/png-contract";
+import { PngExportError } from "@/lib/generator/export/png-error";
 import {
-  PRORES_BUNDLE_FILES,
-  buildProResBundle,
-} from "@/lib/generator/export/prores-bundle";
+  type PngEngineContext,
+  runPngExport,
+  runPngPreflight,
+} from "@/lib/generator/export/png-engine";
+import { ensureExportFontsLoaded } from "@/lib/generator/export/font-assets";
 import { loadFontIntoWorker } from "@/lib/generator/font-loader";
-import {
-  createRenderFrameState,
-  measureRenderTextBox,
-  renderStyledFrame,
-} from "@/lib/generator/render-frame";
-import { formatCountdownTime, getRemainingDurationSeconds } from "@/lib/generator/time";
-import type { GeneratorSettings } from "@/lib/generator/types";
 
 function postMessageToHost(
   message: ExportWorkerMessage,
@@ -47,10 +43,6 @@ function postMessageToHost(
   self.postMessage(message);
 }
 
-// Cadence for streaming progress back to the host. Posting every frame floods
-// the message channel on long exports; throttling by wall-clock keeps the bar
-// smooth (the host interpolates between updates) without the overhead.
-const PROGRESS_INTERVAL_MS = 90;
 // Live preview snapshots are heavier (createImageBitmap + structured transfer),
 // so they run on a slower beat than the numeric progress.
 const PREVIEW_INTERVAL_MS = 250;
@@ -82,187 +74,147 @@ async function emitPreview(canvas: OffscreenCanvas, frameIndex: number) {
   }
 }
 
-type DrawFrameOptions = {
-  context: OffscreenCanvasRenderingContext2D;
-  settings: GeneratorSettings;
-  frameIndex: number;
-  fps: number;
+type AlphaVideoRequest = Extract<
+  ExportWorkerRequest,
+  { kind: "export-alpha-video" }
+>;
+type Mp4Request = Extract<ExportWorkerRequest, { kind: "export-mp4" }>;
+type PngPreflightRequest = Extract<
+  ExportWorkerRequest,
+  { kind: "png-preflight" }
+>;
+type PngStartRequest = Extract<
+  ExportWorkerRequest,
+  { kind: "png-start" | "png-resume" }
+>;
+
+type ActivePngRun = {
+  jobId: string;
+  attemptId: string;
+  cancelled: boolean;
+  previewPending: boolean;
 };
 
-function drawFrameToContext({
-  context,
-  settings,
-  frameIndex,
-  fps,
-}: DrawFrameOptions) {
-  const elapsedSeconds = frameIndex / fps;
-  const displayText = formatCountdownTime(
-    getRemainingDurationSeconds(settings.timer.durationSeconds, elapsedSeconds),
-    settings.timer.displayFormat,
-  );
-  const textBox = measureRenderTextBox(context, displayText, {
-    fontFamily: settings.textStyle.fontFamily,
-    fontSize: settings.textStyle.fontSize,
-    fontWeight: settings.textStyle.fontWeight,
-    letterSpacing: settings.textStyle.letterSpacing,
-    textColor: settings.textStyle.textColor,
-    strokeWidth: settings.textStyle.strokeWidth,
-    strokeColor: settings.textStyle.strokeColor,
-    glowBlur: settings.textStyle.glowBlur,
-    glowColor: settings.textStyle.glowColor,
-    shadowBlur: settings.textStyle.shadowBlur,
-    shadowColor: settings.textStyle.shadowColor,
-    shadowOffsetX: settings.textStyle.shadowOffsetX,
-    shadowOffsetY: settings.textStyle.shadowOffsetY,
-  });
-  const frameState = createRenderFrameState({
-    settings,
-    elapsedSeconds,
-    textBox,
-    safeAreaInset: 32,
-  });
+let activePng: ActivePngRun | null = null;
 
-  renderStyledFrame(
-    context,
-    frameState,
-    settings.themePresetId,
-    settings.templateId,
-  );
+/**
+ * PNG commands run one at a time. Video exports keep their existing handlers,
+ * and the chain also prevents a second export from starting while a PNG job is
+ * still encoding. Cancel and preview-ack bypass the chain because they must act
+ * on the run that is already in flight.
+ */
+let commandChain: Promise<void> = Promise.resolve();
+
+function enqueueCommand(run: () => Promise<void>) {
+  commandChain = commandChain.then(run, run).catch(() => undefined);
 }
 
-type PngSequenceRequest = Extract<ExportWorkerRequest, { kind: "export-png-sequence" }>;
-type AlphaVideoRequest = Extract<ExportWorkerRequest, { kind: "export-alpha-video" }>;
-type Mp4Request = Extract<ExportWorkerRequest, { kind: "export-mp4" }>;
-
-async function handlePngSequence(request: PngSequenceRequest) {
-  const { settings, uploadedFont, enablePreview = true } = request.payload;
-
-  if (uploadedFont) {
-    await loadFontIntoWorker(uploadedFont);
-  }
-  const plan = createExportJobPlan({
-    durationSeconds: settings.timer.durationSeconds,
-    fps: settings.export.fps,
-    format: "png-sequence",
-  });
-
-  const canvas = new OffscreenCanvas(settings.canvas.width, settings.canvas.height);
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    throw new Error("Could not create an offscreen canvas context.");
-  }
-
-  const chunks: BlobPart[] = [];
-  let lastProgressAt = 0;
-  let lastPreviewAt = 0;
-
-  let zip!: Zip;
-  let archiveError: unknown = null;
-  const archivePromise = new Promise<Blob>((resolve, reject) => {
-    zip = new Zip((error, chunk, final) => {
-      if (error) {
-        archiveError = error;
-        reject(error);
-        return;
-      }
-      // fflate emits ordinary ArrayBuffer-backed chunks in browsers. Narrowing
-      // the generic buffer type here avoids an unnecessary copy solely for the
-      // wider SharedArrayBuffer possibility in TypeScript's Uint8Array type.
-      chunks.push(chunk as Uint8Array<ArrayBuffer>);
-      if (final) {
-        // Blob accepts the existing ZIP chunks directly. The old path first
-        // allocated another full-size Uint8Array and copied the entire archive,
-        // causing a deterministic peak-memory spike on Safari/mobile.
-        resolve(new Blob(chunks, { type: "application/zip" }));
-      }
-    });
-  });
-  // Attach a rejection handler immediately: fflate can report an error while a
-  // frame is being pushed, before control reaches the final await below.
-  void archivePromise.catch(() => {});
-
-  for (let frameIndex = 0; frameIndex < plan.totalFrames; frameIndex += 1) {
-    drawFrameToContext({
-      context,
-      settings,
-      frameIndex,
-      fps: settings.export.fps,
-    });
-
-    const blob = await canvas.convertToBlob({ type: "image/png" });
-    const arrayBuffer = await blob.arrayBuffer();
-    const frameBytes = new Uint8Array(arrayBuffer);
-
-    const entry = new ZipPassThrough(plan.getFrameFileName(frameIndex));
-    zip.add(entry);
-    entry.push(frameBytes, true);
-    if (archiveError) {
-      throw archiveError;
-    }
-
-    const now = performance.now();
-    const isBoundaryFrame =
-      frameIndex === 0 || frameIndex === plan.totalFrames - 1;
-
-    if (isBoundaryFrame || now - lastProgressAt >= PROGRESS_INTERVAL_MS) {
-      lastProgressAt = now;
-      postMessageToHost({
-        kind: "progress",
-        payload: {
-          stage: "rendering-frames",
-          completedFrames: frameIndex + 1,
-          totalFrames: plan.totalFrames,
-          message: "",
-        },
-      });
-    }
-
-    if (
-      enablePreview &&
-      (isBoundaryFrame || now - lastPreviewAt >= PREVIEW_INTERVAL_MS)
-    ) {
-      lastPreviewAt = now;
-      await emitPreview(canvas, frameIndex + 1);
-    }
-  }
-
-  const bundle = buildProResBundle({
-    fps: settings.export.fps,
-    framePattern: "frame-%04d.png",
-  });
-  for (const file of PRORES_BUNDLE_FILES) {
-    const entry = new ZipPassThrough(file);
-    zip.add(entry);
-    entry.push(strToU8(bundle[file]), true);
-  }
-
+function postPngError(
+  jobId: string,
+  attemptId: string,
+  error: unknown,
+  committedParts: PngPartDescriptor[] = [],
+) {
+  const pngError =
+    error instanceof PngExportError
+      ? error
+      : new PngExportError(
+          "pngFailedUnexpectedly",
+          error instanceof Error
+            ? error.message
+            : "The PNG export failed unexpectedly.",
+        );
   postMessageToHost({
-    kind: "progress",
+    kind: "png-error",
+    jobId,
+    attemptId,
     payload: {
-      stage: "packaging",
-      completedFrames: plan.totalFrames,
-      totalFrames: plan.totalFrames,
-      message: "",
+      errorCode: pngError.code,
+      recoverable: pngError.recoverable && committedParts.length > 0,
+      committedParts,
+      message: pngError.message,
     },
   });
+}
 
-  zip.end();
-  const archive = await archivePromise;
-  if (archive.size === 0) {
-    throw new Error("The PNG archive is empty.");
-  }
-  postMessageToHost({
-    kind: "complete",
-    payload: {
-      blob: archive,
-      fileName: plan.outputFileName,
-      mimeType: "application/zip",
+function createPngContext(jobId: string, attemptId: string): PngEngineContext {
+  return {
+    jobId,
+    attemptId,
+    post: postMessageToHost,
+    isCancelled: () => activePng?.cancelled === true,
+    isPreviewAllowed: () =>
+      activePng !== null && !activePng.previewPending,
+    onPreviewPosted: () => {
+      if (activePng) {
+        activePng.previewPending = true;
+      }
     },
-  });
+  };
+}
+
+async function handlePngPreflight(request: PngPreflightRequest) {
+  await ensureExportFontsLoaded();
+  if (activePng) {
+    postPngError(
+      request.jobId,
+      request.attemptId,
+      new PngExportError(
+        "pngLocked",
+        "Another PNG export is already running in this tab.",
+      ),
+    );
+    return;
+  }
+  activePng = {
+    jobId: request.jobId,
+    attemptId: request.attemptId,
+    cancelled: false,
+    previewPending: false,
+  };
+  try {
+    await runPngPreflight(
+      createPngContext(request.jobId, request.attemptId),
+      request.payload,
+    );
+  } catch (error) {
+    postPngError(request.jobId, request.attemptId, error);
+  } finally {
+    activePng = null;
+  }
+}
+
+async function handlePngExport(request: PngStartRequest, resume: boolean) {
+  await ensureExportFontsLoaded();
+  const { jobId, attemptId } = request.payload;
+  if (activePng) {
+    postPngError(
+      jobId,
+      attemptId,
+      new PngExportError(
+        "pngLocked",
+        "Another PNG export is already running in this tab.",
+      ),
+    );
+    return;
+  }
+  activePng = {
+    jobId,
+    attemptId,
+    cancelled: false,
+    previewPending: false,
+  };
+  try {
+    await runPngExport(createPngContext(jobId, attemptId), request.payload, resume);
+  } catch (error) {
+    postPngError(jobId, attemptId, error);
+  } finally {
+    activePng = null;
+  }
 }
 
 async function handleAlphaVideo(request: AlphaVideoRequest) {
+  await ensureExportFontsLoaded();
   const { settings, target, uploadedFont, enablePreview = true } = request.payload;
 
   if (uploadedFont) {
@@ -298,7 +250,7 @@ async function handleAlphaVideo(request: AlphaVideoRequest) {
         throw new Error("Could not create encoder canvas context.");
       }
       previewCanvas = canvas;
-      drawFrameToContext({
+      drawExportFrame({
         context,
         settings,
         frameIndex,
@@ -359,6 +311,7 @@ async function openMp4Sink(
 }
 
 async function handleMp4Export(request: Mp4Request) {
+  await ensureExportFontsLoaded();
   const {
     settings,
     uploadedFont,
@@ -410,7 +363,7 @@ async function handleMp4Export(request: Mp4Request) {
       context.fillStyle = resolveMp4FrameBackground(settings.canvas);
       context.fillRect(0, 0, canvas.width, canvas.height);
       previewCanvas = canvas;
-      drawFrameToContext({
+      drawExportFrame({
         context,
         settings,
         frameIndex,
@@ -444,37 +397,70 @@ async function handleMp4Export(request: Mp4Request) {
   });
 }
 
-self.onmessage = async (event: MessageEvent<ExportWorkerRequest>) => {
+function postVideoError(error: unknown, kind: ExportWorkerRequest["kind"]) {
+  const code =
+    error instanceof Mp4SinkError
+      ? error.code
+      : kind === "export-mp4"
+        ? "mp4FailedUnexpectedly"
+        : "alphaVideoFailedUnexpectedly";
+  postMessageToHost({
+    kind: "error",
+    payload: {
+      code,
+      message: error instanceof Error ? error.message : undefined,
+    },
+  });
+}
+
+async function runVideoExport(request: Mp4Request | AlphaVideoRequest) {
   try {
-    if (event.data.kind === "export-mp4") {
-      await handleMp4Export(event.data);
-      return;
-    }
-
-    if (event.data.kind === "export-png-sequence") {
-      await handlePngSequence(event.data);
-      return;
-    }
-
-    if (event.data.kind === "export-alpha-video") {
-      await handleAlphaVideo(event.data);
-      return;
+    if (request.kind === "export-mp4") {
+      await handleMp4Export(request);
+    } else {
+      await handleAlphaVideo(request);
     }
   } catch (error) {
-    const code =
-      error instanceof Mp4SinkError
-        ? error.code
-        : event.data.kind === "export-mp4"
-        ? "mp4FailedUnexpectedly"
-        : event.data.kind === "export-alpha-video"
-          ? "alphaVideoFailedUnexpectedly"
-          : "pngSequenceFailedUnexpectedly";
-    postMessageToHost({
-      kind: "error",
-      payload: {
-        code,
-        message: error instanceof Error ? error.message : undefined,
-      },
-    });
+    postVideoError(error, request.kind);
   }
+}
+
+const workerHost = self as unknown as {
+  onmessage: ((event: MessageEvent<ExportWorkerRequest>) => void) | null;
+};
+
+workerHost.onmessage = (event: MessageEvent<ExportWorkerRequest>) => {
+  const request = event.data;
+
+  if (request.kind === "cancel-png") {
+    if (
+      activePng?.jobId === request.jobId &&
+      activePng.attemptId === request.attemptId
+    ) {
+      activePng.cancelled = true;
+    }
+    return;
+  }
+
+  if (request.kind === "png-preview-ack") {
+    if (
+      activePng?.jobId === request.jobId &&
+      activePng.attemptId === request.attemptId
+    ) {
+      activePng.previewPending = false;
+    }
+    return;
+  }
+
+  if (request.kind === "png-preflight") {
+    enqueueCommand(() => handlePngPreflight(request));
+    return;
+  }
+
+  if (request.kind === "png-start" || request.kind === "png-resume") {
+    enqueueCommand(() => handlePngExport(request, request.kind === "png-resume"));
+    return;
+  }
+
+  enqueueCommand(() => runVideoExport(request));
 };

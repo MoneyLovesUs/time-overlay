@@ -1,9 +1,6 @@
 import type { GeneratorSettings } from "@/lib/generator/types";
 import type { ClientDeviceType } from "@/lib/analytics/environment";
-import {
-  PRO_MAX_DURATION_SECONDS,
-  PRO_PNG_SEQUENCE_MAX_SECONDS,
-} from "@/lib/pro/entitlements";
+import { PRO_MAX_DURATION_SECONDS } from "@/lib/pro/entitlements";
 import {
   estimateMp4Bytes,
   MP4_IN_MEMORY_BUDGET_BYTES,
@@ -44,7 +41,6 @@ export type ExportAdvisory = {
     | "vp9AlphaUnavailableError"
     | "hevcAlphaUnavailableError"
     | "mobileExportLimitError"
-    | "pngSequenceTooLongError"
     | "webmRealtimeWarning"
     | "heavyExportWarning"
     | "pngSequenceInfo"
@@ -304,26 +300,22 @@ export function getExportAdvisory(
     };
   }
 
-  // Pro-only state: free jobs are normalized to <=300s, so only a Pro user can
-  // reach a PNG sequence over the 600s archive limit. Point them at a streamed
-  // video format instead (spec 6.1).
-  if (
-    settings.export.format === "png-sequence" &&
-    settings.timer.durationSeconds > PRO_PNG_SEQUENCE_MAX_SECONDS
-  ) {
-    return {
-      disabledFormats,
-      code: "pngSequenceTooLongError",
-      severity: "error",
-    };
-  }
-
   const canvasPixels = settings.canvas.width * settings.canvas.height;
   const projectedFrames = settings.timer.durationSeconds * settings.export.fps;
   const pixelFrames = canvasPixels * projectedFrames;
   const isMobileDevice = deviceType === "mobile" || deviceType === "tablet";
 
   if (isMobileDevice) {
+    // PNG is no longer silently disabled on phones. The export flow shows one
+    // advice step and then applies the real capability check; other formats
+    // keep their existing hard limits.
+    if (settings.export.format === "png-sequence") {
+      return {
+        disabledFormats,
+        code: "pngSequenceInfo",
+        severity: "info",
+      };
+    }
     if (settings.export.format === "mp4") {
       if (
         exceedsMobileMp4Limits(settings, support.supportsStreamingMp4 === true)
@@ -361,6 +353,7 @@ export function getExportAdvisory(
 
   if (
     deviceType === "desktop" &&
+    settings.export.format !== "png-sequence" &&
     (pixelFrames >= 4_000_000_000 || canvasPixels >= 4_000_000)
   ) {
     return {

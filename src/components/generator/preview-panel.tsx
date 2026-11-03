@@ -11,6 +11,7 @@ import {
   clampPreviewElapsedSeconds,
   syncCanvasElementSize,
 } from "@/lib/generator/preview-runtime";
+import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
 import {
   createRenderFrameState,
   measureRenderTextBox,
@@ -138,36 +139,66 @@ export function PreviewPanel({
       return;
     }
 
-    context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolveCanvasFontFamily(settings.textStyle.fontFamily, settings.textStyle.customFontFamily)}`;
-    const textBox = measureRenderTextBox(context, displayText, {
-      fontFamily: settings.textStyle.fontFamily,
-      fontSize: settings.textStyle.fontSize,
-      fontWeight: settings.textStyle.fontWeight,
-      letterSpacing: settings.textStyle.letterSpacing,
-      textColor: settings.textStyle.textColor,
-      strokeWidth: settings.textStyle.strokeWidth,
-      strokeColor: settings.textStyle.strokeColor,
-      glowBlur: settings.textStyle.glowBlur,
-      glowColor: settings.textStyle.glowColor,
-      shadowBlur: settings.textStyle.shadowBlur,
-      shadowColor: settings.textStyle.shadowColor,
-      shadowOffsetX: settings.textStyle.shadowOffsetX,
-      shadowOffsetY: settings.textStyle.shadowOffsetY,
-    });
-
-    const frameState = createRenderFrameState({
-      settings,
-      elapsedSeconds,
-      textBox,
-      safeAreaInset: 32,
-    });
-
-    renderStyledFrame(
-      context,
-      frameState,
-      settings.themePresetId,
-      settings.templateId,
+    let cancelled = false;
+    const resolvedFamily = resolveCanvasFontFamily(
+      settings.textStyle.fontFamily,
+      settings.textStyle.customFontFamily,
     );
+
+    const draw = () => {
+      if (cancelled || !canvasRef.current) {
+        return;
+      }
+      context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolvedFamily}`;
+      const textBox = measureRenderTextBox(context, displayText, {
+        fontFamily: settings.textStyle.fontFamily,
+        customFontFamily: settings.textStyle.customFontFamily,
+        fontSize: settings.textStyle.fontSize,
+        fontWeight: settings.textStyle.fontWeight,
+        letterSpacing: settings.textStyle.letterSpacing,
+        textColor: settings.textStyle.textColor,
+        strokeWidth: settings.textStyle.strokeWidth,
+        strokeColor: settings.textStyle.strokeColor,
+        glowBlur: settings.textStyle.glowBlur,
+        glowColor: settings.textStyle.glowColor,
+        shadowBlur: settings.textStyle.shadowBlur,
+        shadowColor: settings.textStyle.shadowColor,
+        shadowOffsetX: settings.textStyle.shadowOffsetX,
+        shadowOffsetY: settings.textStyle.shadowOffsetY,
+      });
+
+      const frameState = createRenderFrameState({
+        settings,
+        elapsedSeconds,
+        textBox,
+        safeAreaInset: 32,
+      });
+
+      renderStyledFrame(
+        context,
+        frameState,
+        settings.themePresetId,
+        settings.templateId,
+      );
+    };
+
+    if (typeof document !== "undefined" && "fonts" in document) {
+      // The first preview paint must wait for the same pinned face the worker
+      // uses; otherwise the canvas briefly measures/paints an OS fallback.
+      void ensurePreviewFontsLoaded()
+        .then(() =>
+          document.fonts.load(
+            `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolvedFamily}`,
+          ),
+        )
+        .then(draw, draw);
+    } else {
+      draw();
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [displayText, elapsedSeconds, settings]);
 
   const handlePlay = () => {

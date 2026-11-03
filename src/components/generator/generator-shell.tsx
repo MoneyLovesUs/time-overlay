@@ -102,6 +102,7 @@ import {
   type PngPlatformAdvice,
 } from "@/lib/generator/export/png-limits";
 import { readLatestPngManifest } from "@/lib/generator/export/png-manifest";
+import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
 import { sha256Hex } from "@/lib/generator/export/png-zip";
 import {
   PngPrepareDialog,
@@ -517,10 +518,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   useEffect(() => {
     // The preview canvas resolves the same pinned families the export worker
     // loads before rendering, so what the user sees matches the exported PNG.
-    if (typeof document !== "undefined" && "fonts" in document) {
-      void document.fonts.load('700 88px "TimeOverlay Geist Mono"');
-      void document.fonts.load('700 88px "TimeOverlay Geist Sans"');
-    }
+    void ensurePreviewFontsLoaded().catch(() => undefined);
   }, []);
 
   useEffect(() => {
@@ -1641,14 +1639,15 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       return;
     }
 
-    if (
-      message.kind === "png-error" &&
-      (!run ||
-        (prep &&
-          message.jobId === prep.jobId &&
-          message.attemptId === prep.attemptId))
-    ) {
-      failPngPrep(message.payload.errorCode);
+    if (message.kind === "png-error" && !run) {
+      // A stale worker message must not dismiss an unrelated preparation.
+      if (
+        prep &&
+        message.jobId === prep.jobId &&
+        message.attemptId === prep.attemptId
+      ) {
+        failPngPrep(message.payload.errorCode);
+      }
       return;
     }
 

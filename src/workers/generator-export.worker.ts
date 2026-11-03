@@ -154,7 +154,6 @@ function createPngContext(jobId: string, attemptId: string): PngEngineContext {
 }
 
 async function handlePngPreflight(request: PngPreflightRequest) {
-  await ensureExportFontsLoaded();
   if (activePng) {
     postPngError(
       request.jobId,
@@ -173,6 +172,9 @@ async function handlePngPreflight(request: PngPreflightRequest) {
     previewPending: false,
   };
   try {
+    // Font initialization belongs to this request's error ownership so a
+    // failed fetch reaches the preparation UI instead of being swallowed.
+    await ensureExportFontsLoaded();
     await runPngPreflight(
       createPngContext(request.jobId, request.attemptId),
       request.payload,
@@ -185,7 +187,6 @@ async function handlePngPreflight(request: PngPreflightRequest) {
 }
 
 async function handlePngExport(request: PngStartRequest, resume: boolean) {
-  await ensureExportFontsLoaded();
   const { jobId, attemptId } = request.payload;
   if (activePng) {
     postPngError(
@@ -205,6 +206,7 @@ async function handlePngExport(request: PngStartRequest, resume: boolean) {
     previewPending: false,
   };
   try {
+    await ensureExportFontsLoaded();
     await runPngExport(createPngContext(jobId, attemptId), request.payload, resume);
   } catch (error) {
     postPngError(jobId, attemptId, error);

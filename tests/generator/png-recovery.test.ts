@@ -12,6 +12,7 @@ import {
 } from "@/lib/generator/export/png-engine";
 import type { PngCheckpoint } from "@/lib/generator/export/png-checkpoint";
 import { readLatestPngManifest } from "@/lib/generator/export/png-manifest";
+import { PngExportError } from "@/lib/generator/export/png-error";
 import type { ExportWorkerMessage } from "@/lib/generator/export/job";
 
 /**
@@ -25,7 +26,7 @@ class MemoryFile {
 
 type PartFaults = {
   gate?: Promise<void>;
-  failure?: "write" | "close";
+  failure?: "write" | "close" | "shortWrite";
   onWrite?: (bytes: number) => void;
 };
 
@@ -52,6 +53,13 @@ class MemoryFileHandle {
         }
         if (faults?.failure === "write") {
           throw new DOMException("write failed", "NotReadableError");
+        }
+        if (faults?.failure === "shortWrite") {
+          throw new PngExportError(
+            "pngStorageFull",
+            "The storage accepted fewer bytes than were written.",
+            true,
+          );
         }
         const merged = new Uint8Array(buffer.length + next.byteLength);
         merged.set(buffer);
@@ -457,7 +465,7 @@ describe("PNG write backpressure and failures", () => {
     });
   });
 
-  it.each(["write", "close"] as const)(
+  it.each(["write", "close", "shortWrite"] as const)(
     "does not commit frames or a part when the part write fails at %s",
     async (failure) => {
       const directory = new MemoryDirectory("time-overlay-job-recovery-test");

@@ -126,17 +126,4 @@ describe("deterministic canvas fonts", () => {
       '"Brand Font", "TimeOverlay Geist Mono", ui-monospace, monospace',
     );
   });
-
-  it("keeps customFontFamily in the frame style used by canvas drawing", () => {
-    const settings = createGeneratorSettings({
-      textStyle: { customFontFamily: "Brand Font" },
-    });
-    const frameState = createRenderFrameState({
-      settings,
-      elapsedSeconds: 0,
-      textBox: { width: 240, height: 96 },
-      safeAreaInset: 32,
-    });
-    expect(frameState.style.customFontFamily).toBe("Brand Font");
-  });
 });

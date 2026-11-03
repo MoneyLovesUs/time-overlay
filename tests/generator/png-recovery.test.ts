@@ -23,27 +23,45 @@ class MemoryFile {
   bytes = new Uint8Array(0);
 }
 
+type PartFaults = {
+  gate?: Promise<void>;
+  failure?: "write" | "close";
+  onWrite?: (bytes: number) => void;
+};
+
 class MemoryFileHandle {
   constructor(
     private readonly file: MemoryFile,
     readonly name: string,
+    private readonly faults?: PartFaults,
   ) {}
   async getFile() {
     return new File([Uint8Array.from(this.file.bytes)], this.name);
   }
   async createWritable() {
     const file = this.file;
+    const faults = this.faults;
     let buffer = new Uint8Array(0);
     return {
       async write(data: Uint8Array | string) {
         const next =
           typeof data === "string" ? new TextEncoder().encode(data) : data;
+        faults?.onWrite?.(next.byteLength);
+        if (faults?.gate) {
+          await faults.gate;
+        }
+        if (faults?.failure === "write") {
+          throw new DOMException("write failed", "NotReadableError");
+        }
         const merged = new Uint8Array(buffer.length + next.byteLength);
         merged.set(buffer);
         merged.set(next, buffer.length);
         buffer = merged;
       },
       async close() {
+        if (faults?.failure === "close") {
+          throw new DOMException("close failed", "NotReadableError");
+        }
         file.bytes = Uint8Array.from(buffer);
       },
       async abort() {
@@ -56,6 +74,7 @@ class MemoryFileHandle {
 class MemoryDirectory {
   readonly files = new Map<string, MemoryFile>();
   readonly directories = new Map<string, MemoryDirectory>();
+  partFaults?: PartFaults;
   constructor(readonly name: string) {}
 
   async getFileHandle(name: string, options?: { create?: boolean }) {
@@ -67,7 +86,11 @@ class MemoryDirectory {
       file = new MemoryFile();
       this.files.set(name, file);
     }
-    return new MemoryFileHandle(file, name) as unknown as FileSystemFileHandle;
+    return new MemoryFileHandle(
+      file,
+      name,
+      name.startsWith("timer-part-") ? this.partFaults : undefined,
+    ) as unknown as FileSystemFileHandle;
   }
 
   async getDirectoryHandle(name: string, options?: { create?: boolean }) {
@@ -387,4 +410,80 @@ describe("PNG recovery ownership", () => {
     );
     expect(final?.manifest.status).toBe("complete");
   });
+});
+
+describe("PNG write backpressure and failures", () => {
+  it("stops encoding while a real part write is blocked, then completes", async () => {
+    const directory = new MemoryDirectory("time-overlay-job-recovery-test");
+    const gate = Promise.withResolvers<void>();
+    const writeStarted = Promise.withResolvers<void>();
+    let writes = 0;
+    let queuedBytes = 0;
+    directory.partFaults = {
+      gate: gate.promise,
+      onWrite: (bytes) => {
+        writes += 1;
+        queuedBytes += bytes;
+        writeStarted.resolve();
+      },
+    };
+    const encoded: number[] = [];
+    const { context, messages } = createContext();
+    const run = runPngExport(context, createPayload(directory), false, {
+      encodeFrame: async (frameIndex) => {
+        encoded.push(frameIndex);
+        return new Uint8Array([frameIndex & 0xff, 1, 2, 3]);
+      },
+      persistCheckpoint: async () => undefined,
+    });
+
+    await writeStarted.promise;
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(encoded).toEqual([0]);
+    expect(writes).toBe(1);
+    expect(queuedBytes).toBeLessThan(256);
+    expect(
+      messages.filter((message) => message.kind === "png-part-committed"),
+    ).toHaveLength(0);
+
+    gate.resolve();
+    await run;
+    expect(messages.at(-1)?.kind).toBe("png-complete");
+    expect(encoded).toHaveLength(90);
+    const complete = messages.find((message) => message.kind === "png-complete");
+    expect(complete?.kind === "png-complete" && complete.payload.parts[0]).toMatchObject({
+      firstFrameIndex: 0,
+      nextFrameIndex: 90,
+    });
+  });
+
+  it.each(["write", "close"] as const)(
+    "does not commit frames or a part when the part write fails at %s",
+    async (failure) => {
+      const directory = new MemoryDirectory("time-overlay-job-recovery-test");
+      directory.partFaults = { failure };
+      const checkpoints: PngCheckpoint[] = [];
+      const { context, messages } = createContext();
+      await runPngExport(context, createPayload(directory), false, {
+        encodeFrame: async (frameIndex) => new Uint8Array([frameIndex & 0xff]),
+        persistCheckpoint: async (checkpoint) => {
+          checkpoints.push(checkpoint);
+        },
+      });
+
+      expect(
+        messages.find((message) => message.kind === "png-error")?.payload,
+      ).toMatchObject({ committedParts: [] });
+      expect(
+        messages.filter((message) => message.kind === "png-part-committed"),
+      ).toHaveLength(0);
+      const manifest = await readLatestPngManifest(
+        directory as unknown as FileSystemDirectoryHandle,
+      );
+      expect(manifest?.manifest.parts).toEqual([]);
+      expect(manifest?.manifest.nextFrameIndex).toBe(0);
+      expect(checkpoints.at(-1)?.parts).toEqual([]);
+      expect(checkpoints.at(-1)?.nextFrameIndex).toBe(0);
+    },
+  );
 });

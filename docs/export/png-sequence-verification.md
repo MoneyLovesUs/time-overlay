@@ -114,14 +114,17 @@ not an exhaustive microsecond peak.
   ProRes 4444 (`ffprobe`: 900 frames, 30 fps, 30.000 s, 1280×720, alpha 0..255);
   a missing-middle fixture refused conversion and created no video. macOS
   Archive Utility created one folder per ZIP, confirming the merge instructions.
-- Independent supervisor evidence: Blender 4.5.15 LTS imported the
-  variable-weight-corrected 45,000- and 108,000-frame outputs at 30 fps for
-  exactly 1500 s and 3600 s. Supervisor crash/restart proof on the corrected
-  source preserved two committed volumes and produced an identical RGBA hash
-  across frames 6087/6088. The native macOS directory proof (9,000 frames,
-  real picker and permission prompt) predates the font-weight repair; the
-  directory sink code is unchanged, but a final-build native rerun is not
-  claimed here.
+- Independent supervisor evidence: the variable-weight-corrected 45,000 /
+  108,000 / 216,000 / 4K / 1080p60 archives all passed entry CRC, PNG
+  dimensions/alpha type, global numbering, part bounds and boundary-image
+  review. Blender 4.5.15 LTS imported the 45,000- and 108,000-frame outputs at
+  30 fps for exactly 1500 s and 3600 s. Supervisor crash/restart proof on the
+  corrected source preserved two committed volumes and produced an identical
+  RGBA hash across frames 6087/6088. Supervisor real-browser checks confirmed
+  the live clock progresses and pre-registered unloaded faces are loaded before
+  the first paint. The native macOS directory proof (9,000 frames, real picker
+  and permission prompt) predates the font-weight repair; the directory sink
+  code is unchanged, but a final-build native rerun is not claimed here.
 
 ## Remaining blockers
 

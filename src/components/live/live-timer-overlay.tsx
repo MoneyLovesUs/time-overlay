@@ -149,21 +149,7 @@ export function LiveTimerOverlay() {
         lastKey = key;
         paint(context, settings, frame);
       }
-      // The live page has its own canvas and never mounts the generator preview.
-    // Wait for the pinned face before the countdown clock starts so the first
-    // visible frame is not an OS fallback.
-    void ensurePreviewFontsLoaded()
-      .then(() => {
-        if (cancelled) {
-          return;
-        }
-        fontsReady = true;
-        startedAt = performance.now();
-        rafId = requestAnimationFrame(tick);
-      })
-      .catch((error) => {
-        console.error("Live overlay fonts failed to load.", error);
-      });
+      rafId = requestAnimationFrame(tick);
     };
     // The live page has its own canvas and never mounts the generator preview.
     // Wait for the pinned face before the countdown clock starts so the first

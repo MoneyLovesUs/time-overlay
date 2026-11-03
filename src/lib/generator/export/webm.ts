@@ -38,6 +38,18 @@ function createAbortError(): WebmExportError {
   return new WebmExportError("exportCancelled", "Export cancelled.");
 }
 
+function waitForAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) {
+    return Promise.reject(signal.reason ?? createAbortError());
+  }
+  const aborted = Promise.withResolvers<never>();
+  const onAbort = () => aborted.reject(signal.reason ?? createAbortError());
+  signal.addEventListener("abort", onAbort, { once: true });
+  return Promise.race([promise, aborted.promise]).finally(() => {
+    signal.removeEventListener("abort", onAbort);
+  });
+}
+
 function stopMediaRecorder(recorder: MediaRecorder | null) {
   if (recorder?.state !== "inactive") {
     try {
@@ -158,21 +170,6 @@ export async function exportWebmLocally(
   }
   document.addEventListener("visibilitychange", handleVisibilityChange);
 
-  // WebM records from a main-thread canvas. Do not start the real-time
-  // recorder until the same pinned face used by the worker is installed.
-  try {
-    await ensurePreviewFontsLoaded();
-  } catch (error) {
-    throw new WebmExportError(
-      "webmUnavailable",
-      "The export font could not be loaded. Reload the page and retry.",
-      { cause: error },
-    );
-  }
-  if (controller.signal.aborted) {
-    throw controller.signal.reason ?? createAbortError();
-  }
-
   const stream = canvas.captureStream(settings.export.fps);
   let audioContext: AudioContext | null = null;
   let audioSourceNode: AudioBufferSourceNode | null = null;
@@ -182,6 +179,22 @@ export async function exportWebmLocally(
   try {
     if (controller.signal.aborted) {
       throw controller.signal.reason;
+    }
+
+    // WebM records from a main-thread canvas. Do not start the real-time
+    // recorder until the same pinned face used by the worker is installed.
+    // This wait is abortable and lives inside the cleanup try/finally.
+    try {
+      await waitForAbort(ensurePreviewFontsLoaded(), controller.signal);
+    } catch (error) {
+      if (controller.signal.aborted) {
+        throw controller.signal.reason ?? createAbortError();
+      }
+      throw new WebmExportError(
+        "webmUnavailable",
+        "The export font could not be loaded. Reload the page and retry.",
+        { cause: error },
+      );
     }
 
     if (wantsAudio) {

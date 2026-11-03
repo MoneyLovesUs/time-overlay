@@ -30,8 +30,9 @@ Reference contract: `docs/superpowers/specs/2026-11-03-long-png-sequence-export.
 | Android Chrome / iOS Safari real devices | Blocked | No Android device attached; paired iPhone has Web Inspector off |
 
 Each part in every completed run is at most 512 MiB and at most 10,000 PNGs.
-The closest observed full part was 536,870,795 bytes (117 bytes below 512 MiB),
-and a 216,000-frame run contained a 10,000-frame part. Frame names are one-based
+The closest observed full part on the final build was 536,869,802 bytes (1,110
+bytes below 512 MiB); an earlier 216,000-frame run also exercised the exact
+10,000-PNG part cap. Frame names are one-based
 with one fixed width per job (`frame-00001`–`frame-45000`, `frame-000001`–
 `frame-108000`, etc.). Every part's ZIP entries were CRC-tested; first and last
 frames were decoded and checked for 1280×720/3840×2160/1920×1080 dimensions and

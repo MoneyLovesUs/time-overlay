@@ -8,10 +8,10 @@ Reference contract: `docs/superpowers/specs/2026-11-03-long-png-sequence-export.
 
 ## Environment and build
 
-- Hardware: Apple M3 Max, 36 GiB RAM, macOS 25.5.0 arm64.
+- Hardware: Apple M3 Max, 36 GiB RAM, macOS arm64.
 - Browser for the lane runs: Google Chrome 156 headless (`HeadlessChrome/156.0.0.0`), persistent profile with the browser's real storage quota.
-- Build checks: `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test -- --run` (458 tests) and `pnpm build` all exit 0 on the commit containing this document.
-- All runs bound to the lane's local dev server on `127.0.0.1:4317`; no telemetry was sent to production. No upload of frames or fonts occurs.
+- Supervisor independently ran `pnpm exec tsc --noEmit`, `pnpm lint`, `pnpm test -- --run` (465 tests across 81 files) and `pnpm build` on source commit `296d330`; all exited 0.
+- Full-size lane runs used `127.0.0.1:4317`; the supervisor's final production-build recovery smoke used `127.0.0.1:4319`. No telemetry was sent to production. No upload of frames or fonts occurs.
 
 ## Browser/output matrix
 
@@ -19,13 +19,13 @@ Reference contract: `docs/superpowers/specs/2026-11-03-long-png-sequence-export.
 |---|---|---|
 | Chrome, 1500 s, 720p, 30 fps, transparent, Center Mono | Pass | 45,000 frames, 15 ZIPs, 7,821,704,765 bytes, 240.4 s; all CRC, continuity, part limit and boundary alpha checks passed |
 | Chrome, 3600 s, 720p, 30 fps, simple template (Transparent Minimal, SS) | Pass | 108,000 frames, 14 ZIPs, 7,030,934,719 bytes, 294.0 s; all checks passed |
-| Chrome, Windows, 3600 s, high-complexity template | Blocked | No Windows VM/authorization; not simulated |
+| Chrome, Windows, 3600 s, high-complexity template | Blocked | Designated LAPTOP-6IC50N8N offline / SSH timeout; not simulated |
 | Chrome, 3600 s, 720p, 60 fps | Pass | 216,000 frames, 27 ZIPs, 14,061,863,655 bytes, 567.4 s; all CRC/continuity/limits/boundary alpha passed |
 | Chrome, 4K/30 representative short | Pass | 120 s, 3,600 frames, 2 ZIPs, 692,387,262 bytes; real byte split at frame 2,779 |
 | Chrome, 1080p/60 representative short | Pass | 300 s, 18,000 frames, 3 ZIPs, 1,386,130,622 bytes; real byte splits at frames 6,363 and 13,585 |
 | Chrome, long job interrupted and restarted | Pass | 300 s job killed after two committed parts (6,087 frames) with writes into part 3; resume completed 9,000 continuous frames. Both prior ZIPs kept identical names/bytes; boundary frames 6087/6088 decoded to the same RGBA MD5 (`e4d7d38138edc1b3a744feeba1a2e427`) |
 | Chrome, cooperative cancel and resume | Pass | Cancelled after two committed parts (6,087 frames); both ZIPs kept; resume produced 9,000 continuous frames |
-| Chrome, short job | Pass | 30 s produced one 166,960,560-byte ZIP automatically; 900 frames, CRC and alpha OK |
+| Chrome, short job (earlier font build) | Pass on that build | 30 s produced one 166,960,560-byte ZIP automatically; 900 frames, CRC and alpha OK; byte size is historical |
 | Desktop Safari | Blocked | Safari WebDriver remote automation is off; not replaced with WebKit/UA emulation |
 | Android Chrome / iOS Safari real devices | Blocked | No Android device attached; paired iPhone has Web Inspector off |
 
@@ -39,9 +39,10 @@ frames were decoded and checked for 1280×720/3840×2160/1920×1080 dimensions a
 alpha.
 
 Raw evidence and retained ZIPs: `.dispatch/e2e/png1500`, `png108k`, `png216k`,
-`png4k`, `png1080p60`, `png-recovery`, `png-cancel`. The 216,000-frame summary
-was reconstructed after a disk-full interruption during download; all 42 parts
-were later downloaded and CRC-verified (`png216k/archive-verification.json`).
+`png4k`, `png1080p60`, `png-recovery`, `png-cancel`. The final variable-weight
+216,000-frame run contains 27 parts. An earlier, superseded 42-part run hit a
+host disk-full error during download; that run's recovery report is historical
+evidence, not the final 27-part manifest.
 
 ## Memory and process observations
 
@@ -70,9 +71,10 @@ not an exhaustive microsecond peak.
   parts rejected.
 - OPFS writes used real temp-file write/flush/close/read/delete probes. A failed
   flush still releases the exclusive handle so cleanup can remove the part.
-- The browser's quota grew with real usage: 45,000 frames used 8.2 GB; 216,000
-  frames used 22.0 GB without an override (`quotaOverrideGB=0`). The harness
-  reports the quota before/after each run.
+- Real browser storage usage, without a quota override (`quotaOverrideGB=0`),
+  reached 7,821,941,319 bytes for 45,000 frames and 14,062,453,966 bytes for
+  216,000 frames. These usage figures include metadata and are distinct from
+  the ZIP byte totals above. The harness records quota before/after each run.
 - Crash recovery: committed parts were preserved byte-for-byte, the unfinished
   part was redone, and the resumed boundary pixels were identical after the
   pinned-font repair. Settings, font, missing/corrupt part and finalization-only
@@ -125,6 +127,15 @@ not an exhaustive microsecond peak.
   the first paint. The native macOS directory proof (9,000 frames, real picker
   and permission prompt) predates the font-weight repair; the directory sink
   code is unchanged, but a final-build native rerun is not claimed here.
+- Final production-build supervisor smoke also passed: after killing Chrome
+  with two volumes committed, both saved files were preserved and rendering
+  resumed at frame index 6,087 to produce 9,000 continuous CRC-valid frames.
+  Initial preview/exported-first-frame RGBA hashes matched; frames 6087/6088
+  across the restart also had identical RGBA hashes. No page errors occurred.
+- Independent WebM fault injection showed a visible font error with no retained
+  visibility listeners. With the font request left unresolved, cancellation
+  returned to the cancelled state within the 0.714-second observation and
+  removed its visibility listeners.
 
 ## Remaining blockers
 
@@ -135,7 +146,8 @@ not an exhaustive microsecond peak.
    is off and a native Safari attempt did not hydrate the generator; no Android
    device is attached and the paired iPhone has Web Inspector off. No UA or
    WebKit simulation is accepted as a substitute.
-3. The final-build native macOS directory/picker rerun is not claimed; the
-   recorded real-directory proof predates the font-weight repair even though the
-   directory sink itself is unchanged.
+3. The final-build native macOS directory/picker rerun was blocked by System
+   Events assistive-access denial (`-25211`). Its owned test browser was closed.
+   The earlier real-directory proof predates the font-weight repair; the
+   directory sink itself is unchanged, but final-build success is not claimed.
 4. Windows batch conversion and Windows ZIP extraction remain unverified.

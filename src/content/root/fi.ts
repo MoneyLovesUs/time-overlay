@@ -201,6 +201,103 @@ const fiRootPageContent = {
         pngSequenceFailedUnexpectedly:
           "PNG Sequence -vienti epäonnistui odottamatta.",
       },
+      png: {
+        prepareTitle: "Valmistele PNG-jakso",
+        prepareIntro:
+          "Olet viemässä läpinäkyvää PNG-jaksoa. Tarkista alla oleva suunnitelma ennen kuin valitset, mihin kuvat tallennetaan.",
+        prepareSummaryTemplate:
+          "{duration} s · {fps} fps · {frames} kuvaa · {width}×{height}",
+        estimateTemplate:
+          "Noin {size}, {parts} ZIP-osaa, koodausta noin {time}. Arviot tarkentuvat sitä mukaa kuin kuvia kirjoitetaan.",
+        estimateUnknown:
+          "Näytekuvia ei ollut saatavilla, joten koko- ja aika-arviot eivät ole tiedossa. Vienti voi silti jatkua.",
+        sampleProgress: "Luodaan näytekuvia koon ja ajan arvioimiseksi…",
+        longJobTitle: "Tämä on pitkä vienti",
+        longJobBody:
+          "Kuvat kirjoitetaan levylle osa kerrallaan, joten koko jaksoa ei koskaan pidetä muistissa. Jokainen ZIP-osa on purettava ja yhdistettävä ennen tuontia.",
+        saveFolderButton: "Valitse tallennuskansio ja aloita",
+        saveFolderHint:
+          "Selain pyytää kirjoitusoikeuden kerran. Sen sisään luodaan tehtäväkansio, ja valmiit osat jäävät levylle.",
+        opfsButton: "Luo selaimessa ja lataa osat",
+        opfsHint:
+          "Selain säilyttää väliaikaiset tiedostot, kunnes lataat ne ja siivoat. Varaa tilaa väliaikaiselle kopiolle, latauksille ja puretuille kuville.",
+        continueButton: "Jatka tässä välilehdessä",
+        cancelPrepButton: "Peruuta valmistelu",
+        adviceDesktopSafari:
+          "Sujuvampaa vientiä varten käytä tietokoneen Chromea. Voit jatkaa, mutta pitkät PNG-viennit varmistetaan ensisijaisesti Chromessa.",
+        adviceMobile:
+          "Sujuvampaa vientiä varten vie tietokoneella. Voit jatkaa, jos laite läpäisee tallennustilan tarkistuksen.",
+        capabilityMissing:
+          "Tämä vienti vaatii keskeytyksen kestävän paikallisen tallennustilan ja yhden aktiivisen välilehden, joita tämä selain tai profiili ei tarjoa.",
+        longStorageMissing:
+          "Pitkä vienti vaatii joko kirjoitettavan kansion tai selaintallennustilan, joka todella vastaanottaa kirjoituksia. Tämä selain ei tarjoa turvallista kohdetta, joten kuvia ei luotu.",
+        runTitle: "PNG-jakson vienti",
+        modeDirectory: "Tallennuskansio",
+        modeBrowserStorage: "Selainmuisti",
+        modeMemory: "Väliaikaismuisti",
+        runFramesTemplate: "Käsitellyt kuvat",
+        runCommittedTemplate: "Turvassa tallennetut kuvat",
+        runPartTemplate: "Nykyinen osa · tallennetut osat",
+        runBytesTemplate: "Kirjoitettu",
+        stoppingButton: "Pysäytetään…",
+        cancelButton: "Peruuta vienti",
+        cancelledMessage:
+          "Vienti pysäytetty. Valmiit ZIP-osat säilytetään; jatka viimeksi tallennetusta osasta.",
+        resultTitle: "PNG-vienti valmis",
+        directorySavedTemplate:
+          "Tallennettiin {frames} kuvaa {parts} ZIP-osana kansioon {folder} ({size}).",
+        opfsPartsTitle:
+          "{parts} ZIP-osaa, {size}. Lataa jokainen osa, kun se on luettelossa.",
+        partDownloadButton: "Lataa",
+        partRangeTemplate: "kuvat {first}–{last} · {size}",
+        mergeInstructionsTitle: "Ennen tuontia",
+        mergeInstructionsBody:
+          "Pura kaikki osat, siirrä kaikki frame-*.png-tiedostot yhteen kansioon ja tuo se kansio kuvasarjana valitulla fps-arvolla. Älä tuo jokaista osaa erillisenä lähtölaskentana. Ensimmäinen ZIP sisältää skriptit puuttuvien kuvien tarkistamiseen.",
+        autoDownloadNote:
+          "Selaimen lataus on alkanut. Pidä tämä välilehti auki, kunnes se valmistuu.",
+        openFolderHint:
+          "Selain ei voi avata tiedostoselainta; käytä tarvittaessa järjestelmän kansioikkunaa.",
+        cleanupButton: "Siivoa selaimen väliaikaistiedostot",
+        recoveryTitle: "Löytyi kesken jäänyt PNG-vienti",
+        recoveryBodyTemplate:
+          "{frames} / {total} kuvaa on tallennettu turvassa {parts} osaan. Keskeneräinen osa tehdään uudelleen.",
+        restoreButton: "Jatka vientiä",
+        authorizeButton: "Salli ja jatka",
+        selectFolderButton: "Valitse vientikansio",
+        removeRecordButton: "Poista palautustietue",
+        fontRequired:
+          "Tämä vienti käytti mukautettua fonttia. Anna sama fonttitiedosto jatkaaksesi.",
+        fontButton: "Valitse fonttitiedosto",
+        downloadFailed:
+          "Latausta ei voitu aloittaa. Valmiit tiedostot ovat yhä saatavilla yllä; yritä uudelleen.",
+        errorTitle: "PNG-viennin ongelma",
+        errorMessages: {
+          pngStorageUnavailable:
+            "Tämä selain esti PNG-vienneille tarvittavan paikallisen tallennustilan. Käytä tietokoneen Chromen tavallista ikkunaa.",
+          pngDirectoryPermissionDenied:
+            "Kirjoitusoikeutta valittuun kansioon ei myönnetty. Valitse kansio uudelleen ja salli kirjoitus; vientiä ei aloitettu.",
+          pngStorageFull:
+            "Vapaata tilaa ei riitä tämän PNG-osan viimeistelyyn. Vapauta tilaa ja jatka; tallennetut osat säilytetään.",
+          pngWriteFailed:
+            "PNG-osan tallennus epäonnistui. Tallennetut osat säilytetään; tarkista kansio tai tallennustila ja jatka.",
+          pngZipValidationFailed:
+            "Tallennettu ZIP-osa ei läpäissyt tarkistusta. Se tehdään uudelleen; aiemmat osat säilytetään.",
+          pngFrameTooLarge:
+            "Yksi PNG-kuva tai sen vaatima ZIP-metatieto ylittää osakohtaisen rajan. Pienennä resoluutiota tai käytä yksinkertaisempaa tyyliä.",
+          pngMemoryLimitExceeded:
+            "Tämä vienti tarvitsee enemmän väliaikaista muistia kuin rajattu muistipolku sallii. Käytä pitkässä viennissä tietokoneen Chromea ja kirjoitettavaa kansiota.",
+          pngResumeVersionMismatch:
+            "Tallennettu vienti on tehty eri asetuksilla, aineistoilla tai vanhemmalla sovellusversiolla. Sitä ei voi yhdistää turvallisesti; aloita uusi vienti ja säilytä olemassa olevat osat.",
+          pngResumeFileMissing:
+            "Tallennettu ZIP-osa puuttuu tai on muuttunut. Kyseinen osa on tehtävä uudelleen; valitse tehtäväkansio uudelleen ja jatka.",
+          pngLocked:
+            "Tämä vienti on auki toisessa välilehdessä tai selain ei voi lukita tehtävää. Sulje toinen välilehti ja yritä uudelleen.",
+          pngCheckpointFailed:
+            "Tämä selain ei voi säilyttää paikallista tarkistuspistettä, jota keskeytyksen kestävä PNG-vienti tarvitsee. Käytä tietokoneen Chromea tai vie lyhyt tehtävä, joka mahtuu muistiin.",
+          pngFailedUnexpectedly:
+            "PNG-vienti pysähtyi odottamatta. Tallennetut osat, jos niitä on, säilytetään; jatka tai aloita uusi vienti.",
+        },
+      },
     },
   },
   seoSection: {

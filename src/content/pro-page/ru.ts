@@ -35,8 +35,8 @@ const ruProPageContent: ProPageContent = {
     },
     {
       feature: "Прозрачное видео",
-      free: "PNG-последовательность",
-      pro: "PNG-последовательность + VP9/HEVC одним файлом",
+      free: "PNG-последовательность до 5 минут",
+      pro: "PNG-последовательность до 60 минут + VP9/HEVC одним файлом",
     },
     {
       feature: "Шаблоны",

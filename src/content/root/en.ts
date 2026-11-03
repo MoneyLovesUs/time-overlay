@@ -189,7 +189,7 @@ const enRootPageContent = {
         hevcAlphaUnavailableError:
           "MOV HEVC + alpha needs Safari 17.4+ on macOS. Use WebM VP9 + alpha on other platforms.",
         mobileExportLimitError:
-          "This job is too large for a reliable phone or tablet export. MP4 at up to 1080p handles long timers; PNG sequence and WebM are limited to 60 seconds at 720p. Move 4K work to desktop.",
+          "This job is too large for a reliable phone or tablet export. MP4 at up to 1080p handles long timers; WebM is limited to 60 seconds at 720p. Move 4K work to desktop.",
         webmRealtimeWarning:
           "WebM records in real time. This export will take at least as long as the timer, and you must keep this tab in the foreground until the download starts.",
         heavyExportWarning:
@@ -220,6 +220,103 @@ const enRootPageContent = {
         pngSequenceFailedUnexpectedly:
           "PNG sequence export failed unexpectedly.",
       },
+      png: {
+        prepareTitle: "Prepare PNG sequence",
+        prepareIntro:
+          "You are exporting a transparent PNG sequence. Check the plan below before choosing where the frames are saved.",
+        prepareSummaryTemplate:
+          "{duration}s · {fps} fps · {frames} frames · {width}×{height}",
+        estimateTemplate:
+          "About {size}, {parts} ZIP part(s), roughly {time} of encoding. Estimates update as the real frames are written.",
+        estimateUnknown:
+          "Sample frames were unavailable, so the size and time estimates are unknown. The export can still continue.",
+        sampleProgress: "Rendering sample frames to estimate size and time…",
+        longJobTitle: "This is a long export",
+        longJobBody:
+          "Frames are written to disk part by part, so the whole sequence is never kept in memory. Every ZIP part must be unzipped and merged before importing.",
+        saveFolderButton: "Choose save folder and start",
+        saveFolderHint:
+          "The browser asks once for write access. A task folder is created inside it, and completed parts stay on disk.",
+        opfsButton: "Generate in browser, download parts",
+        opfsHint:
+          "The browser keeps temporary files until you download and clean them. Allow room for the temporary copy, your downloads, and the unzipped frames.",
+        continueButton: "Continue in this tab",
+        cancelPrepButton: "Cancel preparation",
+        adviceDesktopSafari:
+          "For better export performance, use desktop Chrome. You can continue, but long PNG exports are verified primarily in Chrome.",
+        adviceMobile:
+          "For better export performance, export on a computer. You can continue if this device passes the storage check.",
+        capabilityMissing:
+          "This export needs resumable local storage and a single active tab, which this browser or profile does not provide.",
+        longStorageMissing:
+          "A long export needs either a writable folder or browser storage that actually accepts writes. This browser offers no safe destination, so no frames were generated.",
+        runTitle: "PNG sequence export",
+        modeDirectory: "Save folder",
+        modeBrowserStorage: "Browser storage",
+        modeMemory: "Temporary memory",
+        runFramesTemplate: "Frames processed",
+        runCommittedTemplate: "Frames safely saved",
+        runPartTemplate: "Current part · saved parts",
+        runBytesTemplate: "Written",
+        stoppingButton: "Stopping…",
+        cancelButton: "Cancel export",
+        cancelledMessage:
+          "Export stopped. Completed ZIP parts are kept; resume from the last saved part.",
+        resultTitle: "PNG export complete",
+        directorySavedTemplate:
+          "Saved {frames} frames as {parts} ZIP part(s) in {folder} ({size}).",
+        opfsPartsTitle:
+          "{parts} ZIP part(s), {size}. Download each part while it is listed here.",
+        partDownloadButton: "Download",
+        partRangeTemplate: "frames {first}–{last} · {size}",
+        mergeInstructionsTitle: "Before importing",
+        mergeInstructionsBody:
+          "Unzip every part, move all frame-*.png files into one folder, then import that folder as an image sequence at the chosen fps. Do not import each part as a separate countdown. The first ZIP includes conversion scripts that check for missing frames.",
+        autoDownloadNote:
+          "The browser download has started. Keep this tab open until it finishes.",
+        openFolderHint:
+          "The browser cannot open your file manager; use your system folder window if needed.",
+        cleanupButton: "Clean browser temp files",
+        recoveryTitle: "Unfinished PNG export found",
+        recoveryBodyTemplate:
+          "{frames} of {total} frames are safely saved across {parts} part(s). The unfinished part will be redone.",
+        restoreButton: "Resume export",
+        authorizeButton: "Authorize and continue",
+        selectFolderButton: "Select export folder",
+        removeRecordButton: "Remove recovery record",
+        fontRequired:
+          "This export used a custom font. Provide the same font file to resume.",
+        fontButton: "Select font file",
+        downloadFailed:
+          "The download could not start. The finished files are still available above; try again.",
+        errorTitle: "PNG export problem",
+        errorMessages: {
+          pngStorageUnavailable:
+            "This browser blocked the local storage needed for PNG exports. Use a regular window on desktop Chrome.",
+          pngDirectoryPermissionDenied:
+            "Write access to the chosen folder was not granted. Choose the folder again and allow writes; no export was started.",
+          pngStorageFull:
+            "There is not enough free space to finish this PNG part. Free some space, then resume; saved parts are kept.",
+          pngWriteFailed:
+            "Saving a PNG part failed. Saved parts are kept; check the folder or storage and resume.",
+          pngZipValidationFailed:
+            "A saved ZIP part failed validation. It will be redone; earlier parts are kept.",
+          pngFrameTooLarge:
+            "A single PNG frame or its required ZIP metadata is larger than the per-part limit. Reduce the resolution or use a simpler style.",
+          pngMemoryLimitExceeded:
+            "This export needs more temporary memory than the limited in-memory path allows. Use desktop Chrome with a writable folder for a long export.",
+          pngResumeVersionMismatch:
+            "The saved export was made with different settings, assets, or an older app version. It cannot be joined safely; start a new export and keep the existing parts.",
+          pngResumeFileMissing:
+            "A saved ZIP part is missing or changed. The affected part must be redone; reselect the task folder and resume.",
+          pngLocked:
+            "This export is open in another tab, or this browser cannot lock the task. Close the other tab and retry.",
+          pngCheckpointFailed:
+            "This browser cannot keep the local checkpoint that resumable PNG exports need. Use desktop Chrome, or export a short job that fits in memory.",
+          pngFailedUnexpectedly:
+            "The PNG export stopped unexpectedly. Saved parts, if any, are kept; resume or start a new export.",
+        },
+      },
       progress: {
         remainingTemplate: "{time} left",
         previewLabel: "Live preview",
@@ -231,7 +328,7 @@ const enRootPageContent = {
           "Transparent exports drop straight onto your footage — no green screen needed.",
         ],
         desktopNote:
-          "On phones and tablets, export MP4 (up to 1080p) for long timers, and keep this page open with the screen on until the download starts. PNG sequence and WebM stay limited to 60 seconds at 720p.",
+          "On phones and tablets, export MP4 (up to 1080p) for long timers, and keep this page open with the screen on until the download starts. WebM stays limited to 60 seconds at 720p.",
         fallbackSuggestionTemplate: "Tip: try {format} instead.",
         stageLabels: {
           validating: "Preparing export",

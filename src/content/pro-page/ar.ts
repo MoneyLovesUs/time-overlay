@@ -35,8 +35,8 @@ const arProPageContent: ProPageContent = {
     },
     {
       feature: "الفيديو الشفاف",
-      free: "تسلسل PNG",
-      pro: "تسلسل PNG + VP9/HEVC في ملف واحد",
+      free: "تسلسل PNG حتى 5 دقائق",
+      pro: "تسلسل PNG حتى 60 دقيقة + VP9/HEVC في ملف واحد",
     },
     {
       feature: "القوالب",

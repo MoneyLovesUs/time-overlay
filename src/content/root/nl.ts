@@ -195,6 +195,104 @@ const nlRootPageContent = {
         alphaVideoFailedUnexpectedly: "Transparent video export failed unexpectedly.",
         pngSequenceFailedUnexpectedly: "PNG Sequence-export is onverwacht mislukt.",
       },
+      png: {
+        prepareTitle: "PNG-sequentie voorbereiden",
+        prepareIntro:
+          "Je exporteert een transparante PNG-sequentie. Controleer het plan hieronder voordat je kiest waar de frames worden opgeslagen.",
+        prepareSummaryTemplate:
+          "{duration} s · {fps} fps · {frames} frames · {width}×{height}",
+        estimateTemplate:
+          "Ongeveer {size}, {parts} ZIP-deel(en), ongeveer {time} coderen. De schattingen worden bijgewerkt terwijl de echte frames worden weggeschreven.",
+        estimateUnknown:
+          "Er waren geen voorbeeldframes beschikbaar, dus de schatting van grootte en tijd is onbekend. De export kan gewoon doorgaan.",
+        sampleProgress:
+          "Voorbeeldframes renderen om grootte en tijd te schatten…",
+        longJobTitle: "Deze export duurt lang",
+        longJobBody:
+          "Frames worden deel voor deel naar schijf geschreven, dus de hele reeks staat nooit in het geheugen. Elk ZIP-deel moet worden uitgepakt en samengevoegd voordat je importeert.",
+        saveFolderButton: "Map kiezen en starten",
+        saveFolderHint:
+          "De browser vraagt één keer om schrijftoegang. Daarin wordt een taakmap aangemaakt en voltooide delen blijven op schijf staan.",
+        opfsButton: "In de browser genereren, delen downloaden",
+        opfsHint:
+          "De browser bewaart tijdelijke bestanden tot je ze downloadt en opruimt. Houd ruimte vrij voor de tijdelijke kopie, je downloads en de uitgepakte frames.",
+        continueButton: "Doorgaan in dit tabblad",
+        cancelPrepButton: "Voorbereiding annuleren",
+        adviceDesktopSafari:
+          "Gebruik Chrome op de desktop voor betere exportprestaties. Je kunt doorgaan, maar lange PNG-exports worden vooral in Chrome gecontroleerd.",
+        adviceMobile:
+          "Exporteer op een computer voor betere prestaties. Je kunt doorgaan als dit apparaat de opslagcontrole haalt.",
+        capabilityMissing:
+          "Deze export vereist hervatbare lokale opslag en één actief tabblad, wat deze browser of dit profiel niet biedt.",
+        longStorageMissing:
+          "Een lange export heeft een beschrijfbare map nodig of browseropslag die schrijfacties echt accepteert. Deze browser biedt geen veilige bestemming, dus er zijn geen frames gemaakt.",
+        runTitle: "PNG-sequentie exporteren",
+        modeDirectory: "Opslagmap",
+        modeBrowserStorage: "Browseropslag",
+        modeMemory: "Tijdelijk geheugen",
+        runFramesTemplate: "Verwerkte frames",
+        runCommittedTemplate: "Veilig opgeslagen frames",
+        runPartTemplate: "Huidig deel · opgeslagen delen",
+        runBytesTemplate: "Geschreven",
+        stoppingButton: "Stoppen…",
+        cancelButton: "Export annuleren",
+        cancelledMessage:
+          "Export gestopt. Voltooide ZIP-delen blijven bewaard; hervat vanaf het laatst opgeslagen deel.",
+        resultTitle: "PNG-export voltooid",
+        directorySavedTemplate:
+          "{frames} frames opgeslagen als {parts} ZIP-deel(en) in {folder} ({size}).",
+        opfsPartsTitle:
+          "{parts} ZIP-deel(en), {size}. Download elk deel zolang het hier staat.",
+        partDownloadButton: "Downloaden",
+        partRangeTemplate: "frames {first}–{last} · {size}",
+        mergeInstructionsTitle: "Voor het importeren",
+        mergeInstructionsBody:
+          "Pak elk deel uit, zet alle frame-*.png-bestanden in één map en importeer die map als beeldsequentie met de gekozen fps. Importeer elk deel niet als aparte countdown. De eerste ZIP bevat conversiescripts die ontbrekende frames controleren.",
+        autoDownloadNote:
+          "De download van de browser is gestart. Houd dit tabblad open tot hij klaar is.",
+        openFolderHint:
+          "De browser kan je bestandsbeheer niet openen; gebruik zo nodig het mapvenster van je systeem.",
+        cleanupButton: "Tijdelijke browserbestanden opruimen",
+        recoveryTitle: "Onvoltooide PNG-export gevonden",
+        recoveryBodyTemplate:
+          "{frames} van {total} frames zijn veilig opgeslagen over {parts} deel(en). Het onvoltooide deel wordt opnieuw gedaan.",
+        restoreButton: "Export hervatten",
+        authorizeButton: "Toestaan en doorgaan",
+        selectFolderButton: "Exportmap selecteren",
+        removeRecordButton: "Herstelregistratie verwijderen",
+        fontRequired:
+          "Deze export gebruikte een aangepast lettertype. Geef hetzelfde lettertypebestand op om te hervatten.",
+        fontButton: "Lettertypebestand selecteren",
+        downloadFailed:
+          "De download kon niet starten. De voltooide bestanden staan hierboven nog; probeer het opnieuw.",
+        errorTitle: "Probleem met PNG-export",
+        errorMessages: {
+          pngStorageUnavailable:
+            "Deze browser heeft de lokale opslag geblokkeerd die PNG-exports nodig hebben. Gebruik een normaal Chrome-venster op de desktop.",
+          pngDirectoryPermissionDenied:
+            "Schrijftoegang tot de gekozen map is niet verleend. Kies de map opnieuw en sta schrijven toe; er is geen export gestart.",
+          pngStorageFull:
+            "Er is niet genoeg vrije ruimte om dit PNG-deel af te maken. Maak ruimte vrij en hervat; opgeslagen delen blijven bewaard.",
+          pngWriteFailed:
+            "Het opslaan van een PNG-deel is mislukt. Opgeslagen delen blijven bewaard; controleer de map of opslag en hervat.",
+          pngZipValidationFailed:
+            "Een opgeslagen ZIP-deel is niet door de validatie gekomen. Het wordt opnieuw gedaan; eerdere delen blijven bewaard.",
+          pngFrameTooLarge:
+            "Een PNG-frame of de benodigde ZIP-metadata is groter dan de limiet per deel. Verlaag de resolutie of gebruik een eenvoudiger stijl.",
+          pngMemoryLimitExceeded:
+            "Deze export vraagt meer tijdelijk geheugen dan het beperkte in-memory pad toestaat. Gebruik voor een lange export Chrome op de desktop met een beschrijfbare map.",
+          pngResumeVersionMismatch:
+            "De opgeslagen export is gemaakt met andere instellingen, assets of een oudere app-versie. Hij kan niet veilig worden samengevoegd; start een nieuwe export en bewaar de bestaande delen.",
+          pngResumeFileMissing:
+            "Een opgeslagen ZIP-deel ontbreekt of is gewijzigd. Het getroffen deel moet opnieuw; selecteer de taakmap opnieuw en hervat.",
+          pngLocked:
+            "Deze export is open in een ander tabblad, of deze browser kan de taak niet vergrendelen. Sluit het andere tabblad en probeer opnieuw.",
+          pngCheckpointFailed:
+            "Deze browser kan het lokale controlepunt niet bewaren dat hervatbare PNG-exports nodig hebben. Gebruik Chrome op de desktop, of exporteer een korte taak die in het geheugen past.",
+          pngFailedUnexpectedly:
+            "De PNG-export is onverwacht gestopt. Opgeslagen delen, als die er zijn, blijven bewaard; hervat of start een nieuwe export.",
+        },
+      },
     },
   },
   seoSection: {

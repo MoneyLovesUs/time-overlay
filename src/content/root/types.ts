@@ -1,3 +1,4 @@
+import type { PngErrorCode } from "@/lib/generator/export/png-contract";
 import type {
   AudioCueVariant,
   ExportQualityPreset,
@@ -30,6 +31,63 @@ export type RootDualLinkCta = {
   betweenLinks: string;
   secondLinkLabel: string;
   afterSecondLink: string;
+};
+
+/**
+ * Copy for the 3600s PNG sequence flow. Required in every enabled locale so a
+ * storage or recovery error can never fall back to an unrelated generic line.
+ */
+export type PngExportCopy = {
+  prepareTitle: string;
+  prepareIntro: string;
+  prepareSummaryTemplate: string;
+  estimateTemplate: string;
+  estimateUnknown: string;
+  sampleProgress: string;
+  longJobTitle: string;
+  longJobBody: string;
+  saveFolderButton: string;
+  saveFolderHint: string;
+  opfsButton: string;
+  opfsHint: string;
+  continueButton: string;
+  cancelPrepButton: string;
+  adviceDesktopSafari: string;
+  adviceMobile: string;
+  capabilityMissing: string;
+  longStorageMissing: string;
+  runTitle: string;
+  modeDirectory: string;
+  modeBrowserStorage: string;
+  modeMemory: string;
+  runFramesTemplate: string;
+  runCommittedTemplate: string;
+  runPartTemplate: string;
+  runBytesTemplate: string;
+  stoppingButton: string;
+  cancelButton: string;
+  cancelledMessage: string;
+  resultTitle: string;
+  directorySavedTemplate: string;
+  opfsPartsTitle: string;
+  partDownloadButton: string;
+  partRangeTemplate: string;
+  mergeInstructionsTitle: string;
+  mergeInstructionsBody: string;
+  autoDownloadNote: string;
+  openFolderHint: string;
+  cleanupButton: string;
+  recoveryTitle: string;
+  recoveryBodyTemplate: string;
+  restoreButton: string;
+  authorizeButton: string;
+  selectFolderButton: string;
+  removeRecordButton: string;
+  fontRequired: string;
+  fontButton: string;
+  downloadFailed: string;
+  errorTitle: string;
+  errorMessages: Record<PngErrorCode, string>;
 };
 
 export type RootPageContent = {
@@ -184,6 +242,7 @@ export type RootPageContent = {
       // Optional perceived-wait copy for the live export progress view. Optional
       // so non-English locales can omit it and fall back to built-in English
       // defaults; the numeric parts (percent, ETA) are language-neutral.
+      png: PngExportCopy;
       progress?: {
         remainingTemplate: string;
         previewLabel: string;

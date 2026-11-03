@@ -35,8 +35,8 @@ const zhHantProPageContent: ProPageContent = {
     },
     {
       feature: "透明影片",
-      free: "PNG 序列",
-      pro: "PNG 序列 + 單一檔案 VP9/HEVC",
+      free: "PNG 序列最長 5 分鐘",
+      pro: "PNG 序列最長 60 分鐘 + 單一檔案 VP9/HEVC",
     },
     {
       feature: "範本",

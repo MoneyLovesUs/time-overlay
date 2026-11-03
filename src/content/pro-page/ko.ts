@@ -35,8 +35,8 @@ const koProPageContent: ProPageContent = {
     },
     {
       feature: "투명 영상",
-      free: "PNG 시퀀스",
-      pro: "PNG 시퀀스 + 단일 파일 VP9/HEVC",
+      free: "PNG 시퀀스 최대 5분",
+      pro: "PNG 시퀀스 최대 60분 + 단일 파일 VP9/HEVC",
     },
     {
       feature: "템플릿",

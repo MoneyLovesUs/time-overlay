@@ -35,8 +35,8 @@ const hiProPageContent: ProPageContent = {
     },
     {
       feature: "पारदर्शी वीडियो",
-      free: "PNG सीक्वेंस",
-      pro: "PNG सीक्वेंस + एक फ़ाइल में VP9/HEVC",
+      free: "PNG सीक्वेंस 5 मिनट तक",
+      pro: "PNG सीक्वेंस 60 मिनट तक + एक फ़ाइल में VP9/HEVC",
     },
     {
       feature: "टेम्पलेट",

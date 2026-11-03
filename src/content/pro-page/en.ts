@@ -35,8 +35,8 @@ const enProPageContent: ProPageContent = {
     },
     {
       feature: "Transparent video",
-      free: "PNG sequence",
-      pro: "PNG sequence + one-file VP9/HEVC",
+      free: "PNG sequence up to 5 minutes",
+      pro: "PNG sequence up to 60 minutes + one-file VP9/HEVC",
     },
     {
       feature: "Templates",

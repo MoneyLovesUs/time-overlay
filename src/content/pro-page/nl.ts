@@ -35,8 +35,8 @@ const nlProPageContent: ProPageContent = {
     },
     {
       feature: "Transparante video",
-      free: "PNG-reeks",
-      pro: "PNG-reeks + VP9/HEVC als één bestand",
+      free: "PNG-reeks tot 5 minuten",
+      pro: "PNG-reeks tot 60 minuten + VP9/HEVC als één bestand",
     },
     {
       feature: "Sjablonen",

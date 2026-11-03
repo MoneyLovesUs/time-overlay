@@ -285,14 +285,14 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
           "macOS: `brew install ffmpeg`. Windows: download from ffmpeg.org and add the bin folder to PATH. Linux: `sudo apt install ffmpeg` or your package manager equivalent.",
       },
       {
-        title: "Download the Time Overlay PNG sequence",
+        title: "Download and merge every Time Overlay PNG part",
         body:
-          "Export 'PNG Sequence' from the Time Overlay generator. The downloaded zip includes the frames plus `convert-to-prores.sh`, `convert-to-prores.bat`, and a README.",
+          "Export 'PNG Sequence' from the Time Overlay generator. Long exports arrive as `timer-part-001.zip`, `timer-part-002.zip`, and so on. Unzip every part and move all `frame-*.png` files into one folder; the numbering is global, so the names do not collide. The first part includes `convert-to-prores.sh`, `convert-to-prores.bat`, and a README.",
       },
       {
         title: "Run the bundled script",
         body:
-          "Unzip the archive. On macOS or Linux, run `./convert-to-prores.sh` from a terminal. On Windows, double-click `convert-to-prores.bat`. The script writes `output.mov` next to the frames.",
+          "Put the script in the merged frames folder. On macOS or Linux, run `./convert-to-prores.sh` from a terminal. On Windows, double-click `convert-to-prores.bat`. The script checks every numbered frame before calling ffmpeg and refuses to run if one is missing, then writes `output.mov` next to the frames.",
       },
       {
         title: "Manual one-liner if you prefer",
@@ -461,14 +461,14 @@ const zhHansGuides: Record<GuideSlug, GuideBaseContent> = {
     recommendedFormat: "PNG 序列作为源文件；Final Cut 时间线使用 ProRes 4444 MOV。",
     steps: [
       {
-        title: "导出叠加素材",
+        title: "导出并合并全部 PNG 分卷",
         body:
-          "在 Time Overlay 中选择与剪辑节奏一致的时长和适合项目的样式预设，然后在导出面板选择“PNG 序列”。",
+          "在 Time Overlay 中选择与剪辑节奏一致的时长和样式预设，然后在导出面板选择“PNG 序列”。长任务会得到 timer-part-001.zip、timer-part-002.zip 等多个普通 ZIP。请解压全部卷，把所有 frame-*.png 合并到同一个文件夹；编号全局连续，文件名不会冲突。第一卷包含 convert-to-prores 脚本。",
       },
       {
         title: "转换为 ProRes 4444",
         body:
-          "解压 PNG 导出包并运行附带的 convert-to-prores 脚本。脚本使用 FFmpeg 生成一个采用 4444 profile 和 alpha 像素格式的 output.mov。",
+          "把脚本放进合并后的帧文件夹并运行。脚本会先检查从 1 到总帧数的每个编号，缺帧时明确失败，避免输出悄悄截短的视频；全部齐全后使用 FFmpeg 的 4444 profile 和 alpha 像素格式生成 output.mov。",
       },
       {
         title: "导入并连接到主故事线上方",
@@ -791,7 +791,12 @@ const enGuideEvidence: Record<GuideSlug, GuideEvidence> = {
       {
         symptom: "FFmpeg reports that no input files were found",
         resolution:
-          "Run the command inside the extracted frame directory and make the input pattern match the actual zero-padded filenames exactly.",
+          "Run the command inside the merged frames directory and make the input pattern match the actual zero-padded filenames exactly. Long PNG exports are split into several ZIP parts; unzip all of them into that one directory first.",
+      },
+      {
+        symptom: "The script stops with a missing frame",
+        resolution:
+          "A ZIP part was not extracted or the parts were not merged into one folder. Unzip every timer-part-*.zip into the same frames directory and run the script again.",
       },
       {
         symptom: "The MOV duration is incorrect",
@@ -1027,7 +1032,12 @@ const zhHansEvidenceCopy: Record<
       {
         symptom: "FFmpeg 找不到输入文件",
         resolution:
-          "在解压后的帧目录内运行命令，并让输入通配模式与实际补零文件名完全一致。",
+          "在合并后的帧目录内运行命令，并让输入通配模式与实际补零文件名完全一致。长 PNG 导出会分成多个 ZIP，请先把全部卷解压到同一个目录。",
+      },
+      {
+        symptom: "脚本提示缺少帧并停止",
+        resolution:
+          "有 ZIP 分卷未解压，或没有合并到同一个文件夹。把全部 timer-part-*.zip 解压到同一个帧目录后重新运行脚本。",
       },
       {
         symptom: "MOV 时长不正确",

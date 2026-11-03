@@ -188,6 +188,103 @@ const jaRootPageContent = {
       hevcAlphaInfo:
         "MOV HEVC + alpha は、対応する Mac の Final Cut Pro に適した直接書き出し形式です。",
       },
+      png: {
+        prepareTitle: "PNG シーケンスの準備",
+        prepareIntro:
+          "透明 PNG シーケンスを書き出します。フレームの保存先を選ぶ前に、下のプランを確認してください。",
+        prepareSummaryTemplate:
+          "{duration}秒 · {fps} fps · {frames} フレーム · {width}×{height}",
+        estimateTemplate:
+          "約 {size}、ZIP {parts} 個、エンコードに約 {time}。推定値は実際のフレーム書き出しに合わせて更新されます。",
+        estimateUnknown:
+          "サンプルフレームを取得できなかったため、サイズと時間の推定値は不明です。書き出しは続行できます。",
+        sampleProgress: "サイズと時間を見積もるためサンプルフレームを描画中…",
+        longJobTitle: "長時間の書き出しです",
+        longJobBody:
+          "フレームは分割して順にディスクへ書き出されるため、シーケンス全体をメモリに保持しません。読み込む前に、各 ZIP パートを解凍して結合する必要があります。",
+        saveFolderButton: "保存先を選んで開始",
+        saveFolderHint:
+          "ブラウザが一度だけ書き込み権限を求めます。その中にタスクフォルダーが作成され、完了したパートはディスクに残ります。",
+        opfsButton: "ブラウザ内で生成し、パートをダウンロード",
+        opfsHint:
+          "一時ファイルは、ダウンロードして削除するまでブラウザが保持します。一時コピー、ダウンロード、解凍後のフレーム分の空き容量を確保してください。",
+        continueButton: "このタブで続行",
+        cancelPrepButton: "準備を中止",
+        adviceDesktopSafari:
+          "書き出し性能を高めるにはデスクトップ版 Chrome をお使いください。続行は可能ですが、長時間の PNG 書き出しは主に Chrome で検証されています。",
+        adviceMobile:
+          "書き出し性能を高めるにはパソコンで書き出してください。この端末がストレージ検査に通れば続行できます。",
+        capabilityMissing:
+          "この書き出しには再開可能なローカルストレージと単一のアクティブタブが必要ですが、このブラウザまたはプロファイルでは利用できません。",
+        longStorageMissing:
+          "長時間の書き出しには書き込み可能なフォルダーか、実際に書き込みを受け付けるブラウザストレージが必要です。このブラウザには安全な保存先がないため、フレームは生成されませんでした。",
+        runTitle: "PNG シーケンス書き出し",
+        modeDirectory: "保存フォルダー",
+        modeBrowserStorage: "ブラウザー保存",
+        modeMemory: "一時メモリー",
+        runFramesTemplate: "処理済みフレーム",
+        runCommittedTemplate: "保存済みフレーム",
+        runPartTemplate: "現在のパート · 保存済みパート",
+        runBytesTemplate: "書き込み済み",
+        stoppingButton: "停止中…",
+        cancelButton: "書き出しを中止",
+        cancelledMessage:
+          "書き出しを停止しました。完了した ZIP パートは保持されます。最後に保存されたパートから再開できます。",
+        resultTitle: "PNG 書き出し完了",
+        directorySavedTemplate:
+          "{folder} に {frames} フレームを ZIP {parts} 個（{size}）として保存しました。",
+        opfsPartsTitle:
+          "ZIP {parts} 個、{size}。一覧に表示されている間に各パートをダウンロードしてください。",
+        partDownloadButton: "ダウンロード",
+        partRangeTemplate: "フレーム {first}–{last} · {size}",
+        mergeInstructionsTitle: "読み込み前の確認",
+        mergeInstructionsBody:
+          "すべてのパートを解凍し、frame-*.png を 1 つのフォルダーにまとめてから、選んだ fps で画像シーケンスとして読み込んでください。各パートを別々のカウントダウンとして読み込まないでください。最初の ZIP には、欠落フレームを確認する変換スクリプトが含まれています。",
+        autoDownloadNote:
+          "ブラウザのダウンロードが開始されました。完了するまでこのタブを閉じないでください。",
+        openFolderHint:
+          "ブラウザからファイルマネージャーは開けません。必要なら OS のフォルダーウィンドウを使用してください。",
+        cleanupButton: "ブラウザの一時ファイルを削除",
+        recoveryTitle: "未完了の PNG 書き出しが見つかりました",
+        recoveryBodyTemplate:
+          "{total} フレーム中 {frames} フレームが {parts} 個のパートに分けて安全に保存されています。未完了のパートはやり直されます。",
+        restoreButton: "書き出しを再開",
+        authorizeButton: "許可して続行",
+        selectFolderButton: "書き出し先フォルダーを選択",
+        removeRecordButton: "復元記録を削除",
+        fontRequired:
+          "この書き出しはカスタムフォントを使用しています。再開するには同じフォントファイルを指定してください。",
+        fontButton: "フォントファイルを選択",
+        downloadFailed:
+          "ダウンロードを開始できませんでした。完成したファイルは上に残っています。もう一度お試しください。",
+        errorTitle: "PNG 書き出しの問題",
+        errorMessages: {
+          pngStorageUnavailable:
+            "このブラウザは PNG 書き出しに必要なローカルストレージをブロックしました。デスクトップ版 Chrome の通常ウィンドウを使用してください。",
+          pngDirectoryPermissionDenied:
+            "選択したフォルダーへの書き込み権限が許可されませんでした。フォルダーを選び直して書き込みを許可してください。書き出しは開始されていません。",
+          pngStorageFull:
+            "この PNG パートを完了するための空き容量が足りません。容量を確保してから再開してください。保存済みのパートは保持されます。",
+          pngWriteFailed:
+            "PNG パートの保存に失敗しました。保存済みのパートは保持されます。フォルダーまたはストレージを確認して再開してください。",
+          pngZipValidationFailed:
+            "保存された ZIP パートが検証に失敗しました。そのパートはやり直されます。それ以前のパートは保持されます。",
+          pngFrameTooLarge:
+            "1 枚の PNG フレームまたは必要な ZIP メタデータがパートごとの上限を超えています。解像度を下げるか、より単純なスタイルを使用してください。",
+          pngMemoryLimitExceeded:
+            "この書き出しには、メモリ内処理の上限を超える一時メモリが必要です。長時間の書き出しには書き込み可能なフォルダーとデスクトップ版 Chrome を使用してください。",
+          pngResumeVersionMismatch:
+            "保存された書き出しは、設定・アセット・アプリのバージョンが異なるため安全に結合できません。新しい書き出しを開始し、既存のパートは保管してください。",
+          pngResumeFileMissing:
+            "保存された ZIP パートが見つからないか変更されています。該当パートをやり直す必要があります。タスクフォルダーを選び直して再開してください。",
+          pngLocked:
+            "この書き出しは別のタブで開かれているか、このブラウザはタスクをロックできません。他のタブを閉じて再試行してください。",
+          pngCheckpointFailed:
+            "このブラウザは再開可能な PNG 書き出しに必要なローカルチェックポイントを保持できません。デスクトップ版 Chrome を使用するか、メモリに収まる短いジョブを書き出してください。",
+          pngFailedUnexpectedly:
+            "PNG 書き出しが予期せず停止しました。保存済みのパートがあれば保持されます。再開するか、新しい書き出しを開始してください。",
+        },
+      },
       runtimeMessages: {
         exportReadyTemplate: "書き出し完了: {fileName}",
         preparingWebm: "ローカル WebM 書き出しを準備中",

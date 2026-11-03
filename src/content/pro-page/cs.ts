@@ -35,8 +35,8 @@ const csProPageContent: ProPageContent = {
     },
     {
       feature: "Průhledné video",
-      free: "Sekvence PNG",
-      pro: "Sekvence PNG + VP9/HEVC v jednom souboru",
+      free: "Sekvence PNG až 5 minut",
+      pro: "Sekvence PNG až 60 minut + VP9/HEVC v jednom souboru",
     },
     {
       feature: "Šablony",

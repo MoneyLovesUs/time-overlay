@@ -35,8 +35,8 @@ const jaProPageContent: ProPageContent = {
     },
     {
       feature: "透過動画",
-      free: "PNGシーケンス",
-      pro: "PNGシーケンス + VP9/HEVCの単一ファイル",
+      free: "PNGシーケンス 最大5分",
+      pro: "PNGシーケンス 最大60分 + VP9/HEVCの単一ファイル",
     },
     {
       feature: "テンプレート",

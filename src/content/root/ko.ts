@@ -189,6 +189,103 @@ const koRootPageContent = {
       hevcAlphaInfo:
         "MOV HEVC + alpha는 호환되는 Mac의 Final Cut Pro에 권장하는 직접 내보내기 형식이에요.",
       },
+      png: {
+        prepareTitle: "PNG 시퀀스 준비",
+        prepareIntro:
+          "투명 PNG 시퀀스를 내보냅니다. 프레임 저장 위치를 선택하기 전에 아래 계획을 확인하세요.",
+        prepareSummaryTemplate:
+          "{duration}초 · {fps} fps · {frames}프레임 · {width}×{height}",
+        estimateTemplate:
+          "약 {size}, ZIP {parts}개, 인코딩에 대략 {time}. 실제 프레임이 기록되면서 예상치가 갱신됩니다.",
+        estimateUnknown:
+          "샘플 프레임을 가져오지 못해 크기와 시간 예상치를 알 수 없습니다. 내보내기는 계속할 수 있습니다.",
+        sampleProgress: "크기와 시간을 예상하기 위해 샘플 프레임을 렌더링하는 중…",
+        longJobTitle: "긴 내보내기입니다",
+        longJobBody:
+          "프레임은 파트별로 디스크에 기록되므로 전체 시퀀스가 메모리에 유지되지 않습니다. 가져오기 전에 모든 ZIP 파트의 압축을 풀어 병합해야 합니다.",
+        saveFolderButton: "저장 폴더 선택 후 시작",
+        saveFolderHint:
+          "브라우저가 쓰기 권한을 한 번 요청합니다. 그 안에 작업 폴더가 만들어지고, 완료된 파트는 디스크에 남습니다.",
+        opfsButton: "브라우저에서 생성하고 파트 다운로드",
+        opfsHint:
+          "브라우저는 다운로드하고 정리할 때까지 임시 파일을 보관합니다. 임시 사본, 다운로드, 압축을 푼 프레임을 위한 공간을 확보하세요.",
+        continueButton: "이 탭에서 계속",
+        cancelPrepButton: "준비 취소",
+        adviceDesktopSafari:
+          "더 나은 내보내기 성능을 위해 데스크톱 Chrome을 사용하세요. 계속할 수는 있지만 긴 PNG 내보내기는 주로 Chrome에서 검증됩니다.",
+        adviceMobile:
+          "더 나은 내보내기 성능을 위해 컴퓨터에서 내보내세요. 이 기기가 저장 공간 검사를 통과하면 계속할 수 있습니다.",
+        capabilityMissing:
+          "이 내보내기에는 재개 가능한 로컬 저장소와 하나의 활성 탭이 필요하지만, 이 브라우저나 프로필에서는 제공되지 않습니다.",
+        longStorageMissing:
+          "긴 내보내기에는 쓰기 가능한 폴더나 실제로 쓰기를 받아들이는 브라우저 저장소가 필요합니다. 이 브라우저에는 안전한 저장 위치가 없어 프레임이 생성되지 않았습니다.",
+        runTitle: "PNG 시퀀스 내보내기",
+        modeDirectory: "저장 폴더",
+        modeBrowserStorage: "브라우저 저장소",
+        modeMemory: "임시 메모리",
+        runFramesTemplate: "처리된 프레임",
+        runCommittedTemplate: "안전하게 저장된 프레임",
+        runPartTemplate: "현재 파트 · 저장된 파트",
+        runBytesTemplate: "기록됨",
+        stoppingButton: "중지 중…",
+        cancelButton: "내보내기 취소",
+        cancelledMessage:
+          "내보내기를 중지했습니다. 완료된 ZIP 파트는 유지되며 마지막으로 저장된 파트부터 재개할 수 있습니다.",
+        resultTitle: "PNG 내보내기 완료",
+        directorySavedTemplate:
+          "{folder}에 {frames}프레임을 ZIP {parts}개({size})로 저장했습니다.",
+        opfsPartsTitle:
+          "ZIP {parts}개, {size}. 목록에 표시되는 동안 각 파트를 다운로드하세요.",
+        partDownloadButton: "다운로드",
+        partRangeTemplate: "프레임 {first}–{last} · {size}",
+        mergeInstructionsTitle: "가져오기 전에",
+        mergeInstructionsBody:
+          "모든 파트의 압축을 풀고 frame-*.png 파일을 한 폴더로 모은 뒤, 선택한 fps로 해당 폴더를 이미지 시퀀스로 가져오세요. 각 파트를 별도의 카운트다운으로 가져오지 마세요. 첫 번째 ZIP에는 누락된 프레임을 확인하는 변환 스크립트가 포함되어 있습니다.",
+        autoDownloadNote:
+          "브라우저 다운로드가 시작되었습니다. 완료될 때까지 이 탭을 열어 두세요.",
+        openFolderHint:
+          "브라우저에서는 파일 관리자를 열 수 없습니다. 필요하면 운영체제의 폴더 창을 사용하세요.",
+        cleanupButton: "브라우저 임시 파일 정리",
+        recoveryTitle: "완료되지 않은 PNG 내보내기를 찾았습니다",
+        recoveryBodyTemplate:
+          "전체 {total}프레임 중 {frames}프레임이 {parts}개 파트에 나뉘어 안전하게 저장되었습니다. 완료되지 않은 파트는 다시 처리됩니다.",
+        restoreButton: "내보내기 재개",
+        authorizeButton: "승인하고 계속",
+        selectFolderButton: "내보내기 폴더 선택",
+        removeRecordButton: "복구 기록 삭제",
+        fontRequired:
+          "이 내보내기는 사용자 지정 글꼴을 사용했습니다. 재개하려면 같은 글꼴 파일을 지정하세요.",
+        fontButton: "글꼴 파일 선택",
+        downloadFailed:
+          "다운로드를 시작하지 못했습니다. 완료된 파일은 위에 남아 있습니다. 다시 시도하세요.",
+        errorTitle: "PNG 내보내기 문제",
+        errorMessages: {
+          pngStorageUnavailable:
+            "이 브라우저가 PNG 내보내기에 필요한 로컬 저장소를 차단했습니다. 데스크톱 Chrome의 일반 창을 사용하세요.",
+          pngDirectoryPermissionDenied:
+            "선택한 폴더에 대한 쓰기 권한이 허용되지 않았습니다. 폴더를 다시 선택하고 쓰기를 허용하세요. 내보내기는 시작되지 않았습니다.",
+          pngStorageFull:
+            "이 PNG 파트를 완료할 여유 공간이 부족합니다. 공간을 확보한 뒤 재개하세요. 저장된 파트는 유지됩니다.",
+          pngWriteFailed:
+            "PNG 파트 저장에 실패했습니다. 저장된 파트는 유지됩니다. 폴더나 저장소를 확인하고 재개하세요.",
+          pngZipValidationFailed:
+            "저장된 ZIP 파트가 검증을 통과하지 못했습니다. 해당 파트는 다시 처리되며 이전 파트는 유지됩니다.",
+          pngFrameTooLarge:
+            "PNG 프레임 한 장 또는 필요한 ZIP 메타데이터가 파트당 한도를 초과했습니다. 해상도를 낮추거나 더 단순한 스타일을 사용하세요.",
+          pngMemoryLimitExceeded:
+            "이 내보내기에는 메모리 내 처리 한도보다 많은 임시 메모리가 필요합니다. 긴 내보내기에는 쓰기 가능한 폴더와 데스크톱 Chrome을 사용하세요.",
+          pngResumeVersionMismatch:
+            "저장된 내보내기는 설정, 에셋 또는 앱 버전이 달라 안전하게 이어붙일 수 없습니다. 새 내보내기를 시작하고 기존 파트는 보관하세요.",
+          pngResumeFileMissing:
+            "저장된 ZIP 파트가 없거나 변경되었습니다. 해당 파트를 다시 처리해야 합니다. 작업 폴더를 다시 선택하고 재개하세요.",
+          pngLocked:
+            "이 내보내기가 다른 탭에서 열려 있거나 이 브라우저가 작업을 잠글 수 없습니다. 다른 탭을 닫고 다시 시도하세요.",
+          pngCheckpointFailed:
+            "이 브라우저는 재개 가능한 PNG 내보내기에 필요한 로컬 체크포인트를 유지할 수 없습니다. 데스크톱 Chrome을 사용하거나 메모리에 들어가는 짧은 작업을 내보내세요.",
+          pngFailedUnexpectedly:
+            "PNG 내보내기가 예기치 않게 중단되었습니다. 저장된 파트가 있으면 유지됩니다. 재개하거나 새 내보내기를 시작하세요.",
+        },
+      },
       runtimeMessages: {
         exportReadyTemplate: "내보내기 준비 완료: {fileName}",
         preparingWebm: "로컬 WebM 내보내기 준비 중",

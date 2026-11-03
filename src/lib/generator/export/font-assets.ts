@@ -66,10 +66,14 @@ export function ensurePreviewFontsLoaded(): Promise<void> {
   }
   previewLoadPromise ??= (async () => {
     for (const asset of EXPORT_FONT_ASSETS) {
-      const existing = [...document.fonts].some(
+      const existing = [...document.fonts].filter(
         (face) => face.family.replaceAll('"', "") === asset.family,
       );
-      if (existing) {
+      if (existing.length > 0) {
+        // A registered @font-face/FontFace is not necessarily loaded. Awaiting
+        // fonts.ready alone does not start unused faces, so the first canvas
+        // paint could still measure an OS fallback.
+        await Promise.all(existing.map((face) => face.load()));
         continue;
       }
       const response = await fetch(asset.url, { cache: "force-cache" });

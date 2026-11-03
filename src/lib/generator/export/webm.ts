@@ -3,6 +3,7 @@ import { synthesizeAudioCues } from "@/lib/generator/encode/audio-cues";
 import { createExportJobPlan } from "@/lib/generator/export/job";
 import { getPreferredAlphaWebmMimeType } from "@/lib/generator/export/webm-mime";
 import { runWebmTimeline } from "@/lib/generator/export/webm-timeline";
+import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
 import {
   createRenderFrameState,
   measureRenderTextBox,
@@ -156,6 +157,21 @@ export async function exportWebmLocally(
     controller.abort(backgroundError());
   }
   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  // WebM records from a main-thread canvas. Do not start the real-time
+  // recorder until the same pinned face used by the worker is installed.
+  try {
+    await ensurePreviewFontsLoaded();
+  } catch (error) {
+    throw new WebmExportError(
+      "webmUnavailable",
+      "The export font could not be loaded. Reload the page and retry.",
+      { cause: error },
+    );
+  }
+  if (controller.signal.aborted) {
+    throw controller.signal.reason ?? createAbortError();
+  }
 
   const stream = canvas.captureStream(settings.export.fps);
   let audioContext: AudioContext | null = null;

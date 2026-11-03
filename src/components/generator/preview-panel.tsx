@@ -36,6 +36,7 @@ export function PreviewPanel({
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [previewFontError, setPreviewFontError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const previewFrameStyle = useMemo(() => {
     const aspectRatio = `${settings.canvas.width} / ${settings.canvas.height}`;
@@ -149,6 +150,7 @@ export function PreviewPanel({
       if (cancelled || !canvasRef.current) {
         return;
       }
+      setPreviewFontError(false);
       context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolvedFamily}`;
       const textBox = measureRenderTextBox(context, displayText, {
         fontFamily: settings.textStyle.fontFamily,
@@ -191,7 +193,12 @@ export function PreviewPanel({
             `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolvedFamily}`,
           ),
         )
-        .then(draw, draw);
+        .then(draw)
+        .catch(() => {
+          if (!cancelled) {
+            setPreviewFontError(true);
+          }
+        });
     } else {
       draw();
     }
@@ -230,6 +237,15 @@ export function PreviewPanel({
       <div className="space-y-4 px-5 py-5">
         <div className="relative flex min-h-72 items-center justify-center overflow-hidden border border-border/80 bg-[linear-gradient(180deg,rgba(8,11,16,0.96),rgba(9,10,14,0.98))] p-3 sm:p-4">
           <div className="relative max-w-full" style={previewFrameStyle}>
+            {previewFontError ? (
+              <p
+                className="absolute inset-x-3 top-3 z-10 border border-destructive/40 bg-background/90 px-3 py-2 text-[12px] leading-5 text-destructive"
+                role="alert"
+              >
+                {ui.fontUnavailable ??
+                  "The preview font could not be loaded. Reload the page before exporting."}
+              </p>
+            ) : null}
             <canvas
               ref={canvasRef}
               onClick={() => (isPlaying ? handlePause() : handlePlay())}

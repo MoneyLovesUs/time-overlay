@@ -184,6 +184,9 @@ export type RootPageContent = {
       safeAreaOnButton: string;
       safeAreaOffButton: string;
       currentReadoutLabel: string;
+      // Optional so locales without this preview-only error keep a clear
+      // English fallback; export errors use the localized PNG error map.
+      fontUnavailable?: string;
     };
     exportPanel: {
       title: string;

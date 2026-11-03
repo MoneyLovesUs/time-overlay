@@ -139,6 +139,8 @@ const enRootPageContent = {
       safeAreaOnButton: "Safe Area On",
       safeAreaOffButton: "Safe Area Off",
       currentReadoutLabel: "Current readout",
+      fontUnavailable:
+        "The preview font could not be loaded. Reload the page before exporting.",
     },
     exportPanel: {
       title: "Export",

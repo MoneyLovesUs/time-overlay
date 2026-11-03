@@ -87,11 +87,12 @@ not an exhaustive microsecond peak.
 ## Font and script consistency
 
 - Built-in Geist Mono/Sans are bundled under `public/fonts` and loaded into the
-  export worker and preview with matching `100 900` weight descriptors before
-  rendering; `customFontFamily` reaches both measurement and drawing. A failed
-  font fetch now produces a visible localized export error instead of a stuck
-  preparation state. The preview and an explicitly constructed worker face
-  render the same decoded RGBA hash (`fb701fd1`) at 700/100 px.
+  export worker, generator preview, live overlay and main-thread WebM recorder
+  with matching `100 900` weight descriptors before rendering; `customFontFamily`
+  reaches both measurement and drawing. A failed font fetch now produces a
+  visible localized export error and a preview alert instead of a stuck
+  preparation or a silent fallback. The preview and an explicitly constructed
+  worker face render the same decoded RGBA hash (`fb701fd1`) at 700/100 px.
 - Exported `convert-to-prores.sh` checks every frame from 1 to N before ffmpeg
   and refuses a missing middle frame. macOS/Linux script execution and the
   Windows batch escaping are covered by tests; the Windows batch was not run on
@@ -102,18 +103,25 @@ not an exhaustive microsecond peak.
   ProRes 4444 (`ffprobe`: 900 frames, 30 fps, 30.000 s, 1280×720, alpha 0..255);
   a missing-middle fixture refused conversion and created no video. macOS
   Archive Utility created one folder per ZIP, confirming the merge instructions.
-- Independent supervisor evidence: Blender 4.5.15 LTS imported 45,000 and
-  108,000 frames at 30 fps for exactly 1500 s and 3600 s before the final font
-  repair. Final-build editor re-import and the native macOS directory rerun on
-  the final build remain unverified gates.
+- Independent supervisor evidence: Blender 4.5.15 LTS imported the
+  variable-weight-corrected 45,000- and 108,000-frame outputs at 30 fps for
+  exactly 1500 s and 3600 s. Supervisor crash/restart proof on the corrected
+  source preserved two committed volumes and produced an identical RGBA hash
+  across frames 6087/6088. The native macOS directory proof (9,000 frames,
+  real picker and permission prompt) predates the font-weight repair; the
+  directory sink code is unchanged, but a final-build native rerun is not
+  claimed here.
 
 ## Remaining blockers
 
-1. Windows Chrome 108,000-frame high-complexity row: no Windows VM/device or
-   authorization to use one.
-2. Desktop Safari and real Android/iOS rows: automation/device access disabled
-   or absent; no UA emulation is accepted as a substitute.
-3. Final-build editor import and final-build native directory/picker proof are
-   retained for independent supervisor verification; the earlier import and
-   native-directory proofs were captured before the font pinning change.
+1. Windows Chrome 108,000-frame high-complexity row: the designated
+   LAPTOP-6IC50N8N was offline / its SSH connection timed out, so the row was
+   not executed.
+2. Desktop Safari and real Android/iOS rows: Safari WebDriver remote automation
+   is off and a native Safari attempt did not hydrate the generator; no Android
+   device is attached and the paired iPhone has Web Inspector off. No UA or
+   WebKit simulation is accepted as a substitute.
+3. The final-build native macOS directory/picker rerun is not claimed; the
+   recorded real-directory proof predates the font-weight repair even though the
+   directory sink itself is unchanged.
 4. Windows batch conversion and Windows ZIP extraction remain unverified.

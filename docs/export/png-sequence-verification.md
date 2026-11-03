@@ -86,6 +86,10 @@ not an exhaustive microsecond peak.
 
 ## Font and script consistency
 
+- The live overlay initializes its clock once, after font readiness, and only
+  schedules the next animation frame inside `tick`. A real Chrome run painted
+  `05:00 → 04:59 → 04:58 → …` across 4.5 seconds; a jsdom regression exercises
+  80 frames and asserts the same progression.
 - Built-in Geist Mono/Sans are bundled under `public/fonts` and loaded into the
   export worker, generator preview, live overlay and main-thread WebM recorder
   with matching `100 900` weight descriptors before rendering; `customFontFamily`

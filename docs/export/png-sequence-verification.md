@@ -89,6 +89,10 @@ not an exhaustive microsecond peak.
 - A registered-but-unloaded `@font-face` is explicitly loaded before the helper
   resolves. Real Chrome test: aliases registered as `unloaded`, then the first
   `/live` fillText saw both faces `loaded` and painted `05:00`.
+- Main-thread WebM waits for fonts inside its cleanup scope and races the wait
+  against abort. Font rejection removes visibility/abort listeners and stops
+  capture tracks; cancellation while the font promise is unresolved rejects
+  immediately with the provided reason. Both cases have regressions.
 - The live overlay initializes its clock once, after font readiness, and only
   schedules the next animation frame inside `tick`. A real Chrome run painted
   `05:00 → 04:59 → 04:58 → …` across 4.5 seconds; a jsdom regression exercises

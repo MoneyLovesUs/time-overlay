@@ -66,12 +66,11 @@ export function resolveCanvasFontFamily(
   fontFamily: FrameTextStyle["fontFamily"],
   customFontFamily?: string,
 ) {
-  if (customFontFamily) {
-    const fallback =
-      fontFamily === "geist-sans" ? "ui-sans-serif, sans-serif" : "ui-monospace, monospace";
-    return `"${customFontFamily}", ${fallback}`;
-  }
-  return fontFamily === "geist-sans" ? "ui-sans-serif, sans-serif" : "ui-monospace, monospace";
+  const builtIn =
+    fontFamily === "geist-sans"
+      ? '"TimeOverlay Geist Sans", ui-sans-serif, sans-serif'
+      : '"TimeOverlay Geist Mono", ui-monospace, monospace';
+  return customFontFamily ? `"${customFontFamily}", ${builtIn}` : builtIn;
 }
 
 const TEXT_REGION_FILL_RATIO = 0.84;
@@ -146,6 +145,7 @@ export function createRenderFrameState({
     formatCountdownTime(remainingSeconds, settings.timer.displayFormat);
   const baseStyle: FrameTextStyle = {
     fontFamily: settings.textStyle.fontFamily,
+    customFontFamily: settings.textStyle.customFontFamily,
     fontSize: settings.textStyle.fontSize,
     fontWeight: settings.textStyle.fontWeight,
     letterSpacing: settings.textStyle.letterSpacing,

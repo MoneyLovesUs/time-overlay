@@ -86,6 +86,9 @@ not an exhaustive microsecond peak.
 
 ## Font and script consistency
 
+- A registered-but-unloaded `@font-face` is explicitly loaded before the helper
+  resolves. Real Chrome test: aliases registered as `unloaded`, then the first
+  `/live` fillText saw both faces `loaded` and painted `05:00`.
 - The live overlay initializes its clock once, after font readiness, and only
   schedules the next animation frame inside `tick`. A real Chrome run painted
   `05:00 → 04:59 → 04:58 → …` across 4.5 seconds; a jsdom regression exercises

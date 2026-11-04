@@ -4,6 +4,11 @@ import type {
   GeneratorFormat,
   GeneratorSettings,
 } from "@/lib/generator/types";
+import type {
+  PngPreflightPayload,
+  PngStartPayload,
+  PngWorkerResponse,
+} from "@/lib/generator/export/png-contract";
 
 export type ExportJobPlan = {
   format: GeneratorFormat;
@@ -35,14 +40,6 @@ export type ExportWorkerRequest =
       };
     }
   | {
-      kind: "export-png-sequence";
-      payload: {
-        settings: GeneratorSettings;
-        uploadedFont?: UploadedFont;
-        enablePreview?: boolean;
-      };
-    }
-  | {
       kind: "export-alpha-video";
       payload: {
         settings: GeneratorSettings;
@@ -50,6 +47,34 @@ export type ExportWorkerRequest =
         uploadedFont?: UploadedFont;
         enablePreview?: boolean;
       };
+    }
+  | {
+      kind: "png-preflight";
+      jobId: string;
+      attemptId: string;
+      payload: PngPreflightPayload;
+    }
+  | {
+      // The frozen configuration and destination are fixed before this request;
+      // editing the UI afterwards cannot change the running job.
+      kind: "png-start";
+      payload: PngStartPayload;
+    }
+  | {
+      kind: "png-resume";
+      payload: PngStartPayload;
+    }
+  | {
+      kind: "cancel-png";
+      jobId: string;
+      attemptId: string;
+    }
+  | {
+      // One outstanding preview at a time; without an ack the worker skips new
+      // snapshots instead of letting bitmaps pile up on the main thread.
+      kind: "png-preview-ack";
+      jobId: string;
+      attemptId: string;
     };
 
 export type ExportWorkerMessage =
@@ -63,6 +88,8 @@ export type ExportWorkerMessage =
       // the wait. Best-effort: the worker omits it when createImageBitmap is
       // unavailable, and the host degrades to a bar-only view.
       kind: "preview";
+      jobId?: string;
+      attemptId?: string;
       payload: {
         bitmap: ImageBitmap;
         frameIndex: number;
@@ -83,11 +110,11 @@ export type ExportWorkerMessage =
           | "mp4FailedUnexpectedly"
           | "mp4StorageUnavailable"
           | "mp4StorageFull"
-          | "pngSequenceFailedUnexpectedly"
           | "alphaVideoFailedUnexpectedly";
         message?: string;
       };
-    };
+    }
+  | PngWorkerResponse;
 
 export function createExportJobPlan({
   durationSeconds,
@@ -97,6 +124,7 @@ export function createExportJobPlan({
   Pick<GeneratorSettings["export"], "fps" | "format">): ExportJobPlan {
   const totalFrames = Math.max(1, Math.round(durationSeconds * fps));
   const extension = FORMAT_EXTENSIONS[format];
+  const frameNameWidth = Math.max(4, String(totalFrames).length);
 
   return {
     format,
@@ -104,7 +132,7 @@ export function createExportJobPlan({
     totalFrames,
     outputFileName: `time-overlay.${extension}`,
     getFrameFileName(frameIndex) {
-      return `frame-${String(frameIndex + 1).padStart(4, "0")}.png`;
+      return `frame-${String(frameIndex + 1).padStart(frameNameWidth, "0")}.png`;
     },
   };
 }

@@ -11,6 +11,7 @@ import {
   clampPreviewElapsedSeconds,
   syncCanvasElementSize,
 } from "@/lib/generator/preview-runtime";
+import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
 import {
   createRenderFrameState,
   measureRenderTextBox,
@@ -35,6 +36,7 @@ export function PreviewPanel({
   const rafRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [previewFontError, setPreviewFontError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const previewFrameStyle = useMemo(() => {
     const aspectRatio = `${settings.canvas.width} / ${settings.canvas.height}`;
@@ -138,36 +140,72 @@ export function PreviewPanel({
       return;
     }
 
-    context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolveCanvasFontFamily(settings.textStyle.fontFamily, settings.textStyle.customFontFamily)}`;
-    const textBox = measureRenderTextBox(context, displayText, {
-      fontFamily: settings.textStyle.fontFamily,
-      fontSize: settings.textStyle.fontSize,
-      fontWeight: settings.textStyle.fontWeight,
-      letterSpacing: settings.textStyle.letterSpacing,
-      textColor: settings.textStyle.textColor,
-      strokeWidth: settings.textStyle.strokeWidth,
-      strokeColor: settings.textStyle.strokeColor,
-      glowBlur: settings.textStyle.glowBlur,
-      glowColor: settings.textStyle.glowColor,
-      shadowBlur: settings.textStyle.shadowBlur,
-      shadowColor: settings.textStyle.shadowColor,
-      shadowOffsetX: settings.textStyle.shadowOffsetX,
-      shadowOffsetY: settings.textStyle.shadowOffsetY,
-    });
-
-    const frameState = createRenderFrameState({
-      settings,
-      elapsedSeconds,
-      textBox,
-      safeAreaInset: 32,
-    });
-
-    renderStyledFrame(
-      context,
-      frameState,
-      settings.themePresetId,
-      settings.templateId,
+    let cancelled = false;
+    const resolvedFamily = resolveCanvasFontFamily(
+      settings.textStyle.fontFamily,
+      settings.textStyle.customFontFamily,
     );
+
+    const draw = () => {
+      if (cancelled || !canvasRef.current) {
+        return;
+      }
+      setPreviewFontError(false);
+      context.font = `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolvedFamily}`;
+      const textBox = measureRenderTextBox(context, displayText, {
+        fontFamily: settings.textStyle.fontFamily,
+        customFontFamily: settings.textStyle.customFontFamily,
+        fontSize: settings.textStyle.fontSize,
+        fontWeight: settings.textStyle.fontWeight,
+        letterSpacing: settings.textStyle.letterSpacing,
+        textColor: settings.textStyle.textColor,
+        strokeWidth: settings.textStyle.strokeWidth,
+        strokeColor: settings.textStyle.strokeColor,
+        glowBlur: settings.textStyle.glowBlur,
+        glowColor: settings.textStyle.glowColor,
+        shadowBlur: settings.textStyle.shadowBlur,
+        shadowColor: settings.textStyle.shadowColor,
+        shadowOffsetX: settings.textStyle.shadowOffsetX,
+        shadowOffsetY: settings.textStyle.shadowOffsetY,
+      });
+
+      const frameState = createRenderFrameState({
+        settings,
+        elapsedSeconds,
+        textBox,
+        safeAreaInset: 32,
+      });
+
+      renderStyledFrame(
+        context,
+        frameState,
+        settings.themePresetId,
+        settings.templateId,
+      );
+    };
+
+    if (typeof document !== "undefined" && "fonts" in document) {
+      // The first preview paint must wait for the same pinned face the worker
+      // uses; otherwise the canvas briefly measures/paints an OS fallback.
+      void ensurePreviewFontsLoaded()
+        .then(() =>
+          document.fonts.load(
+            `${settings.textStyle.fontWeight} ${settings.textStyle.fontSize}px ${resolvedFamily}`,
+          ),
+        )
+        .then(draw)
+        .catch(() => {
+          if (!cancelled) {
+            setPreviewFontError(true);
+          }
+        });
+    } else {
+      draw();
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [displayText, elapsedSeconds, settings]);
 
   const handlePlay = () => {
@@ -199,6 +237,15 @@ export function PreviewPanel({
       <div className="space-y-4 px-5 py-5">
         <div className="relative flex min-h-72 items-center justify-center overflow-hidden border border-border/80 bg-[linear-gradient(180deg,rgba(8,11,16,0.96),rgba(9,10,14,0.98))] p-3 sm:p-4">
           <div className="relative max-w-full" style={previewFrameStyle}>
+            {previewFontError ? (
+              <p
+                className="absolute inset-x-3 top-3 z-10 border border-destructive/40 bg-background/90 px-3 py-2 text-[12px] leading-5 text-destructive"
+                role="alert"
+              >
+                {ui.fontUnavailable ??
+                  "The preview font could not be loaded. Reload the page before exporting."}
+              </p>
+            ) : null}
             <canvas
               ref={canvasRef}
               onClick={() => (isPlaying ? handlePause() : handlePlay())}

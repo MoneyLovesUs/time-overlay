@@ -35,8 +35,8 @@ const deProPageContent: ProPageContent = {
     },
     {
       feature: "Transparentes Video",
-      free: "PNG-Sequenz",
-      pro: "PNG-Sequenz + VP9/HEVC als eine Datei",
+      free: "PNG-Sequenz bis zu 5 Minuten",
+      pro: "PNG-Sequenz bis zu 60 Minuten + VP9/HEVC als eine Datei",
     },
     {
       feature: "Vorlagen",

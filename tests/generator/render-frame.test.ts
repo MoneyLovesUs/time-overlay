@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { createGeneratorSettings } from "@/lib/generator/defaults";
-import { createRenderFrameState } from "@/lib/generator/render-frame";
+import {
+  createRenderFrameState,
+  resolveCanvasFontFamily,
+} from "@/lib/generator/render-frame";
 
 describe("createRenderFrameState", () => {
   it("formats the current frame text from the active timer settings", () => {
@@ -105,5 +108,22 @@ describe("createRenderFrameState", () => {
     expect(frameState.style.fontSize).toBeGreaterThan(settings.textStyle.fontSize);
     expect(frameState.position.x).toBeLessThan(900);
     expect(frameState.position.y).toBeLessThan(560);
+  });
+});
+
+describe("deterministic canvas fonts", () => {
+  it("pins the bundled Geist families before OS fallbacks", () => {
+    expect(resolveCanvasFontFamily("geist-mono")).toContain(
+      '"TimeOverlay Geist Mono"',
+    );
+    expect(resolveCanvasFontFamily("geist-sans")).toContain(
+      '"TimeOverlay Geist Sans"',
+    );
+  });
+
+  it("puts an uploaded font first while retaining the pinned fallback", () => {
+    expect(resolveCanvasFontFamily("geist-mono", "Brand Font")).toBe(
+      '"Brand Font", "TimeOverlay Geist Mono", ui-monospace, monospace',
+    );
   });
 });

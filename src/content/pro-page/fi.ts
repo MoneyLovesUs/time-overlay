@@ -35,8 +35,8 @@ const fiProPageContent: ProPageContent = {
     },
     {
       feature: "Läpinäkyvä video",
-      free: "PNG-sekvenssi",
-      pro: "PNG-sekvenssi + VP9/HEVC yhtenä tiedostona",
+      free: "PNG-sekvenssi enintään 5 minuuttia",
+      pro: "PNG-sekvenssi enintään 60 minuuttia + VP9/HEVC yhtenä tiedostona",
     },
     {
       feature: "Mallit",

@@ -183,7 +183,7 @@ const zhHansRootPageContent = {
         hevcAlphaUnavailableError:
           "MOV HEVC + alpha 需要 macOS 上的 Safari 17.4+。其他平台请使用 WebM VP9 + alpha。",
         mobileExportLimitError:
-          "这个导出任务太大，手机或平板无法稳定完成。MP4 最高 1080p 可以导出长计时器；PNG 序列和 WebM 在手机上最长 60 秒（720p）。4K 请在电脑上导出。",
+          "这个导出任务太大，手机或平板无法稳定完成。MP4 最高 1080p 可以导出长计时器；WebM 在手机上最长 60 秒（720p）。4K 请在电脑上导出。",
         heavyExportWarning:
           "这次导出可能会占用较多内存和 CPU。如果浏览器吃力，建议改用 720p、30 秒以内或 PNG 序列。",
         pngSequenceInfo:
@@ -209,6 +209,103 @@ const zhHansRootPageContent = {
           "设备剩余存储空间不足，无法完成这次导出。请清理一些空间，或缩短时长、降低画质。",
         pngSequenceFailedUnexpectedly: "PNG 序列导出意外失败。",
       },
+      png: {
+        prepareTitle: "准备 PNG 序列",
+        prepareIntro:
+          "你正在导出透明 PNG 序列。选择帧的保存位置前，请先确认下面的方案。",
+        prepareSummaryTemplate:
+          "{duration} 秒 · {fps} fps · {frames} 帧 · {width}×{height}",
+        estimateTemplate:
+          "约 {size}，{parts} 个 ZIP 分片，编码大约需要 {time}。估算值会随着实际帧写入而更新。",
+        estimateUnknown:
+          "未能获取样本帧，因此无法估算大小和时间。导出仍可继续。",
+        sampleProgress: "正在渲染样本帧以估算大小和时间…",
+        longJobTitle: "这是一次长时导出",
+        longJobBody:
+          "帧会分片依次写入磁盘，因此整个序列不会一直留在内存中。导入前必须解压并合并所有 ZIP 分片。",
+        saveFolderButton: "选择保存文件夹并开始",
+        saveFolderHint:
+          "浏览器会请求一次写入权限。任务文件夹会在其中创建，已完成的分片会保留在磁盘上。",
+        opfsButton: "在浏览器内生成，下载分片",
+        opfsHint:
+          "浏览器会保留临时文件，直到你下载并清理它们。请为临时副本、下载文件和解压后的帧预留空间。",
+        continueButton: "在此标签页中继续",
+        cancelPrepButton: "取消准备",
+        adviceDesktopSafari:
+          "为获得更好的导出性能，请使用桌面版 Chrome。你可以继续，但长时 PNG 导出主要在 Chrome 中验证。",
+        adviceMobile:
+          "为获得更好的导出性能，请在电脑上导出。如果此设备通过存储检查，你可以继续。",
+        capabilityMissing:
+          "此导出需要可续传的本地存储和单一活动标签页，而当前浏览器或配置文件不提供这些条件。",
+        longStorageMissing:
+          "长时导出需要可写入的文件夹，或真正能接受写入的浏览器存储。此浏览器没有安全的保存目标，因此未生成任何帧。",
+        runTitle: "PNG 序列导出",
+        modeDirectory: "保存文件夹",
+        modeBrowserStorage: "浏览器存储",
+        modeMemory: "临时内存",
+        runFramesTemplate: "已处理帧数",
+        runCommittedTemplate: "已安全保存帧数",
+        runPartTemplate: "当前分片 · 已保存分片",
+        runBytesTemplate: "已写入",
+        stoppingButton: "正在停止…",
+        cancelButton: "取消导出",
+        cancelledMessage:
+          "导出已停止。已完成的 ZIP 分片会保留，可从上次保存的分片继续。",
+        resultTitle: "PNG 导出完成",
+        directorySavedTemplate:
+          "已将 {frames} 帧保存为 {parts} 个 ZIP 分片，位于 {folder}（{size}）。",
+        opfsPartsTitle:
+          "{parts} 个 ZIP 分片，{size}。请趁分片仍列在此处时逐个下载。",
+        partDownloadButton: "下载",
+        partRangeTemplate: "帧 {first}–{last} · {size}",
+        mergeInstructionsTitle: "导入前须知",
+        mergeInstructionsBody:
+          "解压所有分片，把所有 frame-*.png 文件放到同一个文件夹，然后以所选 fps 将整个文件夹作为图像序列导入。不要将每个分片作为单独的倒计时导入。第一个 ZIP 中包含用于检查缺失帧的转换脚本。",
+        autoDownloadNote:
+          "浏览器已开始下载。请保持此标签页打开直到下载完成。",
+        openFolderHint:
+          "浏览器无法打开文件管理器；如有需要，请使用系统的文件夹窗口。",
+        cleanupButton: "清理浏览器临时文件",
+        recoveryTitle: "发现未完成的 PNG 导出",
+        recoveryBodyTemplate:
+          "{total} 帧中有 {frames} 帧已安全保存到 {parts} 个分片中。未完成的分片将重做。",
+        restoreButton: "继续导出",
+        authorizeButton: "授权并继续",
+        selectFolderButton: "选择导出文件夹",
+        removeRecordButton: "删除恢复记录",
+        fontRequired:
+          "此导出使用了自定义字体。继续时需提供相同的字体文件。",
+        fontButton: "选择字体文件",
+        downloadFailed:
+          "下载无法开始。完成的文件仍在上方可用，请重试。",
+        errorTitle: "PNG 导出出现问题",
+        errorMessages: {
+          pngStorageUnavailable:
+            "此浏览器阻止了 PNG 导出所需的本地存储。请使用桌面版 Chrome 的普通窗口。",
+          pngDirectoryPermissionDenied:
+            "未获得所选文件夹的写入权限。请重新选择文件夹并允许写入；导出尚未开始。",
+          pngStorageFull:
+            "没有足够的可用空间完成此 PNG 分片。请释放一些空间后继续；已保存的分片会保留。",
+          pngWriteFailed:
+            "保存 PNG 分片失败。已保存的分片会保留；请检查文件夹或存储后继续。",
+          pngZipValidationFailed:
+            "已保存的 ZIP 分片未通过校验。该分片将重做，更早的分片会保留。",
+          pngFrameTooLarge:
+            "单个 PNG 帧或其所需的 ZIP 元数据超过分片上限。请降低分辨率或改用更简单的样式。",
+          pngMemoryLimitExceeded:
+            "此导出所需的临时内存超过了受限的内存内处理上限。长时导出请使用桌面版 Chrome 和可写入的文件夹。",
+          pngResumeVersionMismatch:
+            "已保存的导出使用了不同的设置、素材或旧版应用，无法安全接续。请开始新的导出，并保留现有的分片。",
+          pngResumeFileMissing:
+            "某个已保存的 ZIP 分片缺失或已更改。该分片需要重做；请重新选择任务文件夹后继续。",
+          pngLocked:
+            "此导出已在另一个标签页中打开，或此浏览器无法锁定任务。请关闭其他标签页后重试。",
+          pngCheckpointFailed:
+            "此浏览器无法保留可续传 PNG 导出所需的本地检查点。请使用桌面版 Chrome，或导出一个能放进内存的短任务。",
+          pngFailedUnexpectedly:
+            "PNG 导出意外停止。已保存的分片（如有）会保留；你可以继续或开始新的导出。",
+        },
+      },
       progress: {
         remainingTemplate: "剩余 {time}",
         previewLabel: "实时预览",
@@ -220,7 +317,7 @@ const zhHansRootPageContent = {
           "透明导出可直接叠到素材上，不需要绿幕抠像。",
         ],
         desktopNote:
-          "手机和平板上请导出 MP4（最高 1080p），长计时器也能导出。导出时请保持页面打开、屏幕常亮，直到开始下载。PNG 序列和 WebM 在手机上最长 60 秒（720p）。",
+          "手机和平板上请导出 MP4（最高 1080p），长计时器也能导出。导出时请保持页面打开、屏幕常亮，直到开始下载。WebM 在手机上最长 60 秒（720p）；PNG 序列请按导出前的建议操作。",
         fallbackSuggestionTemplate: "建议：改试 {format}。",
         stageLabels: {
           validating: "正在准备导出",

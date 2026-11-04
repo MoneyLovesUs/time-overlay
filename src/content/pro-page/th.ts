@@ -35,8 +35,8 @@ const thProPageContent: ProPageContent = {
     },
     {
       feature: "วิดีโอโปร่งใส",
-      free: "ชุดภาพ PNG",
-      pro: "ชุดภาพ PNG + VP9/HEVC ไฟล์เดียว",
+      free: "ชุดภาพ PNG สูงสุด 5 นาที",
+      pro: "ชุดภาพ PNG สูงสุด 60 นาที + VP9/HEVC ไฟล์เดียว",
     },
     {
       feature: "เทมเพลต",

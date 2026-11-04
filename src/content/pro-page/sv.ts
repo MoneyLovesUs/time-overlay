@@ -35,8 +35,8 @@ const svProPageContent: ProPageContent = {
     },
     {
       feature: "Transparent video",
-      free: "PNG-sekvens",
-      pro: "PNG-sekvens + VP9/HEVC som en enda fil",
+      free: "PNG-sekvens upp till 5 minuter",
+      pro: "PNG-sekvens upp till 60 minuter + VP9/HEVC som en enda fil",
     },
     {
       feature: "Mallar",

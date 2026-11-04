@@ -55,7 +55,7 @@ describe("localized generator ui", () => {
     );
   });
 
-  it("falls back to clear mobile limits and a cancel action for locales without new copy", () => {
+  it("shows mobile PNG advice without disabling export and keeps a cancel action", () => {
     const settings = createGeneratorSettings({
       timer: { durationSeconds: 61 },
     });
@@ -64,6 +64,7 @@ describe("localized generator ui", () => {
       getInitialLocalExportSupport(),
       "mobile",
     );
+    expect(advisory.severity).toBe("info");
     const limitedMarkup = renderToStaticMarkup(
       React.createElement(ExportPanel, {
         settings,
@@ -81,8 +82,9 @@ describe("localized generator ui", () => {
     );
 
     expect(limitedMarkup).toContain(
-      "This job is too large for a reliable phone or tablet export.",
+      "PNG Sequence es la entrega local-first más fiable",
     );
+    expect(limitedMarkup).not.toMatch(/<button[^>]*disabled[^>]*>[^<]*\s*Export/i);
     expect(limitedMarkup).toContain(
       "On phones and tablets, export MP4 (up to 1080p) for long timers",
     );

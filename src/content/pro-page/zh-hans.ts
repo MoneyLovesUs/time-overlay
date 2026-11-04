@@ -35,8 +35,8 @@ const zhHansProPageContent: ProPageContent = {
     },
     {
       feature: "透明视频",
-      free: "PNG 序列",
-      pro: "PNG 序列 + 单文件 VP9/HEVC",
+      free: "PNG 序列最长 5 分钟",
+      pro: "PNG 序列最长 60 分钟 + 单文件 VP9/HEVC",
     },
     {
       feature: "模板",

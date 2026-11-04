@@ -3,6 +3,7 @@
 import posthog from "posthog-js";
 import { useEffect, useRef } from "react";
 
+import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
 import {
   createRenderFrameState,
   measureRenderTextBox,
@@ -127,11 +128,12 @@ export function LiveTimerOverlay() {
     };
     applyCanvasSize();
 
-    const startedAt = performance.now();
+    let startedAt = 0;
     let rafId = 0;
+    let fontsReady = false;
 
     const tick = () => {
-      if (cancelled) {
+      if (cancelled || !fontsReady) {
         return;
       }
       const frame = computeLiveFrame(
@@ -149,7 +151,30 @@ export function LiveTimerOverlay() {
       }
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
+    // The live page has its own canvas and never mounts the generator preview.
+    // Wait for the pinned face before the countdown clock starts so the first
+    // visible frame is not an OS fallback.
+    void ensurePreviewFontsLoaded()
+      .then(() => {
+        if (cancelled) {
+          return;
+        }
+        fontsReady = true;
+        startedAt = performance.now();
+        rafId = requestAnimationFrame(tick);
+      })
+      .catch((error) => {
+        console.error("Live overlay fonts failed to load.", error);
+        if (cancelled) {
+          return;
+        }
+        // The live overlay is not an export-critical surface. Degrade to the
+        // platform font rather than remaining permanently blank; export paths
+        // still fail explicitly when their pinned face cannot load.
+        fontsReady = true;
+        startedAt = performance.now();
+        rafId = requestAnimationFrame(tick);
+      });
 
     const controller = new AbortController();
     let reported = false;

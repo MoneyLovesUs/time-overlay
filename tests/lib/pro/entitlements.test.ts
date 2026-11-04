@@ -5,7 +5,6 @@ import {
   FREE_MAX_DURATION_SECONDS,
   PRO_MAX_DURATION_SECONDS,
   PRO_PRICE_LABEL,
-  PRO_PNG_SEQUENCE_MAX_SECONDS,
   type ProTrigger,
 } from "@/lib/pro/entitlements";
 
@@ -14,7 +13,6 @@ describe("pro entitlements", () => {
     assert.equal(PRO_PRICE_LABEL, "$9");
     assert.equal(FREE_MAX_DURATION_SECONDS, 300);
     assert.equal(PRO_MAX_DURATION_SECONDS, 3600);
-    assert.equal(PRO_PNG_SEQUENCE_MAX_SECONDS, 600);
   });
 
   it("defines the four checkout triggers", () => {

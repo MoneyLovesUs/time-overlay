@@ -39,7 +39,6 @@ import {
   GENERATOR_TEMPLATES,
   getDefaultTemplateForPreset,
   getGeneratorTemplateById,
-  PRO_SIGNATURE_TEMPLATE_IDS,
 } from "@/lib/generator/templates";
 import {
   GENERATOR_DURATION_LIMIT_SECONDS,
@@ -65,6 +64,57 @@ import { downloadBlob } from "@/lib/generator/export/png-sequence";
 import { holdScreenWakeLock } from "@/lib/generator/export/wake-lock";
 import { estimateRemainingMs } from "@/lib/generator/export/progress";
 import { buildExportFunnelTelemetry } from "@/lib/generator/export/telemetry";
+import {
+  collectPngRecoveryOffers,
+  createPngJobDirectory,
+  cleanPngOpfsJob,
+  pickPngDirectory,
+  queryPngDirectoryPermission,
+  readOpfsPngPart,
+  readPngFontBackup,
+  removePngRecoveryRecord,
+  requestPngDirectoryPermission,
+  supportsPngDirectoryPicker,
+  tryAcquirePngJobLock,
+  type PngJobLock,
+  type PngRecoveryOffer,
+} from "@/lib/generator/export/png-client";
+import {
+  deletePngCheckpoint,
+  isPngCheckpointStoreAvailable,
+  listPngCheckpoints,
+} from "@/lib/generator/export/png-checkpoint";
+import {
+  isPngWorkerResponse,
+  PNG_RENDERER_VERSION,
+  type PngErrorCode,
+  type PngOutputMode,
+  type PngPartDescriptor,
+  type PngPreflightResult,
+  type PngStartPayload,
+  type PngWorkerResponse,
+} from "@/lib/generator/export/png-contract";
+import {
+  formatPngBytes,
+  getPngPlatformAdvice,
+  isPngLongExport,
+  PNG_MEMORY_BUDGET_BYTES,
+  type PngPlatformAdvice,
+} from "@/lib/generator/export/png-limits";
+import { readLatestPngManifest } from "@/lib/generator/export/png-manifest";
+import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
+import {
+  claimPngStart,
+  createPngStartGuard,
+} from "@/lib/generator/export/png-start-guard";
+import { sha256Hex } from "@/lib/generator/export/png-zip";
+import {
+  PngPrepareDialog,
+  PngRecoveryCard,
+  PngResultCard,
+  PngRunCard,
+  type PngResultView,
+} from "@/components/generator/png-export-view";
 import {
   getExportAdvisory,
   getInitialLocalExportSupport,
@@ -109,8 +159,60 @@ type CompletedExportArtifact = {
   mimeType: string;
 };
 
+type PngPrepState = {
+  jobId: string;
+  attemptId: string;
+  settings: GeneratorSettings;
+  uploadedFont: UploadedFont | null;
+  totalFrames: number;
+  preflight: PngPreflightResult | null;
+  advice: PngPlatformAdvice | null;
+  isLongJob: boolean;
+  canDirectory: boolean;
+  opfsWritable: boolean;
+  checkpointAvailable: boolean;
+  lockAvailable: boolean;
+  memoryAllowed: boolean;
+  autoDownload: boolean;
+  error: string | null;
+};
+
+type PngRunState = {
+  jobId: string;
+  attemptId: string;
+  outputMode: PngOutputMode;
+  settings: GeneratorSettings;
+  totalFrames: number;
+  parts: PngPartDescriptor[];
+  processedFrames: number;
+  committedFrames: number;
+  currentPart: number;
+  bytesWritten: number;
+  stage: string;
+  cancelling: boolean;
+  autoDownload: boolean;
+  resumed: boolean;
+};
+
+type PngResultState = PngResultView & {
+  blob?: Blob;
+  cleanupAvailable: boolean;
+  downloadError: string | null;
+};
+
+type PngRecoveryView = PngRecoveryOffer & {
+  needsFont: boolean;
+  needsPermission: boolean;
+  error: string | null;
+};
+
 const WORKER_WATCHDOG_MS = 60_000;
 const WORKER_PACKAGING_WATCHDOG_MS = 120_000;
+const PNG_WATCHDOG_MS = 120_000;
+const PNG_PREFLIGHT_WATCHDOG_MS = 180_000;
+const PNG_CANCEL_GRACE_MS = 5_000;
+const DEFAULT_PNG_GENERIC_ERROR =
+  "The PNG export failed unexpectedly. Your completed ZIP parts, if any, are kept below.";
 
 // MP4 copy lands with the export-panel button (task 3); until then the
 // pipeline uses the same English fallbacks as the other runtime messages.
@@ -200,24 +302,86 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const activeExportIdRef = useRef(0);
   const activeExportSettingsRef = useRef<GeneratorSettings | null>(null);
   const activeExportTelemetryRef = useRef<AnalyticsEventPayload>({});
-  const activeExportKindRef = useRef<"finalizing" | "webm" | "worker" | null>(
-    null,
-  );
+  const activeExportKindRef = useRef<
+    "finalizing" | "webm" | "worker" | "png" | null
+  >(null);
   const isExportingRef = useRef(false);
   const releaseWakeLockRef = useRef<(() => void) | null>(null);
   const webmAbortControllerRef = useRef<AbortController | null>(null);
   const workerWatchdogRef = useRef<number | null>(null);
+  const pngPrepRef = useRef<PngPrepState | null>(null);
+  const pngRunRef = useRef<PngRunState | null>(null);
+  const pngJobLockRef = useRef<PngJobLock | null>(null);
+  const pngStartGuardRef = useRef(createPngStartGuard());
+  const pngCancelTimerRef = useRef<number | null>(null);
+  const pngWatchdogRef = useRef<number | null>(null);
+  const pngProgressSignatureRef = useRef<string | null>(null);
+  const pngRecoveryFontOfferRef = useRef<PngRecoveryView | null>(null);
+  const pngFontInputRef = useRef<HTMLInputElement | null>(null);
+  const [pngPrep, setPngPrep] = useState<PngPrepState | null>(null);
+  const [pngRun, setPngRun] = useState<PngRunState | null>(null);
+  const [pngResult, setPngResult] = useState<PngResultState | null>(null);
+  const [pngRecoveries, setPngRecoveries] = useState<PngRecoveryView[]>([]);
+  const [pngRecoveryBusy, setPngRecoveryBusy] = useState(false);
+  const [pngRecoveryFonts, setPngRecoveryFonts] = useState<
+    Record<string, UploadedFont>
+  >({});
+  const [pngImportError, setPngImportError] = useState<string | null>(null);
 
-  // Swap in a fresh preview snapshot and release the previous bitmap. ImageBitmap
-  // holds GPU/canvas memory until close() is called, so leaking one per ~250ms of
-  // export would balloon memory on long renders.
+  // Preview ownership is a three-state protocol: committed (state holds it),
+  // drawn (React's effect actually painted it), and retired (no longer the
+  // rendered bitmap). A retired bitmap is closed only after the replacement has
+  // been drawn, or after the surface has committed an empty state. There is no
+  // timer: a suspended tab cannot outlive a drawable bitmap, and StrictMode's
+  // repeated setup still sees a live image. PNG acknowledgements are sent after
+  // the draw, so the worker holds at most one outstanding preview.
+  const consumedPreviewRef = useRef(new WeakSet<ImageBitmap>());
+  const retiredPreviewsRef = useRef<ImageBitmap[]>([]);
+  const pngPendingPreviewRef = useRef<{
+    bitmap: ImageBitmap;
+    jobId: string;
+    attemptId: string;
+  } | null>(null);
+
+  const closeRetiredPreviews = useCallback(() => {
+    for (const bitmap of retiredPreviewsRef.current) {
+      bitmap.close();
+    }
+    retiredPreviewsRef.current = [];
+  }, []);
+
   const setPreview = useCallback((next: ImageBitmap | null) => {
-    if (previewBitmapRef.current && previewBitmapRef.current !== next) {
-      previewBitmapRef.current.close();
+    const previous = previewBitmapRef.current;
+    if (previous && previous !== next) {
+      retiredPreviewsRef.current.push(previous);
     }
     previewBitmapRef.current = next;
     setPreviewBitmap(next);
   }, []);
+
+  const handlePreviewDrawn = useCallback(
+    (bitmap: ImageBitmap) => {
+      consumedPreviewRef.current.add(bitmap);
+      // Everything retired before this draw belongs to older commits; React has
+      // already run their effects (or dropped them) before committing this one.
+      closeRetiredPreviews();
+      const pending = pngPendingPreviewRef.current;
+      if (pending?.bitmap === bitmap) {
+        pngPendingPreviewRef.current = null;
+        exportRuntimeRef.current?.getExportWorker().postMessage({
+          kind: "png-preview-ack",
+          jobId: pending.jobId,
+          attemptId: pending.attemptId,
+        });
+      }
+    },
+    [closeRetiredPreviews],
+  );
+
+  const handlePreviewCleared = useCallback(() => {
+    // The canvas is gone, so no pending effect can still draw these bitmaps.
+    closeRetiredPreviews();
+  }, [closeRetiredPreviews]);
 
   const elapsedExportMs = () =>
     exportStartedAtRef.current === null
@@ -232,6 +396,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       (message, [key, value]) => message.replaceAll(`{${key}}`, String(value)),
       template,
     );
+  const pngCopy = ui.exportPanel.png;
   const clientEnvironment = useMemo(() => detectClientEnvironment(), []);
   const isMobileDevice = clientEnvironment.deviceType !== "desktop";
   const exportAdvisory = useMemo(
@@ -354,6 +519,12 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     // already normalized by updateSettings.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPro]);
+
+  useEffect(() => {
+    // The preview canvas resolves the same pinned families the export worker
+    // loads before rendering, so what the user sees matches the exported PNG.
+    void ensurePreviewFontsLoaded().catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     setSupport(getLocalExportSupport());
@@ -898,6 +1069,1242 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     [clearWorkerWatchdog, finishExportFailure],
   );
 
+  function createPngId(prefix: string) {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+      return prefix ? `${prefix}-${crypto.randomUUID()}` : crypto.randomUUID();
+    }
+    return `${prefix}-${Date.now().toString(36)}-${Math.random()
+      .toString(36)
+      .slice(2, 10)}`;
+  }
+
+  function clearPngWatchdog() {
+    if (pngWatchdogRef.current !== null) {
+      window.clearTimeout(pngWatchdogRef.current);
+      pngWatchdogRef.current = null;
+    }
+    pngProgressSignatureRef.current = null;
+  }
+
+  function clearPngCancelTimer() {
+    if (pngCancelTimerRef.current !== null) {
+      window.clearTimeout(pngCancelTimerRef.current);
+      pngCancelTimerRef.current = null;
+    }
+  }
+
+  function releasePngJobLock() {
+    pngJobLockRef.current?.release();
+    pngJobLockRef.current = null;
+  }
+
+  function pngErrorText(code: string): string {
+    const messages = pngCopy.errorMessages as Record<string, string>;
+    return messages[code] ?? DEFAULT_PNG_GENERIC_ERROR;
+  }
+
+  function updatePngRecovery(
+    jobId: string,
+    patch: Partial<PngRecoveryView>,
+  ) {
+    setPngRecoveries((current) =>
+      current.map((offer) =>
+        offer.jobId === jobId ? { ...offer, ...patch } : offer,
+      ),
+    );
+  }
+
+  const refreshPngRecoveries = useCallback(async () => {
+    try {
+      const offers = await collectPngRecoveryOffers(
+        await listPngCheckpoints(),
+      );
+      const views: PngRecoveryView[] = [];
+      for (const offer of offers) {
+        let needsFont = false;
+        if (offer.manifest.uploadedFont) {
+          const bytes =
+            offer.checkpoint?.uploadedFont?.bytes ??
+            (offer.jobDirectory
+              ? await readPngFontBackup(offer.jobDirectory)
+              : null);
+          needsFont = !bytes;
+        }
+        const permission = offer.jobDirectory
+          ? await queryPngDirectoryPermission(offer.jobDirectory)
+          : "granted";
+        views.push({
+          ...offer,
+          needsFont,
+          needsPermission: permission === "prompt",
+          error: null,
+        });
+      }
+      setPngRecoveries(views);
+    } catch {
+      // Recovery is an enhancement; a scan failure must not break the page.
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshPngRecoveries();
+  }, [refreshPngRecoveries]);
+
+  function setPngRunState(next: PngRunState | null) {
+    pngRunRef.current = next;
+    setPngRun(next);
+  }
+
+  function resetPngRuntime() {
+    pngStartGuardRef.current.release();
+    clearPngWatchdog();
+    clearPngCancelTimer();
+    releasePngJobLock();
+    activeExportKindRef.current = null;
+    activeExportSettingsRef.current = null;
+    isExportingRef.current = false;
+    releaseWakeLockRef.current?.();
+    releaseWakeLockRef.current = null;
+    abandonFiredRef.current = true;
+    exportStartedAtRef.current = null;
+    setIsExporting(false);
+    pngPendingPreviewRef.current = null;
+    setPreview(null);
+    setEtaMs(null);
+    setPngRunState(null);
+  }
+
+  function armPngWatchdog(exportId: number) {
+    const run = pngRunRef.current;
+    const signature = run
+      ? `${run.stage}:${run.processedFrames}:${run.committedFrames}:${run.bytesWritten}`
+      : "preflight";
+    // A heartbeat that repeats the same progress must not push the deadline
+    // forever; only a real frame/byte/commit change resets it.
+    if (
+      pngWatchdogRef.current !== null &&
+      pngProgressSignatureRef.current === signature
+    ) {
+      return;
+    }
+    pngProgressSignatureRef.current = signature;
+    if (pngWatchdogRef.current !== null) {
+      window.clearTimeout(pngWatchdogRef.current);
+    }
+    const check = () => {
+      if (
+        activeExportIdRef.current !== exportId ||
+        !isExportingRef.current ||
+        activeExportKindRef.current !== "png"
+      ) {
+        return;
+      }
+      if (document.visibilityState === "hidden") {
+        // Sleep / background suspension is not proof of a stall. Probe after
+        // waking; only then does a silent worker count as interrupted.
+        pngWatchdogRef.current = window.setTimeout(check, 15_000);
+        return;
+      }
+      pngWatchdogRef.current = null;
+      exportRuntimeRef.current?.terminateExportWorker();
+      releasePngJobLock();
+      finishExportFailure(
+        exportId,
+        "exportWorkerStalled",
+        pngErrorText("pngFailedUnexpectedly"),
+        true,
+      );
+      setPngRunState(null);
+      void refreshPngRecoveries();
+    };
+    pngWatchdogRef.current = window.setTimeout(
+      check,
+      pngRunRef.current ? PNG_WATCHDOG_MS : PNG_PREFLIGHT_WATCHDOG_MS,
+    );
+  }
+
+  function attachPngWorker(exportId: number) {
+    const worker = getExportRuntime().getExportWorker();
+    worker.onmessage = (event) => handlePngWorkerMessage(event, exportId);
+    worker.onerror = (event) => {
+      event.preventDefault();
+      exportRuntimeRef.current?.terminateExportWorker();
+      releasePngJobLock();
+      finishExportFailure(
+        exportId,
+        "exportWorkerCrashed",
+        pngErrorText("pngFailedUnexpectedly"),
+        true,
+      );
+      setPngRunState(null);
+      void refreshPngRecoveries();
+    };
+    worker.onmessageerror = () => {
+      exportRuntimeRef.current?.terminateExportWorker();
+      releasePngJobLock();
+      finishExportFailure(
+        exportId,
+        "exportWorkerMessageUnreadable",
+        pngErrorText("pngFailedUnexpectedly"),
+        true,
+      );
+      setPngRunState(null);
+      void refreshPngRecoveries();
+    };
+    return worker;
+  }
+
+  function cancelPngPrep() {
+    clearPngWatchdog();
+    exportRuntimeRef.current?.terminateExportWorker();
+    releasePngJobLock();
+    pngPrepRef.current = null;
+    setPngPrep(null);
+    resetPngRuntime();
+    setExportProgress({
+      stage: "idle",
+      completedFrames: 0,
+      totalFrames: exportTotalsRef.current,
+      message: "",
+    });
+  }
+
+  function failPngPrep(code: PngErrorCode) {
+    exportRuntimeRef.current?.terminateExportWorker();
+    releasePngJobLock();
+    pngPrepRef.current = null;
+    setPngPrep(null);
+    // Sampling/destination failures happen before export_started; record them
+    // as unsupported conditions rather than pretending a job failed mid-run.
+    trackEvent("export_unsupported", {
+      reason: code,
+      ...activeExportTelemetryRef.current,
+    });
+    resetPngRuntime();
+    exportProgressRef.current = {
+      stage: "error",
+      completedFrames: 0,
+      totalFrames: exportTotalsRef.current,
+      message: pngErrorText(code),
+    };
+    setExportProgress(exportProgressRef.current);
+  }
+
+  async function beginPngExport(exportSettings: GeneratorSettings) {
+    const exportId = activeExportIdRef.current + 1;
+    activeExportIdRef.current = exportId;
+    pngStartGuardRef.current.release();
+    activeExportKindRef.current = "png";
+    isExportingRef.current = true;
+    const jobId = createPngId("job");
+    const attemptId = createPngId("attempt");
+    const totalFrames = Math.max(
+      1,
+      Math.round(
+        exportSettings.timer.durationSeconds * exportSettings.export.fps,
+      ),
+    );
+    const telemetry = buildExportFunnelTelemetry({
+      settings: exportSettings,
+      environment: analyticsEnvironment,
+      template: templateAnalytics,
+    });
+    const checkpointAvailable = await isPngCheckpointStoreAvailable();
+    const lockAvailable =
+      typeof navigator !== "undefined" && Boolean(navigator.locks);
+    const prep: PngPrepState = {
+      jobId,
+      attemptId,
+      settings: exportSettings,
+      uploadedFont,
+      totalFrames,
+      preflight: null,
+      advice: null,
+      isLongJob: false,
+      canDirectory: supportsPngDirectoryPicker(),
+      opfsWritable: false,
+      checkpointAvailable,
+      lockAvailable,
+      memoryAllowed: false,
+      autoDownload: false,
+      error: null,
+    };
+    pngPrepRef.current = prep;
+    setPngPrep(prep);
+    setPngResult(null);
+    exportTotalsRef.current = totalFrames;
+    exportStartedAtRef.current = performance.now();
+    activeExportSettingsRef.current = exportSettings;
+    activeExportTelemetryRef.current = telemetry;
+    // No export_started yet: abandonment during sampling is not a started job.
+    abandonFiredRef.current = true;
+    releaseWakeLockRef.current?.();
+    releaseWakeLockRef.current = holdScreenWakeLock();
+    setPreview(null);
+    setEtaMs(null);
+    setIsExporting(true);
+    const initialProgress: ExportProgressState = {
+      stage: "validating",
+      completedFrames: 0,
+      totalFrames,
+      message: ui.exportPanel.runtimeMessages.preparingPngSequence,
+    };
+    exportProgressRef.current = initialProgress;
+    setExportProgress(initialProgress);
+
+    const pixelFrames =
+      exportSettings.canvas.width *
+      exportSettings.canvas.height *
+      totalFrames;
+    const enablePreview = !isMobileDevice && pixelFrames < 4_000_000_000;
+    try {
+      const worker = attachPngWorker(exportId);
+      worker.postMessage({
+        kind: "png-preflight",
+        jobId,
+        attemptId,
+        payload: {
+          settings: exportSettings,
+          uploadedFont: uploadedFont ?? undefined,
+          rendererVersion: PNG_RENDERER_VERSION,
+          enablePreview,
+        },
+      });
+      armPngWatchdog(exportId);
+    } catch {
+      failPngPrep("pngFailedUnexpectedly");
+    }
+  }
+
+  function applyPngPreflight(
+    exportId: number,
+    jobId: string,
+    attemptId: string,
+    result: PngPreflightResult,
+  ) {
+    const prep = pngPrepRef.current;
+    if (
+      !prep ||
+      prep.jobId !== jobId ||
+      prep.attemptId !== attemptId ||
+      activeExportIdRef.current !== exportId
+    ) {
+      return;
+    }
+    clearPngWatchdog();
+    const settings = prep.settings;
+    const shape = {
+      durationSeconds: settings.timer.durationSeconds,
+      fps: settings.export.fps,
+      totalFrames: result.totalFrames,
+      width: settings.canvas.width,
+      height: settings.canvas.height,
+      estimatedArchiveBytes: result.estimatedArchiveBytes,
+    };
+    const advice = getPngPlatformAdvice({
+      shape,
+      deviceType: clientEnvironment.deviceType,
+      browser: clientEnvironment.browser,
+    });
+    const isLongJob = isPngLongExport(shape);
+    const memoryAllowed =
+      result.estimatedArchiveBytes === null ||
+      result.estimatedArchiveBytes <= PNG_MEMORY_BUDGET_BYTES;
+    const next: PngPrepState = {
+      ...prep,
+      totalFrames: result.totalFrames,
+      preflight: result,
+      advice,
+      isLongJob,
+      opfsWritable: result.opfsWritable,
+      memoryAllowed,
+      autoDownload: !isLongJob && advice === null,
+      error: null,
+    };
+    pngPrepRef.current = next;
+    setPngPrep(next);
+
+    // Long jobs and platform advice need one explicit preparation step. Short
+    // jobs keep the click-export-download experience.
+    if (isLongJob || advice !== null) {
+      return;
+    }
+
+    if (memoryAllowed) {
+      void startPngRunFromPrep(exportId, next, {
+        outputMode: "memory",
+        autoDownload: true,
+      });
+      return;
+    }
+    if (result.opfsWritable) {
+      void startPngRunFromPrep(exportId, next, {
+        outputMode: "opfs",
+        autoDownload: true,
+      });
+      return;
+    }
+    failPngPrep("pngMemoryLimitExceeded");
+  }
+
+  function claimPngPrep(prep: PngPrepState): boolean {
+    return claimPngStart(
+      pngStartGuardRef.current,
+      pngPrepRef.current?.jobId,
+      prep.jobId,
+      () => {
+        // Claim synchronously: the second click must see no preparation and
+        // return without touching the worker or lock held by the winner.
+        pngPrepRef.current = null;
+        setPngPrep(null);
+      },
+    );
+  }
+
+  async function startPngRunFromPrep(
+    exportId: number,
+    prep: PngPrepState,
+    destination: {
+      outputMode: PngOutputMode;
+      directory?: FileSystemDirectoryHandle;
+      directoryName?: string;
+      autoDownload: boolean;
+    },
+    alreadyClaimed = false,
+  ) {
+    if (!alreadyClaimed && !claimPngPrep(prep)) {
+      return;
+    }
+    if (alreadyClaimed) {
+      pngPrepRef.current = null;
+      setPngPrep(null);
+    }
+    if (destination.outputMode !== "memory") {
+      if (!prep.checkpointAvailable) {
+        failPngPrep("pngCheckpointFailed");
+        pngStartGuardRef.current.release();
+        return;
+      }
+      const lock = await tryAcquirePngJobLock(prep.jobId);
+      if (!lock) {
+        failPngPrep("pngLocked");
+        pngStartGuardRef.current.release();
+        return;
+      }
+      pngJobLockRef.current = lock;
+    }
+    const parts: PngPartDescriptor[] = [];
+    const committedFrames = 0;
+    const run: PngRunState = {
+      jobId: prep.jobId,
+      attemptId: prep.attemptId,
+      outputMode: destination.outputMode,
+      settings: prep.settings,
+      totalFrames: prep.totalFrames,
+      parts,
+      processedFrames: committedFrames,
+      committedFrames,
+      currentPart: 1,
+      bytesWritten: 0,
+      stage: "preparing",
+      cancelling: false,
+      autoDownload: destination.autoDownload,
+      resumed: false,
+    };
+    setPngRunState(run);
+    abandonFiredRef.current = false;
+    const pixelFrames =
+      prep.settings.canvas.width *
+      prep.settings.canvas.height *
+      prep.totalFrames;
+    const payload: PngStartPayload = {
+      jobId: prep.jobId,
+      attemptId: prep.attemptId,
+      settings: prep.settings,
+      uploadedFont: prep.uploadedFont ?? undefined,
+      rendererVersion: PNG_RENDERER_VERSION,
+      outputMode: destination.outputMode,
+      outputDirectory: destination.directory,
+      outputDirectoryName: destination.directoryName,
+      enablePreview: !isMobileDevice && pixelFrames < 4_000_000_000,
+    };
+    trackEvent("export_started", {
+      ...activeExportTelemetryRef.current,
+      outputMode: destination.outputMode,
+      resumed: false,
+    });
+    try {
+      const worker = attachPngWorker(exportId);
+      worker.postMessage({ kind: "png-start", payload });
+      armPngWatchdog(exportId);
+    } catch {
+      releasePngJobLock();
+      finishExportFailure(
+        exportId,
+        "exportWorkerUnavailable",
+        pngErrorText("pngFailedUnexpectedly"),
+        true,
+      );
+      setPngRunState(null);
+    }
+    pngStartGuardRef.current.release();
+  }
+
+  async function handlePngChooseFolder() {
+    const prep = pngPrepRef.current;
+    if (!prep?.preflight || pngStartGuardRef.current.isBusy()) {
+      return;
+    }
+    // Hold the guard across picker + directory creation so a double-click
+    // cannot create two task directories.
+    if (!pngStartGuardRef.current.claim()) {
+      return;
+    }
+    try {
+      let picked: FileSystemDirectoryHandle | "cancelled";
+      try {
+        // First await in the click handler: the picker needs this activation.
+        picked = await pickPngDirectory();
+      } catch {
+        updatePngPrepError(pngCopy.capabilityMissing);
+        return;
+      }
+      if (picked === "cancelled") {
+        cancelPngPrep();
+        return;
+      }
+      const job = await createPngJobDirectory(picked, prep.jobId);
+      const next: PngPrepState = { ...prep, jobId: job.jobId };
+      pngPrepRef.current = next;
+      setPngPrep(next);
+      await startPngRunFromPrep(
+        activeExportIdRef.current,
+        next,
+        {
+          outputMode: "directory",
+          directory: job.directory,
+          directoryName: job.directoryName,
+          autoDownload: false,
+        },
+        true,
+      );
+    } catch {
+      updatePngPrepError(pngErrorText("pngDirectoryPermissionDenied"));
+    } finally {
+      pngStartGuardRef.current.release();
+    }
+  }
+
+  function updatePngPrepError(message: string | null) {
+    const prep = pngPrepRef.current;
+    if (!prep) {
+      return;
+    }
+    const next = { ...prep, error: message };
+    pngPrepRef.current = next;
+    setPngPrep(next);
+  }
+
+  function handlePngUseOpfs() {
+    const prep = pngPrepRef.current;
+    if (!prep?.preflight) {
+      return;
+    }
+    void startPngRunFromPrep(activeExportIdRef.current, prep, {
+      outputMode: "opfs",
+      autoDownload: false,
+    });
+  }
+
+  function handlePngContinueMemory() {
+    const prep = pngPrepRef.current;
+    if (!prep?.preflight) {
+      return;
+    }
+    void startPngRunFromPrep(activeExportIdRef.current, prep, {
+      outputMode: "memory",
+      autoDownload: true,
+    });
+  }
+
+  function handlePngWorkerMessage(
+    event: MessageEvent<ExportWorkerMessage>,
+    exportId: number,
+  ) {
+    const message = event.data;
+    const run = pngRunRef.current;
+    const prep = pngPrepRef.current;
+
+    if (message.kind === "preview") {
+      if (
+        !run ||
+        message.jobId !== run.jobId ||
+        message.attemptId !== run.attemptId
+      ) {
+        message.payload.bitmap.close();
+        return;
+      }
+      armPngWatchdog(exportId);
+      pngPendingPreviewRef.current = {
+        bitmap: message.payload.bitmap,
+        jobId: run.jobId,
+        attemptId: run.attemptId,
+      };
+      setPreview(message.payload.bitmap);
+      return;
+    }
+
+    if (!isPngWorkerResponse(message)) {
+      return;
+    }
+
+    if (message.kind === "png-preflight-result") {
+      if (
+        prep &&
+        message.jobId === prep.jobId &&
+        message.attemptId === prep.attemptId
+      ) {
+        applyPngPreflight(
+          exportId,
+          message.jobId,
+          message.attemptId,
+          message.payload,
+        );
+      }
+      return;
+    }
+
+    if (message.kind === "png-error" && !run) {
+      // A stale worker message must not dismiss an unrelated preparation.
+      if (
+        prep &&
+        message.jobId === prep.jobId &&
+        message.attemptId === prep.attemptId
+      ) {
+        failPngPrep(message.payload.errorCode);
+      }
+      return;
+    }
+
+    if (
+      !run ||
+      message.jobId !== run.jobId ||
+      message.attemptId !== run.attemptId
+    ) {
+      return;
+    }
+
+    if (message.kind === "png-progress") {
+      const progress = message.payload;
+      const nextRun: PngRunState = {
+        ...run,
+        stage: progress.stage,
+        processedFrames: progress.processedFrames,
+        committedFrames: progress.committedFrames,
+        currentPart: progress.currentPart,
+        bytesWritten: progress.bytesWritten,
+      };
+      setPngRunState(nextRun);
+      const stage: ExportProgressState["stage"] =
+        progress.stage === "preparing"
+          ? "validating"
+          : progress.stage === "rendering" || progress.stage === "writing"
+            ? "rendering-frames"
+            : "packaging";
+      const nextProgress: ExportProgressState = {
+        stage,
+        completedFrames: progress.processedFrames,
+        totalFrames: run.totalFrames,
+        message: "",
+      };
+      const localized = localizeProgressMessage(nextProgress);
+      exportProgressRef.current = localized;
+      setExportProgress(localized);
+      setEtaMs(
+        estimateRemainingMs(
+          elapsedExportMs() ?? 0,
+          progress.processedFrames,
+          run.totalFrames,
+        ),
+      );
+      armPngWatchdog(exportId);
+      return;
+    }
+
+    if (message.kind === "png-part-committed") {
+      const part = message.payload.part;
+      const parts = run.parts.some(
+        (existing) => existing.partNumber === part.partNumber,
+      )
+        ? run.parts
+        : [...run.parts, part];
+      setPngRunState({
+        ...run,
+        parts,
+        committedFrames: part.nextFrameIndex,
+        currentPart: parts.length + 1,
+      });
+      armPngWatchdog(exportId);
+      return;
+    }
+
+    if (message.kind === "png-complete") {
+      void completePngRun(exportId, message.payload);
+      return;
+    }
+
+    if (message.kind === "png-cancelled") {
+      void cancelledPngRun(exportId, message.payload);
+      return;
+    }
+
+    if (message.kind === "png-error") {
+      void errorPngRun(exportId, message.payload);
+    }
+  }
+
+  async function completePngRun(
+    exportId: number,
+    payload: Extract<PngWorkerResponse, { kind: "png-complete" }>["payload"],
+  ) {
+    const run = pngRunRef.current;
+    if (
+      !run ||
+      activeExportIdRef.current !== exportId ||
+      !isExportingRef.current
+    ) {
+      return;
+    }
+    clearPngWatchdog();
+    clearPngCancelTimer();
+    exportRuntimeRef.current?.terminateExportWorker();
+    releasePngJobLock();
+    const outputTelemetry: AnalyticsEventPayload = {
+      ...activeExportTelemetryRef.current,
+      outputMode: payload.outputMode,
+      partCount: payload.parts.length,
+      totalBytes: payload.totalBytes,
+      totalFrames: payload.totalFrames,
+      committedFrames: payload.totalFrames,
+      resumed: run.resumed,
+    };
+    trackEvent("export_generated", outputTelemetry);
+
+    let autoDownloaded = false;
+    let downloadError: string | null = null;
+    let resultBlob: Blob | undefined;
+    const fileName = "time-overlay.zip";
+
+    try {
+      if (payload.outputMode === "memory") {
+        if (!payload.blob) {
+          throw new Error("The in-memory PNG archive is missing.");
+        }
+        await validateExportArtifact(payload.blob, "application/zip", fileName);
+        downloadBlob(payload.blob, fileName);
+        resultBlob = payload.blob;
+        autoDownloaded = true;
+        trackEvent("export_download_requested", {
+          ...outputTelemetry,
+          fileName,
+        });
+      } else if (
+        payload.outputMode === "opfs" &&
+        run.autoDownload &&
+        payload.parts.length === 1
+      ) {
+        const part = payload.parts[0];
+        const file = await readOpfsPngPart(run.jobId, part.fileName);
+        downloadBlob(file, part.fileName);
+        autoDownloaded = true;
+        trackEvent("export_download_requested", {
+          ...outputTelemetry,
+          fileName: part.fileName,
+          partNumber: part.partNumber,
+        });
+      }
+    } catch {
+      // The output exists; a failed automatic download must not discard it.
+      downloadError = pngCopy.downloadFailed;
+    }
+    // One completion event for the whole task; it does not mean every browser
+    // part was downloaded. Downloads are tracked separately per part.
+    trackEvent("export_completed", {
+      ...outputTelemetry,
+      outputMode: payload.outputMode,
+      downloadsRequested: autoDownloaded ? 1 : 0,
+    });
+
+    setPngResult({
+      jobId: run.jobId,
+      outputMode: payload.outputMode,
+      parts: payload.parts,
+      totalFrames: payload.totalFrames,
+      totalBytes: payload.totalBytes,
+      outputDirectoryName: payload.outputDirectoryName,
+      autoDownloaded,
+      blob: resultBlob,
+      cleanupAvailable: payload.outputMode === "opfs",
+      downloadError,
+    });
+
+    const completeMessage =
+      payload.outputMode === "directory"
+        ? formatTemplate(pngCopy.directorySavedTemplate, {
+            folder: payload.outputDirectoryName ?? run.jobId,
+            parts: payload.parts.length,
+            frames: payload.totalFrames,
+            size: formatPngBytes(payload.totalBytes),
+          })
+        : payload.outputMode === "opfs"
+          ? pngCopy.resultTitle
+          : formatTemplate(
+              ui.exportPanel.runtimeMessages.exportReadyTemplate,
+              { fileName },
+            );
+
+    resetPngRuntime();
+    setExportProgress({
+      stage: "complete",
+      completedFrames: payload.totalFrames,
+      totalFrames: payload.totalFrames,
+      message: completeMessage,
+    });
+    await deletePngCheckpoint(run.jobId).catch(() => undefined);
+    await refreshPngRecoveries();
+  }
+
+  async function cancelledPngRun(
+    exportId: number,
+    payload: Extract<PngWorkerResponse, { kind: "png-cancelled" }>["payload"],
+  ) {
+    const run = pngRunRef.current;
+    if (
+      !run ||
+      activeExportIdRef.current !== exportId ||
+      !isExportingRef.current
+    ) {
+      return;
+    }
+    const committedFrames =
+      payload.committedParts.length > 0
+        ? payload.committedParts[payload.committedParts.length - 1]
+            .nextFrameIndex
+        : 0;
+    trackEvent("export_cancelled", {
+      ...activeExportTelemetryRef.current,
+      stage: run.stage,
+      outputMode: run.outputMode,
+      committedFrames,
+      totalFrames: run.totalFrames,
+      durationMs: elapsedExportMs(),
+    });
+    exportRuntimeRef.current?.terminateExportWorker();
+    resetPngRuntime();
+    setExportProgress({
+      stage: "idle",
+      completedFrames: committedFrames,
+      totalFrames: run.totalFrames,
+      message: pngCopy.cancelledMessage,
+    });
+    await refreshPngRecoveries();
+  }
+
+  async function errorPngRun(
+    exportId: number,
+    payload: Extract<PngWorkerResponse, { kind: "png-error" }>["payload"],
+  ) {
+    const run = pngRunRef.current;
+    if (
+      !run ||
+      activeExportIdRef.current !== exportId ||
+      !isExportingRef.current
+    ) {
+      return;
+    }
+    exportRuntimeRef.current?.terminateExportWorker();
+    releasePngJobLock();
+    setPngRunState(null);
+    finishExportFailure(
+      exportId,
+      payload.errorCode,
+      pngErrorText(payload.errorCode),
+      true,
+    );
+    await refreshPngRecoveries();
+  }
+
+  async function handlePngRecoveryRestore(offer: PngRecoveryView) {
+    if (isExportingRef.current) {
+      return;
+    }
+    if (offer.needsDirectorySelection) {
+      await handlePngRecoverySelectFolder(offer);
+      return;
+    }
+    const directory = offer.jobDirectory;
+    if (directory) {
+      // First await in this click: requestPermission needs the gesture.
+      const permission = await requestPngDirectoryPermission(directory);
+      if (permission !== "granted") {
+        updatePngRecovery(offer.jobId, {
+          needsPermission: permission === "prompt",
+          error: pngCopy.errorMessages.pngDirectoryPermissionDenied,
+        });
+        return;
+      }
+    }
+    updatePngRecovery(offer.jobId, { needsPermission: false, error: null });
+    await proceedPngResume(offer, directory);
+  }
+
+  async function handlePngRecoverySelectFolder(offer: PngRecoveryView) {
+    let picked: FileSystemDirectoryHandle | "cancelled";
+    try {
+      picked = await pickPngDirectory();
+    } catch {
+      updatePngRecovery(offer.jobId, { error: pngCopy.capabilityMissing });
+      return;
+    }
+    if (picked === "cancelled") {
+      return;
+    }
+    const latest = await readLatestPngManifest(picked, offer.jobId)
+      .then((result) => result?.manifest ?? null)
+      .catch(() => null);
+    if (!latest) {
+      updatePngRecovery(offer.jobId, {
+        error: pngCopy.errorMessages.pngResumeFileMissing,
+      });
+      return;
+    }
+    const next: PngRecoveryView = {
+      ...offer,
+      manifest: latest,
+      parts: latest.parts,
+      jobDirectory: picked,
+      needsDirectorySelection: false,
+      needsPermission: false,
+      error: null,
+    };
+    updatePngRecovery(offer.jobId, next);
+    await proceedPngResume(next, picked);
+  }
+
+  async function proceedPngResume(
+    offer: PngRecoveryView,
+    directory: FileSystemDirectoryHandle | null,
+  ) {
+    setPngRecoveryBusy(true);
+    try {
+      const manifest = offer.manifest;
+      let font: UploadedFont | undefined;
+      if (manifest.uploadedFont) {
+        font = pngRecoveryFonts[manifest.jobId];
+        if (!font) {
+          const bytes =
+            offer.checkpoint?.uploadedFont?.bytes ??
+            (directory ? await readPngFontBackup(directory) : null);
+          if (!bytes) {
+            updatePngRecovery(manifest.jobId, {
+              needsFont: true,
+              error: null,
+            });
+            return;
+          }
+          const digest = await sha256Hex(new Uint8Array(bytes));
+          if (digest !== manifest.uploadedFont.sha256) {
+            updatePngRecovery(manifest.jobId, {
+              needsFont: true,
+              error: pngCopy.fontRequired,
+            });
+            return;
+          }
+          font = {
+            family: manifest.uploadedFont.family,
+            data: bytes,
+          };
+        }
+      }
+
+      const lock = await tryAcquirePngJobLock(manifest.jobId);
+      if (!lock) {
+        updatePngRecovery(manifest.jobId, {
+          error: pngCopy.errorMessages.pngLocked,
+        });
+        return;
+      }
+      pngJobLockRef.current = lock;
+
+      const exportId = activeExportIdRef.current + 1;
+      activeExportIdRef.current = exportId;
+      const attemptId = createPngId("attempt");
+      const totalFrames = manifest.totalFrames;
+      const settings = manifest.settings;
+      const template = getGeneratorTemplateById(settings.templateId);
+      const telemetry = buildExportFunnelTelemetry({
+        settings,
+        environment: analyticsEnvironment,
+        template: {
+          templateId: template.id,
+          templateCategory: template.category,
+          templateTier: template.tier,
+          templateOrientation: template.orientation,
+          templateRecommendedFormat: template.recommendedFormat,
+          templateCustomized: true,
+        },
+      });
+      exportTotalsRef.current = totalFrames;
+      exportStartedAtRef.current = performance.now();
+      activeExportSettingsRef.current = settings;
+      activeExportTelemetryRef.current = telemetry;
+      abandonFiredRef.current = false;
+      isExportingRef.current = true;
+      activeExportKindRef.current = "png";
+      releaseWakeLockRef.current?.();
+      releaseWakeLockRef.current = holdScreenWakeLock();
+      setPreview(null);
+      setEtaMs(null);
+      setIsExporting(true);
+      setPngResult(null);
+
+      const pixelFrames =
+        settings.canvas.width * settings.canvas.height * totalFrames;
+      const run: PngRunState = {
+        jobId: manifest.jobId,
+        attemptId,
+        outputMode: manifest.outputMode,
+        settings,
+        totalFrames,
+        parts: manifest.parts,
+        processedFrames: manifest.nextFrameIndex,
+        committedFrames: manifest.nextFrameIndex,
+        currentPart: manifest.nextPartNumber,
+        bytesWritten: manifest.parts.reduce(
+          (total, part) => total + part.bytes,
+          0,
+        ),
+        stage: "preparing",
+        cancelling: false,
+        autoDownload: false,
+        resumed: true,
+      };
+      setPngRunState(run);
+      const initialProgress: ExportProgressState = {
+        stage: "validating",
+        completedFrames: manifest.nextFrameIndex,
+        totalFrames,
+        message: ui.exportPanel.runtimeMessages.preparingPngSequence,
+      };
+      exportProgressRef.current = initialProgress;
+      setExportProgress(initialProgress);
+      trackEvent("export_started", {
+        ...telemetry,
+        outputMode: manifest.outputMode,
+        resumed: true,
+        committedFrames: manifest.nextFrameIndex,
+      });
+
+      const payload: PngStartPayload = {
+        jobId: manifest.jobId,
+        attemptId,
+        settings,
+        uploadedFont: font,
+        rendererVersion: PNG_RENDERER_VERSION,
+        outputMode: manifest.outputMode,
+        outputDirectory:
+          manifest.outputMode === "directory" ? directory ?? undefined : undefined,
+        outputDirectoryName:
+          manifest.outputMode === "directory"
+            ? directory?.name ?? offer.checkpoint?.outputDirectoryName
+            : manifest.jobId,
+        resumeFrom: {
+          nextFrameIndex: manifest.nextFrameIndex,
+          nextPartNumber: manifest.nextPartNumber,
+          parts: manifest.parts,
+        },
+        enablePreview: !isMobileDevice && pixelFrames < 4_000_000_000,
+      };
+
+      const worker = attachPngWorker(exportId);
+      worker.postMessage({ kind: "png-resume", payload });
+      armPngWatchdog(exportId);
+      setPngRecoveries((current) =>
+        current.filter((item) => item.jobId !== manifest.jobId),
+      );
+    } catch {
+      releasePngJobLock();
+      updatePngRecovery(offer.jobId, {
+        error: pngErrorText("pngResumeVersionMismatch"),
+      });
+    } finally {
+      setPngRecoveryBusy(false);
+    }
+  }
+
+  async function handlePngRecoveryRemove(jobId: string) {
+    setPngRecoveryBusy(true);
+    try {
+      await removePngRecoveryRecord(jobId);
+      setPngRecoveries((current) =>
+        current.filter((item) => item.jobId !== jobId),
+      );
+    } finally {
+      setPngRecoveryBusy(false);
+    }
+  }
+
+  async function handlePngRecoveryCleanup(jobId: string) {
+    setPngRecoveryBusy(true);
+    try {
+      await cleanPngOpfsJob(jobId);
+      setPngRecoveries((current) =>
+        current.filter((item) => item.jobId !== jobId),
+      );
+    } finally {
+      setPngRecoveryBusy(false);
+    }
+  }
+
+  async function handlePngCleanupResult(jobId: string) {
+    await cleanPngOpfsJob(jobId);
+    setPngResult(null);
+  }
+
+  async function handlePngDownloadPartForJob(
+    jobId: string,
+    part: PngPartDescriptor,
+  ) {
+    try {
+      const file = await readOpfsPngPart(jobId, part.fileName);
+      downloadBlob(file, part.fileName);
+      trackEvent("export_download_requested", {
+        format: "png-sequence",
+        outputMode: "opfs",
+        partNumber: part.partNumber,
+        partBytes: part.bytes,
+      });
+    } catch {
+      setPngResult((current) =>
+        current ? { ...current, downloadError: pngCopy.downloadFailed } : current,
+      );
+    }
+  }
+
+  async function handlePngDownloadPart(part: PngPartDescriptor) {
+    const result = pngResult;
+    if (result) {
+      await handlePngDownloadPartForJob(result.jobId, part);
+    }
+  }
+
+  async function handlePngCleanupStoredJob(jobId: string) {
+    await cleanPngOpfsJob(jobId);
+    await refreshPngRecoveries();
+  }
+
+  async function handlePngImportFolder() {
+    if (isExportingRef.current) {
+      return;
+    }
+    setPngImportError(null);
+    let picked: FileSystemDirectoryHandle | "cancelled";
+    try {
+      picked = await pickPngDirectory();
+    } catch {
+      setPngImportError(pngCopy.capabilityMissing);
+      return;
+    }
+    if (picked === "cancelled") {
+      return;
+    }
+    const latest = await readLatestPngManifest(picked)
+      .then((result) => result?.manifest ?? null)
+      .catch(() => null);
+    if (!latest) {
+      setPngImportError(pngCopy.errorMessages.pngResumeFileMissing);
+      return;
+    }
+    if (latest.status === "complete") {
+      setPngResult({
+        jobId: latest.jobId,
+        outputMode: "directory",
+        parts: latest.parts,
+        totalFrames: latest.totalFrames,
+        totalBytes: latest.parts.reduce(
+          (total, part) => total + part.bytes,
+          0,
+        ),
+        outputDirectoryName: picked.name,
+        autoDownloaded: false,
+        cleanupAvailable: false,
+        downloadError: null,
+      });
+      return;
+    }
+    const needsFont = latest.uploadedFont
+      ? !(await readPngFontBackup(picked))
+      : false;
+    const offer: PngRecoveryView = {
+      jobId: latest.jobId,
+      manifest: latest,
+      checkpoint: null,
+      jobDirectory: picked,
+      source: "folder",
+      parts: latest.parts,
+      needsDirectorySelection: false,
+      needsPermission: false,
+      needsFont,
+      error: null,
+    };
+    setPngRecoveries((current) => [
+      offer,
+      ...current.filter((item) => item.jobId !== latest.jobId),
+    ]);
+  }
+
+  function handlePngFontPicked(font: UploadedFont) {
+    const offer = pngRecoveryFontOfferRef.current;
+    if (!offer || !offer.manifest.uploadedFont) {
+      return;
+    }
+    setPngRecoveryFonts((current) => ({
+      ...current,
+      [offer.jobId]: {
+        family: offer.manifest.uploadedFont?.family ?? font.family,
+        data: font.data,
+      },
+    }));
+    updatePngRecovery(offer.jobId, { needsFont: false, error: null });
+  }
+
+  async function handlePngFontInputChange(file: File) {
+    try {
+      const font = await readFontFile(file);
+      if (!pngRecoveryFontOfferRef.current) {
+        return;
+      }
+      const digest = await sha256Hex(new Uint8Array(font.data));
+      const offer = pngRecoveryFontOfferRef.current;
+      if (
+        offer.manifest.uploadedFont &&
+        digest !== offer.manifest.uploadedFont.sha256
+      ) {
+        updatePngRecovery(offer.jobId, { error: pngCopy.fontRequired });
+        return;
+      }
+      handlePngFontPicked(font);
+    } catch (error) {
+      const offer = pngRecoveryFontOfferRef.current;
+      if (offer) {
+        updatePngRecovery(offer.jobId, {
+          error:
+            error instanceof Error ? error.message : pngCopy.fontRequired,
+        });
+      }
+    }
+  }
+
   const handleExportWorkerMessage = useCallback(
     (event: MessageEvent<ExportWorkerMessage>, exportId: number) => {
       if (
@@ -933,12 +2340,21 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
 
       if (event.data.kind === "preview") {
         armWorkerWatchdog(exportId);
+        if (document.visibilityState === "hidden") {
+          // Nobody can paint this; drop it instead of queueing GPU memory.
+          event.data.payload.bitmap.close();
+          return;
+        }
         setPreview(event.data.payload.bitmap);
         return;
       }
 
       if (event.data.kind === "complete") {
         void finalizeCompletedExport(exportId, event.data.payload);
+        return;
+      }
+
+      if (event.data.kind !== "error") {
         return;
       }
 
@@ -959,12 +2375,10 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         return;
       }
       const fallback =
-        code === "alphaVideoFailedUnexpectedly"
-          ? ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly
-          : code === "mp4FailedUnexpectedly"
-            ? (ui.exportPanel.runtimeMessages.mp4FailedUnexpectedly ??
-              DEFAULT_MP4_FAILED_MESSAGE)
-          : ui.exportPanel.runtimeMessages.pngSequenceFailedUnexpectedly;
+        code === "mp4FailedUnexpectedly"
+          ? (ui.exportPanel.runtimeMessages.mp4FailedUnexpectedly ??
+            DEFAULT_MP4_FAILED_MESSAGE)
+          : ui.exportPanel.runtimeMessages.alphaVideoFailedUnexpectedly;
       const baseMessage = event.data.payload.message ?? fallback;
       const activeSettings = activeExportSettingsRef.current;
       const suggestedLabel =
@@ -999,6 +2413,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   );
 
   useEffect(() => {
+    const retiredPreviews = retiredPreviewsRef.current;
     return () => {
       webmAbortControllerRef.current?.abort(
         createCodedError("exportCancelled", "Export cancelled."),
@@ -1008,6 +2423,10 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       exportRuntimeRef.current = null;
       previewBitmapRef.current?.close();
       previewBitmapRef.current = null;
+      for (const bitmap of retiredPreviews) {
+        bitmap.close();
+      }
+      retiredPreviews.length = 0;
     };
   }, [clearWorkerWatchdog]);
 
@@ -1075,8 +2494,46 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     analyticsEnvironment,
   ]);
 
-  const handleCancelExport = useCallback(() => {
+  function handleCancelExport() {
     if (!isExportingRef.current) {
+      return;
+    }
+    if (activeExportKindRef.current === "png") {
+      const run = pngRunRef.current;
+      if (!run) {
+        // Sampling or the preparation dialog: cancelling preparation writes no
+        // output and is not an export failure.
+        cancelPngPrep();
+        return;
+      }
+      if (run.cancelling) {
+        return;
+      }
+      const nextRun = { ...run, cancelling: true };
+      pngRunRef.current = nextRun;
+      setPngRun(nextRun);
+      exportRuntimeRef.current?.getExportWorker().postMessage({
+        kind: "cancel-png",
+        jobId: run.jobId,
+        attemptId: run.attemptId,
+      });
+      clearPngCancelTimer();
+      pngCancelTimerRef.current = window.setTimeout(() => {
+        const current = pngRunRef.current;
+        if (!current || current.attemptId !== run.attemptId) {
+          return;
+        }
+        exportRuntimeRef.current?.terminateExportWorker();
+        releasePngJobLock();
+        setPngRunState(null);
+        finishExportFailure(
+          activeExportIdRef.current,
+          "exportWorkerStalled",
+          pngErrorText("pngWriteFailed"),
+          true,
+        );
+        void refreshPngRecoveries();
+      }, PNG_CANCEL_GRACE_MS);
       return;
     }
     const exportId = activeExportIdRef.current;
@@ -1091,7 +2548,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       cancellation.message,
       activeExportKindRef.current === "worker",
     );
-  }, [finishExportFailure]);
+  }
 
   // Localized text for the Pro fallback notice: one line per gated setting that
   // a free session just lost, in the same order the gates apply them.
@@ -1117,6 +2574,13 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     // where the paywall intercepts (spec 6.1).
     if (getProExportBlockReason(settings.templateId, isPro) === "template") {
       openPaywall("template", "feature");
+      return;
+    }
+
+    if (settings.export.format === "png-sequence") {
+      // Sampling, destination choice and part streaming have their own flow;
+      // the frozen settings are captured here before any panel edit.
+      await beginPngExport(settings);
       return;
     }
 
@@ -1253,17 +2717,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       armWorkerWatchdog(exportId);
 
       const enablePreview = !isMobileDevice && pixelFrames < 4_000_000_000;
-      if (exportSettings.export.format === "png-sequence") {
-        exportWorker.postMessage({
-          kind: "export-png-sequence",
-          payload: {
-            settings: exportSettings,
-            uploadedFont: uploadedFont ?? undefined,
-            enablePreview,
-          },
-        });
-        return;
-      }
       if (exportSettings.export.format === "mp4") {
         exportWorker.postMessage({
           kind: "export-mp4",
@@ -1300,6 +2753,143 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       );
     }
   };
+
+  const activePngRecovery =
+    pngRecoveries.find((offer) => offer.manifest.status !== "complete") ?? null;
+  const completedPngStorage = pngRecoveries.filter(
+    (offer) =>
+      offer.manifest.status === "complete" &&
+      offer.source === "opfs" &&
+      offer.jobId !== pngResult?.jobId,
+  );
+  const pngExtras = (
+    <>
+      {pngResult ? (
+        <PngResultCard
+          cleanupAvailable={pngResult.cleanupAvailable}
+          copy={pngCopy}
+          error={pngResult.downloadError}
+          onCleanup={() => void handlePngCleanupResult(pngResult.jobId)}
+          onDownloadPart={(part) => void handlePngDownloadPart(part)}
+          result={pngResult}
+        />
+      ) : null}
+      {pngRun ? (
+        <PngRunCard
+          bytesWritten={pngRun.bytesWritten}
+          cancelling={pngRun.cancelling}
+          committedFrames={pngRun.committedFrames}
+          copy={pngCopy}
+          currentPart={pngRun.currentPart}
+          outputMode={pngRun.outputMode}
+          partCount={pngRun.parts.length}
+          processedFrames={pngRun.processedFrames}
+          totalFrames={pngRun.totalFrames}
+        />
+      ) : null}
+      {!pngRun
+        ? completedPngStorage.map((offer) => (
+            <div key={offer.jobId}>
+              <p className="mb-1 break-all font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                {offer.jobId}
+              </p>
+              <PngResultCard
+                cleanupAvailable
+                copy={pngCopy}
+                onCleanup={() =>
+                  void handlePngCleanupStoredJob(offer.jobId)
+                }
+                onDownloadPart={(part) =>
+                  void handlePngDownloadPartForJob(offer.jobId, part)
+                }
+                result={{
+                  jobId: offer.jobId,
+                  outputMode: offer.manifest.outputMode,
+                  parts: offer.parts,
+                  totalFrames: offer.manifest.totalFrames,
+                  totalBytes: offer.parts.reduce(
+                    (total, part) => total + part.bytes,
+                    0,
+                  ),
+                  outputDirectoryName: offer.manifest.jobId,
+                  autoDownloaded: false,
+                }}
+              />
+            </div>
+          ))
+        : null}
+      {!pngRun && !pngResult && activePngRecovery ? (
+        <PngRecoveryCard
+          busy={pngRecoveryBusy}
+          cleanupAvailable={activePngRecovery.manifest.outputMode === "opfs"}
+          committedFrames={activePngRecovery.parts.at(-1)?.nextFrameIndex ?? 0}
+          copy={pngCopy}
+          error={activePngRecovery.error}
+          jobId={activePngRecovery.jobId}
+          needsDirectorySelection={
+            activePngRecovery.needsDirectorySelection ||
+            (activePngRecovery.manifest.outputMode === "directory" &&
+              activePngRecovery.needsPermission)
+          }
+          needsFont={activePngRecovery.needsFont}
+          needsPermission={activePngRecovery.needsPermission}
+          onCleanup={() =>
+            void handlePngRecoveryCleanup(activePngRecovery.jobId)
+          }
+          onRemoveRecord={() =>
+            void handlePngRecoveryRemove(activePngRecovery.jobId)
+          }
+          onDownloadPart={(part) =>
+            void handlePngDownloadPartForJob(activePngRecovery.jobId, part)
+          }
+          partsDownloadable={activePngRecovery.source === "opfs"}
+          onRestore={() => void handlePngRecoveryRestore(activePngRecovery)}
+          onSelectFolder={() =>
+            void handlePngRecoverySelectFolder(activePngRecovery)
+          }
+          onSelectFont={() => {
+            pngRecoveryFontOfferRef.current = activePngRecovery;
+            pngFontInputRef.current?.click();
+          }}
+          outputMode={activePngRecovery.manifest.outputMode}
+          parts={activePngRecovery.parts}
+          totalFrames={activePngRecovery.manifest.totalFrames}
+        />
+      ) : null}
+      {settings.export.format === "png-sequence" &&
+      !pngRun &&
+      !pngResult &&
+      !pngPrep ? (
+        <div>
+          <button
+            className="w-full border border-border/70 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground underline underline-offset-4"
+            onClick={() => void handlePngImportFolder()}
+            type="button"
+          >
+            {pngCopy.selectFolderButton}
+          </button>
+          {pngImportError ? (
+            <p className="mt-1 text-[11px] leading-5 text-destructive">
+              {pngImportError}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      <input
+        accept=".ttf,.otf,.woff,.woff2"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.currentTarget.files?.[0];
+          event.currentTarget.value = "";
+          if (file) {
+            void handlePngFontInputChange(file);
+          }
+        }}
+        ref={pngFontInputRef}
+        type="file"
+      />
+    </>
+  );
 
   return (
     <main id="tool" className="bg-background text-foreground">
@@ -1416,9 +3006,48 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                     ? undefined
                     : () => openPaywall("direct", "export_complete")
                 }
+                onPreviewCleared={handlePreviewCleared}
+                onPreviewDrawn={handlePreviewDrawn}
+                pngExtras={pngExtras}
+                cancelLabel={
+                  pngRun?.cancelling
+                    ? pngCopy.stoppingButton
+                    : pngPrep
+                      ? pngCopy.cancelPrepButton
+                      : undefined
+                }
               />
             </div>
           </div>
+
+          {pngPrep ? (
+            <PngPrepareDialog
+              busy={false}
+              copy={pngCopy}
+              error={pngPrep.error}
+              isResuming={false}
+              onCancel={cancelPngPrep}
+              onChooseFolder={() => void handlePngChooseFolder()}
+              onContinueMemory={handlePngContinueMemory}
+              onUseOpfs={handlePngUseOpfs}
+              open
+              state={{
+                durationSeconds: pngPrep.settings.timer.durationSeconds,
+                fps: pngPrep.settings.export.fps,
+                width: pngPrep.settings.canvas.width,
+                height: pngPrep.settings.canvas.height,
+                totalFrames: pngPrep.totalFrames,
+                preflight: pngPrep.preflight,
+                advice: pngPrep.advice,
+                isLongJob: pngPrep.isLongJob,
+                canDirectory: pngPrep.canDirectory,
+                opfsWritable: pngPrep.opfsWritable,
+                checkpointAvailable: pngPrep.checkpointAvailable,
+                lockAvailable: pngPrep.lockAvailable,
+                memoryAllowed: pngPrep.memoryAllowed,
+              }}
+            />
+          ) : null}
 
           <ProPaywallModal
             open={paywallTrigger !== null}

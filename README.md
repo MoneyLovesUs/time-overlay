@@ -22,6 +22,37 @@ pnpm test -- --run
 pnpm release:test
 ```
 
+## Export pipeline
+
+Exports run locally in the browser; no frames or fonts are uploaded.
+
+- Entitlements are free 300 seconds and Pro 3600 seconds. For PNG sequence, 600
+  seconds is only the threshold that opens the long-export preparation step; it
+  is not a duration limit.
+- Short PNG jobs keep the single-download experience. Long PNG jobs ask for a
+  save folder (desktop Chrome with the File System Access API) or stream into
+  browser storage (OPFS) for per-part downloads.
+- PNG parts are ordinary independent ZIPs capped at 512 MiB and 10,000 PNGs.
+  Frame names use one fixed global width (for example `frame-000001.png` through
+  `frame-108000.png`), so every part merges into one continuous sequence.
+- A durable manifest plus an IndexedDB checkpoint let a cancelled, refreshed or
+  crashed job resume after the last fully validated part. Recovery re-validates
+  each part's size, central-directory digest and frame range before writing.
+- If an OPFS flush fails, export reports the original storage error and releases
+  the file handle so the incomplete part can be removed. A failed close remains
+  eligible for another close attempt during cleanup.
+- The first part contains `EXPORT-INSTRUCTIONS.txt` and macOS/Linux/Windows
+  conversion scripts. The scripts verify every frame number from 1 to N and
+  refuse to produce a shortened ProRes file when a part is missing.
+- Built-in Geist Mono/Sans are bundled under `public/fonts` and loaded into the
+  export worker before rendering. This pins the canvas face across recovery and
+  prevents an OS fallback from changing glyphs mid-sequence.
+
+The 3600-second PNG implementation and its acceptance contract live in
+`docs/superpowers/specs/2026-11-03-long-png-sequence-export.md`. Observed
+verification results, memory samples and remaining platform gates are recorded
+in `docs/export/png-sequence-verification.md`.
+
 ## Production release
 
 Run `pnpm release:solo` from a clean main checkout synced with origin/main.
@@ -119,4 +150,4 @@ src/
 - `/` is the tool-first homepage and the primary SEO surface.
 - `/` is the tool-first homepage. Reviewed guides, a format comparison, and
   About, Privacy, Contact, and Terms pages provide the supporting public routes.
-- The MVP export strategy is client-side and local-first: prioritize `PNG sequence` and `WebM`, and avoid paid server rendering on Vercel.
+- The export strategy is client-side and local-first: prioritize `PNG sequence` and `WebM`, and avoid paid server rendering on Vercel.

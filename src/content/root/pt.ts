@@ -201,6 +201,104 @@ const ptRootPageContent = {
         pngSequenceFailedUnexpectedly:
           "A exportação em PNG Sequence falhou inesperadamente.",
       },
+      png: {
+        prepareTitle: "Preparar sequência PNG",
+        prepareIntro:
+          "Você está exportando uma sequência PNG transparente. Confira o plano abaixo antes de escolher onde os quadros serão salvos.",
+        prepareSummaryTemplate:
+          "{duration} s · {fps} fps · {frames} quadros · {width}×{height}",
+        estimateTemplate:
+          "Cerca de {size}, {parts} parte(s) ZIP e aproximadamente {time} de codificação. As estimativas são atualizadas conforme os quadros reais são gravados.",
+        estimateUnknown:
+          "Não havia quadros de amostra, então as estimativas de tamanho e tempo são desconhecidas. A exportação ainda pode continuar.",
+        sampleProgress:
+          "Renderizando quadros de amostra para estimar tamanho e tempo…",
+        longJobTitle: "Esta exportação é longa",
+        longJobBody:
+          "Os quadros são gravados no disco parte por parte, então a sequência inteira nunca fica na memória. Cada parte ZIP precisa ser descompactada e unida antes de importar.",
+        saveFolderButton: "Escolher pasta e iniciar",
+        saveFolderHint:
+          "O navegador pede acesso de gravação uma vez. Dentro dela é criada uma pasta de tarefa, e as partes concluídas ficam no disco.",
+        opfsButton: "Gerar no navegador, baixar partes",
+        opfsHint:
+          "O navegador mantém arquivos temporários até você baixá-los e limpá-los. Reserve espaço para a cópia temporária, seus downloads e os quadros descompactados.",
+        continueButton: "Continuar nesta aba",
+        cancelPrepButton: "Cancelar preparação",
+        adviceDesktopSafari:
+          "Para exportar melhor, use o Chrome no computador. Você pode continuar, mas exportações PNG longas são verificadas principalmente no Chrome.",
+        adviceMobile:
+          "Para exportar melhor, faça no computador. Você pode continuar se este dispositivo passar na verificação de armazenamento.",
+        capabilityMissing:
+          "Esta exportação precisa de armazenamento local retomável e de uma única aba ativa, e este navegador ou perfil não oferece isso.",
+        longStorageMissing:
+          "Uma exportação longa precisa de uma pasta com permissão de gravação ou de um armazenamento do navegador que aceite gravações de verdade. Este navegador não oferece um destino seguro, então nenhum quadro foi gerado.",
+        runTitle: "Exportação de sequência PNG",
+        modeDirectory: "Pasta de salvamento",
+        modeBrowserStorage: "Armazenamento do navegador",
+        modeMemory: "Memória temporária",
+        runFramesTemplate: "Quadros processados",
+        runCommittedTemplate: "Quadros salvos com segurança",
+        runPartTemplate: "Parte atual · partes salvas",
+        runBytesTemplate: "Gravado",
+        stoppingButton: "Parando…",
+        cancelButton: "Cancelar exportação",
+        cancelledMessage:
+          "Exportação interrompida. As partes ZIP concluídas são mantidas; retome a partir da última parte salva.",
+        resultTitle: "Exportação PNG concluída",
+        directorySavedTemplate:
+          "{frames} quadros salvos como {parts} parte(s) ZIP em {folder} ({size}).",
+        opfsPartsTitle:
+          "{parts} parte(s) ZIP, {size}. Baixe cada parte enquanto ela aparecer aqui.",
+        partDownloadButton: "Baixar",
+        partRangeTemplate: "quadros {first}–{last} · {size}",
+        mergeInstructionsTitle: "Antes de importar",
+        mergeInstructionsBody:
+          "Descompacte todas as partes, mova os arquivos frame-*.png para uma única pasta e importe essa pasta como sequência de imagens nos fps escolhidos. Não importe cada parte como uma contagem separada. O primeiro ZIP inclui scripts de conversão que verificam quadros faltantes.",
+        autoDownloadNote:
+          "O download do navegador começou. Mantenha esta aba aberta até ele terminar.",
+        openFolderHint:
+          "O navegador não consegue abrir o gerenciador de arquivos; use a janela de pastas do sistema se precisar.",
+        cleanupButton: "Limpar arquivos temporários",
+        recoveryTitle: "Exportação PNG inacabada encontrada",
+        recoveryBodyTemplate:
+          "{frames} de {total} quadros estão salvos com segurança em {parts} parte(s). A parte inacabada será refeita.",
+        restoreButton: "Retomar exportação",
+        authorizeButton: "Autorizar e continuar",
+        selectFolderButton: "Selecionar pasta de exportação",
+        removeRecordButton: "Remover registro de recuperação",
+        fontRequired:
+          "Esta exportação usou uma fonte personalizada. Informe o mesmo arquivo de fonte para retomar.",
+        fontButton: "Selecionar arquivo de fonte",
+        downloadFailed:
+          "O download não pôde começar. Os arquivos prontos continuam disponíveis acima; tente de novo.",
+        errorTitle: "Problema na exportação PNG",
+        errorMessages: {
+          pngStorageUnavailable:
+            "Este navegador bloqueou o armazenamento local necessário para exportar PNG. Use uma janela normal do Chrome no computador.",
+          pngDirectoryPermissionDenied:
+            "A gravação na pasta escolhida não foi autorizada. Escolha a pasta de novo e permita gravar; nenhuma exportação foi iniciada.",
+          pngStorageFull:
+            "Não há espaço livre suficiente para concluir esta parte PNG. Libere espaço e retome; as partes salvas são mantidas.",
+          pngWriteFailed:
+            "Falha ao salvar uma parte PNG. As partes salvas são mantidas; confira a pasta ou o armazenamento e retome.",
+          pngZipValidationFailed:
+            "Uma parte ZIP salva não passou na validação. Ela será refeita; as partes anteriores são mantidas.",
+          pngFrameTooLarge:
+            "Um quadro PNG ou os metadados ZIP necessários passam do limite por parte. Reduza a resolução ou use um estilo mais simples.",
+          pngMemoryLimitExceeded:
+            "Esta exportação precisa de mais memória temporária do que o caminho em memória limitado permite. Para uma exportação longa, use o Chrome no computador com uma pasta com gravação liberada.",
+          pngResumeVersionMismatch:
+            "A exportação salva foi feita com outras configurações, assets ou uma versão mais antiga do app. Não é possível juntá-la com segurança; inicie uma nova exportação e mantenha as partes existentes.",
+          pngResumeFileMissing:
+            "Uma parte ZIP salva está faltando ou mudou. A parte afetada precisa ser refeita; selecione a pasta da tarefa de novo e retome.",
+          pngLocked:
+            "Esta exportação está aberta em outra aba, ou este navegador não consegue bloquear a tarefa. Feche a outra aba e tente de novo.",
+          pngCheckpointFailed:
+            "Este navegador não consegue manter o checkpoint local de que as exportações PNG retomáveis precisam. Use o Chrome no computador ou exporte um trabalho curto que caiba na memória.",
+          pngFailedUnexpectedly:
+            "A exportação PNG parou inesperadamente. As partes salvas, se houver, são mantidas; retome ou inicie uma nova exportação.",
+        },
+      },
     },
   },
   seoSection: {

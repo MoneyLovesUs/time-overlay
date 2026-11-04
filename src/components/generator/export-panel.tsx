@@ -55,6 +55,11 @@ type ExportPanelProps = {
   // Shown when a free session's Pro-only canvas or format was downgraded to its
   // free equivalent, so the change is visible instead of silent.
   fallbackNotice?: string | null;
+  // PNG-specific preparation, recovery and multi-part result UI.
+  pngExtras?: React.ReactNode;
+  cancelLabel?: string;
+  onPreviewDrawn?: (bitmap: ImageBitmap) => void;
+  onPreviewCleared?: () => void;
 };
 
 function subscribeLiveLinkLocale() {
@@ -175,6 +180,10 @@ export function ExportPanel({
   onOpenLiveLink,
   fallbackNotice = null,
   onUnlockPro,
+  pngExtras = null,
+  cancelLabel,
+  onPreviewDrawn,
+  onPreviewCleared,
 }: ExportPanelProps) {
   const liveLinkLocale = useSyncExternalStore(
     subscribeLiveLinkLocale,
@@ -361,7 +370,7 @@ export function ExportPanel({
             type="button"
             variant="outline"
           >
-            <span>{ui.cancelButton ?? "Cancel export"}</span>
+            <span>{cancelLabel ?? ui.cancelButton ?? "Cancel export"}</span>
             <X className="size-4" />
           </Button>
         ) : (
@@ -394,6 +403,8 @@ export function ExportPanel({
           </div>
         ) : null}
 
+        {pngExtras}
+
         <ExportProgressView
           exportProgress={exportProgress}
           isExporting={isExporting}
@@ -402,6 +413,8 @@ export function ExportPanel({
           statusTitle={ui.exportStatusTitle}
           idleMessage={ui.exportStatusIdle}
           progressCopy={ui.progress}
+          onPreviewDrawn={onPreviewDrawn}
+          onPreviewCleared={onPreviewCleared}
         />
 
         {!isPro && exportProgress.stage === "complete" && onUnlockPro ? (

@@ -1,3 +1,4 @@
+import { strToU8, zipSync } from "fflate";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -18,14 +19,15 @@ afterEach(() => {
 describe("validateExportArtifact", () => {
   it.each([
     {
-      label: "ZIP local file",
-      blob: blobFromBytes([0x50, 0x4b, 0x03, 0x04, 0x00]),
-      mimeType: "application/zip",
-      fileName: "frames.zip",
-    },
-    {
-      label: "empty ZIP archive",
-      blob: blobFromBytes([0x50, 0x4b, 0x05, 0x06, 0x00]),
+      label: "ZIP archive",
+      blob: new Blob(
+        [
+          Uint8Array.from(
+            zipSync({ "frame-0001.png": strToU8("png") }),
+          ).buffer,
+        ],
+        { type: "application/zip" },
+      ),
       mimeType: "application/zip",
       fileName: "frames.zip",
     },
@@ -84,6 +86,16 @@ describe("validateExportArtifact", () => {
     await expect(promise).rejects.toMatchObject({
       code: "outputValidationFailed",
     });
+  });
+
+  it("rejects a ZIP that has a local header but no end-of-directory", async () => {
+    await expect(
+      validateExportArtifact(
+        blobFromBytes([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
+        "application/zip",
+        "frames.zip",
+      ),
+    ).rejects.toMatchObject({ code: "outputValidationFailed" });
   });
 
   it("uses the file extension when the MIME type is generic", async () => {

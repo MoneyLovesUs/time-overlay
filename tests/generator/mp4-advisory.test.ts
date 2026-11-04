@@ -140,7 +140,7 @@ describe("mobile mp4 export limits", () => {
     );
   });
 
-  it("keeps the existing mobile png-sequence limit: 61s is still blocked", () => {
+  it("advises on a long mobile PNG job instead of disabling it", () => {
     const advisory = getExportAdvisory(
       withOverrides({
         durationSeconds: 61,
@@ -152,8 +152,9 @@ describe("mobile mp4 export limits", () => {
     );
 
     expect(advisory).toMatchObject({
-      code: "mobileExportLimitError",
-      severity: "error",
+      code: "pngSequenceInfo",
+      severity: "info",
     });
+    expect(advisory.disabledFormats).not.toContain("png-sequence");
   });
 });

@@ -201,6 +201,104 @@ const deRootPageContent = {
         pngSequenceFailedUnexpectedly:
           "Der PNG-Sequence-Export ist unerwartet fehlgeschlagen.",
       },
+      png: {
+        prepareTitle: "PNG-Sequenz vorbereiten",
+        prepareIntro:
+          "Du exportierst eine transparente PNG-Sequenz. Prüfe den Plan unten, bevor du wählst, wo die Frames gespeichert werden.",
+        prepareSummaryTemplate:
+          "{duration} s · {fps} fps · {frames} Frames · {width}×{height}",
+        estimateTemplate:
+          "Etwa {size}, {parts} ZIP-Teil(e), rund {time} Kodierung. Die Schätzungen werden aktualisiert, während die echten Frames geschrieben werden.",
+        estimateUnknown:
+          "Beispielframes waren nicht verfügbar, daher sind Größen- und Zeitschätzung unbekannt. Der Export kann trotzdem weiterlaufen.",
+        sampleProgress:
+          "Beispielframes werden gerendert, um Größe und Zeit zu schätzen…",
+        longJobTitle: "Dieser Export dauert lange",
+        longJobBody:
+          "Frames werden Teil für Teil auf die Festplatte geschrieben, die ganze Sequenz liegt also nie im Speicher. Jeder ZIP-Teil muss vor dem Import entpackt und zusammengeführt werden.",
+        saveFolderButton: "Ordner wählen und starten",
+        saveFolderHint:
+          "Der Browser fragt einmal nach Schreibzugriff. Darin wird ein Aufgabenordner angelegt, und fertige Teile bleiben auf der Festplatte.",
+        opfsButton: "Im Browser erzeugen, Teile herunterladen",
+        opfsHint:
+          "Der Browser hält temporäre Dateien, bis du sie herunterlädst und bereinigst. Plane Platz für die temporäre Kopie, deine Downloads und die entpackten Frames ein.",
+        continueButton: "In diesem Tab fortfahren",
+        cancelPrepButton: "Vorbereitung abbrechen",
+        adviceDesktopSafari:
+          "Für bessere Exportleistung nutze Chrome auf dem Desktop. Du kannst fortfahren, aber lange PNG-Exporte werden vor allem in Chrome geprüft.",
+        adviceMobile:
+          "Für bessere Exportleistung exportiere auf einem Computer. Du kannst fortfahren, wenn dieses Gerät die Speicherprüfung besteht.",
+        capabilityMissing:
+          "Dieser Export braucht wiederaufnehmbaren lokalen Speicher und genau einen aktiven Tab, was dieser Browser oder dieses Profil nicht bietet.",
+        longStorageMissing:
+          "Ein langer Export braucht entweder einen beschreibbaren Ordner oder Browserspeicher, der Schreibvorgänge wirklich annimmt. Dieser Browser bietet kein sicheres Ziel, daher wurden keine Frames erzeugt.",
+        runTitle: "PNG-Sequenz-Export",
+        modeDirectory: "Speicherordner",
+        modeBrowserStorage: "Browserspeicher",
+        modeMemory: "Temporärer Speicher",
+        runFramesTemplate: "Verarbeitete Frames",
+        runCommittedTemplate: "Sicher gespeicherte Frames",
+        runPartTemplate: "Aktueller Teil · gespeicherte Teile",
+        runBytesTemplate: "Geschrieben",
+        stoppingButton: "Wird gestoppt…",
+        cancelButton: "Export abbrechen",
+        cancelledMessage:
+          "Export gestoppt. Fertige ZIP-Teile bleiben erhalten; setze beim zuletzt gespeicherten Teil fort.",
+        resultTitle: "PNG-Export abgeschlossen",
+        directorySavedTemplate:
+          "{frames} Frames als {parts} ZIP-Teil(e) in {folder} gespeichert ({size}).",
+        opfsPartsTitle:
+          "{parts} ZIP-Teil(e), {size}. Lade jeden Teil herunter, solange er hier aufgeführt ist.",
+        partDownloadButton: "Herunterladen",
+        partRangeTemplate: "Frames {first}–{last} · {size}",
+        mergeInstructionsTitle: "Vor dem Import",
+        mergeInstructionsBody:
+          "Entpacke alle Teile, verschiebe alle frame-*.png-Dateien in einen Ordner und importiere diesen Ordner als Bildsequenz mit den gewählten fps. Importiere die Teile nicht als einzelne Countdowns. Das erste ZIP enthält Konvertierungsskripte, die fehlende Frames prüfen.",
+        autoDownloadNote:
+          "Der Browser-Download wurde gestartet. Lass diesen Tab offen, bis er fertig ist.",
+        openFolderHint:
+          "Der Browser kann deinen Dateimanager nicht öffnen; nutze bei Bedarf das Ordnerfenster deines Systems.",
+        cleanupButton: "Temporäre Browserdateien bereinigen",
+        recoveryTitle: "Unfertiger PNG-Export gefunden",
+        recoveryBodyTemplate:
+          "{frames} von {total} Frames sind über {parts} Teil(e) sicher gespeichert. Der unfertige Teil wird wiederholt.",
+        restoreButton: "Export fortsetzen",
+        authorizeButton: "Zugriff erlauben und fortfahren",
+        selectFolderButton: "Exportordner auswählen",
+        removeRecordButton: "Wiederherstellungseintrag entfernen",
+        fontRequired:
+          "Dieser Export nutzte eine eigene Schrift. Wähle dieselbe Schriftdatei, um fortzusetzen.",
+        fontButton: "Schriftdatei auswählen",
+        downloadFailed:
+          "Der Download konnte nicht starten. Die fertigen Dateien sind oben weiter verfügbar; versuche es erneut.",
+        errorTitle: "Problem beim PNG-Export",
+        errorMessages: {
+          pngStorageUnavailable:
+            "Dieser Browser hat den lokalen Speicher blockiert, den PNG-Exporte brauchen. Nutze ein normales Chrome-Fenster auf dem Desktop.",
+          pngDirectoryPermissionDenied:
+            "Der Schreibzugriff auf den gewählten Ordner wurde nicht erteilt. Wähle den Ordner erneut und erlaube Schreiben; es wurde kein Export gestartet.",
+          pngStorageFull:
+            "Es ist nicht genug freier Speicher, um diesen PNG-Teil fertigzustellen. Gib Speicher frei und setze dann fort; gespeicherte Teile bleiben erhalten.",
+          pngWriteFailed:
+            "Das Speichern eines PNG-Teils ist fehlgeschlagen. Gespeicherte Teile bleiben erhalten; prüfe Ordner oder Speicher und setze fort.",
+          pngZipValidationFailed:
+            "Ein gespeicherter ZIP-Teil hat die Prüfung nicht bestanden. Er wird wiederholt; frühere Teile bleiben erhalten.",
+          pngFrameTooLarge:
+            "Ein PNG-Frame oder seine nötigen ZIP-Metadaten überschreiten das Limit pro Teil. Reduziere die Auflösung oder wähle einen einfacheren Stil.",
+          pngMemoryLimitExceeded:
+            "Dieser Export braucht mehr temporären Speicher, als der begrenzte In-Memory-Weg erlaubt. Nutze für einen langen Export Chrome auf dem Desktop mit einem beschreibbaren Ordner.",
+          pngResumeVersionMismatch:
+            "Der gespeicherte Export wurde mit anderen Einstellungen, Assets oder einer älteren App-Version erstellt. Er lässt sich nicht sicher zusammenführen; starte einen neuen Export und behalte die vorhandenen Teile.",
+          pngResumeFileMissing:
+            "Ein gespeicherter ZIP-Teil fehlt oder wurde geändert. Der betroffene Teil muss wiederholt werden; wähle den Aufgabenordner erneut und setze fort.",
+          pngLocked:
+            "Dieser Export ist in einem anderen Tab offen, oder dieser Browser kann die Aufgabe nicht sperren. Schließe den anderen Tab und versuche es erneut.",
+          pngCheckpointFailed:
+            "Dieser Browser kann den lokalen Checkpoint nicht halten, den wiederaufnehmbare PNG-Exporte brauchen. Nutze Chrome auf dem Desktop oder exportiere einen kurzen Job, der in den Speicher passt.",
+          pngFailedUnexpectedly:
+            "Der PNG-Export wurde unerwartet beendet. Gespeicherte Teile, falls vorhanden, bleiben erhalten; setze fort oder starte einen neuen Export.",
+        },
+      },
     },
   },
   seoSection: {

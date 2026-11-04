@@ -35,8 +35,8 @@ const frProPageContent: ProPageContent = {
     },
     {
       feature: "Vidéo transparente",
-      free: "Séquence PNG",
-      pro: "Séquence PNG + VP9/HEVC en un seul fichier",
+      free: "Séquence PNG jusqu'à 5 minutes",
+      pro: "Séquence PNG jusqu'à 60 minutes + VP9/HEVC en un seul fichier",
     },
     {
       feature: "Modèles",

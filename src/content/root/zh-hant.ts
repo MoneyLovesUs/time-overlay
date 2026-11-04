@@ -183,6 +183,103 @@ const zhHantRootPageContent = {
       hevcAlphaInfo:
         "MOV HEVC + alpha 是相容 Mac 上 Final Cut Pro 建議的直接匯出格式。",
       },
+      png: {
+        prepareTitle: "準備 PNG 序列",
+        prepareIntro:
+          "你正在匯出透明 PNG 序列。選擇影格儲存位置前，請先確認下方的方案。",
+        prepareSummaryTemplate:
+          "{duration} 秒 · {fps} fps · {frames} 個影格 · {width}×{height}",
+        estimateTemplate:
+          "約 {size}，{parts} 個 ZIP 分段，編碼大約需要 {time}。估算值會隨著實際影格寫入而更新。",
+        estimateUnknown:
+          "無法取得樣本影格，因此大小與時間估算未知。匯出仍可繼續。",
+        sampleProgress: "正在算繪樣本影格以估算大小與時間…",
+        longJobTitle: "這是一次長時間匯出",
+        longJobBody:
+          "影格會分段依序寫入磁碟，因此整段序列不會一直留在記憶體中。匯入前必須解壓縮並合併所有 ZIP 分段。",
+        saveFolderButton: "選擇儲存資料夾並開始",
+        saveFolderHint:
+          "瀏覽器會要求一次寫入權限。工作資料夾會在其中建立，已完成的分段會保留在磁碟上。",
+        opfsButton: "在瀏覽器內產生，下載分段",
+        opfsHint:
+          "瀏覽器會保留暫存檔案，直到你下載並清理它們。請為暫存副本、下載檔案與解壓縮後的影格預留空間。",
+        continueButton: "在此分頁繼續",
+        cancelPrepButton: "取消準備",
+        adviceDesktopSafari:
+          "為獲得更好的匯出效能，請使用桌面版 Chrome。你可以繼續，但長時間 PNG 匯出主要在 Chrome 中驗證。",
+        adviceMobile:
+          "為獲得更好的匯出效能，請在電腦上匯出。若此裝置通過儲存空間檢查，你可以繼續。",
+        capabilityMissing:
+          "此匯出需要可續傳的本機儲存空間與單一作用中分頁，但目前瀏覽器或設定檔並未提供。",
+        longStorageMissing:
+          "長時間匯出需要可寫入的資料夾，或真正能接受寫入的瀏覽器儲存空間。此瀏覽器沒有安全的儲存目標，因此未產生任何影格。",
+        runTitle: "PNG 序列匯出",
+        modeDirectory: "儲存資料夾",
+        modeBrowserStorage: "瀏覽器儲存",
+        modeMemory: "暫存記憶體",
+        runFramesTemplate: "已處理影格數",
+        runCommittedTemplate: "已安全儲存影格數",
+        runPartTemplate: "目前分段 · 已儲存分段",
+        runBytesTemplate: "已寫入",
+        stoppingButton: "正在停止…",
+        cancelButton: "取消匯出",
+        cancelledMessage:
+          "匯出已停止。已完成的 ZIP 分段會保留，可從上次儲存的分段繼續。",
+        resultTitle: "PNG 匯出完成",
+        directorySavedTemplate:
+          "已將 {frames} 個影格存成 {parts} 個 ZIP 分段，位於 {folder}（{size}）。",
+        opfsPartsTitle:
+          "{parts} 個 ZIP 分段，{size}。請在分段仍列於此處時，一次下載一個。",
+        partDownloadButton: "下載",
+        partRangeTemplate: "影格 {first}–{last} · {size}",
+        mergeInstructionsTitle: "匯入前須知",
+        mergeInstructionsBody:
+          "解壓縮所有分段，把所有 frame-*.png 檔案放到同一個資料夾，再以所選 fps 將整個資料夾匯入為影像序列。請勿將每個分段當成各自的倒數計時匯入。第一個 ZIP 內含用於檢查缺漏影格的轉換腳本。",
+        autoDownloadNote:
+          "瀏覽器已開始下載。請保持此分頁開啟直到下載完成。",
+        openFolderHint:
+          "瀏覽器無法開啟檔案總管；如有需要，請使用系統的資料夾視窗。",
+        cleanupButton: "清理瀏覽器暫存檔案",
+        recoveryTitle: "發現未完成的 PNG 匯出",
+        recoveryBodyTemplate:
+          "{total} 個影格中有 {frames} 個已安全儲存於 {parts} 個分段。未完成的分段將會重做。",
+        restoreButton: "繼續匯出",
+        authorizeButton: "授權並繼續",
+        selectFolderButton: "選擇匯出資料夾",
+        removeRecordButton: "移除復原記錄",
+        fontRequired:
+          "此匯出使用了自訂字型。繼續時需提供相同的字型檔案。",
+        fontButton: "選擇字型檔案",
+        downloadFailed:
+          "下載無法開始。完成的檔案仍在上方可用，請再試一次。",
+        errorTitle: "PNG 匯出發生問題",
+        errorMessages: {
+          pngStorageUnavailable:
+            "此瀏覽器封鎖了 PNG 匯出所需的本機儲存空間。請使用桌面版 Chrome 的一般視窗。",
+          pngDirectoryPermissionDenied:
+            "未取得所選資料夾的寫入權限。請重新選擇資料夾並允許寫入；匯出尚未開始。",
+          pngStorageFull:
+            "可用空間不足以完成此 PNG 分段。請釋放一些空間後繼續；已儲存的分段會保留。",
+          pngWriteFailed:
+            "儲存 PNG 分段失敗。已儲存的分段會保留；請檢查資料夾或儲存空間後繼續。",
+          pngZipValidationFailed:
+            "已儲存的 ZIP 分段未通過驗證。該分段會重做，較早的分段會保留。",
+          pngFrameTooLarge:
+            "單一 PNG 影格或其所需的 ZIP 中繼資料超過每個分段的上限。請降低解析度或改用更簡單的樣式。",
+          pngMemoryLimitExceeded:
+            "此匯出所需的暫存記憶體超過記憶體內處理的上限。長時間匯出請使用桌面版 Chrome 與可寫入的資料夾。",
+          pngResumeVersionMismatch:
+            "已儲存的匯出使用了不同的設定、素材或舊版應用程式，無法安全接續。請開始新的匯出，並保留現有分段。",
+          pngResumeFileMissing:
+            "某個已儲存的 ZIP 分段遺失或已變更。該分段必須重做；請重新選擇工作資料夾後繼續。",
+          pngLocked:
+            "此匯出已在另一個分頁中開啟，或此瀏覽器無法鎖定工作。請關閉其他分頁後重試。",
+          pngCheckpointFailed:
+            "此瀏覽器無法保留可續傳 PNG 匯出所需的本機檢查點。請使用桌面版 Chrome，或匯出能放進記憶體的短工作。",
+          pngFailedUnexpectedly:
+            "PNG 匯出意外停止。已儲存的分段（如有）會保留；請繼續或開始新的匯出。",
+        },
+      },
       runtimeMessages: {
         exportReadyTemplate: "匯出完成：{fileName}",
         preparingWebm: "正在準備本機 WebM 匯出",

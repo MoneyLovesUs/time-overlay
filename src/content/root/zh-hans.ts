@@ -216,9 +216,9 @@ const zhHansRootPageContent = {
         prepareSummaryTemplate:
           "{duration} 秒 · {fps} fps · {frames} 帧 · {width}×{height}",
         estimateTemplate:
-          "约 {size}，{parts} 个 ZIP 分片，编码大约需要 {time}。估算值会随着实际帧写入而更新。",
+          "约 {size}，{parts} 个 ZIP 分片，导出大约需要 {time}。",
         estimateUnknown:
-          "未能获取样本帧，因此无法估算大小和时间。导出仍可继续。",
+          "大小和时间的估算会在导出过程中显示。",
         sampleProgress: "正在渲染样本帧以估算大小和时间…",
         longJobTitle: "这是一次长时导出",
         longJobBody:
@@ -232,17 +232,17 @@ const zhHansRootPageContent = {
         continueButton: "在此标签页中继续",
         cancelPrepButton: "取消准备",
         adviceDesktopSafari:
-          "为获得更好的导出性能，请使用桌面版 Chrome。你可以继续，但长时 PNG 导出主要在 Chrome 中验证。",
+          "Safari 无法保存这么大的导出——它的内置存储会在导出完成前被占满。这么长的计时器，请在电脑上使用 Chrome 或 Edge。",
         adviceMobile:
-          "为获得更好的导出性能，请在电脑上导出。如果此设备通过存储检查，你可以继续。",
+          "这么长的计时器请用电脑导出。手机和平板的存储常常撑不到导出完成。",
         capabilityMissing:
-          "此导出需要可续传的本地存储和单一活动标签页，而当前浏览器或配置文件不提供这些条件。",
+          "此浏览器无法保存导出文件。请关闭此页面的其他标签页后重试，或在电脑上使用 Chrome。",
         longStorageMissing:
-          "长时导出需要可写入的文件夹，或真正能接受写入的浏览器存储。此浏览器没有安全的保存目标，因此未生成任何帧。",
+          "你的浏览器无法创建保存帧的位置。请释放存储空间，或在电脑上使用 Chrome 后重试。",
         runTitle: "PNG 序列导出",
         modeDirectory: "保存文件夹",
-        modeBrowserStorage: "浏览器存储",
-        modeMemory: "临时内存",
+        modeBrowserStorage: "保存在浏览器中",
+        modeMemory: "保存在内存中",
         runFramesTemplate: "已处理帧数",
         runCommittedTemplate: "已安全保存帧数",
         runPartTemplate: "当前分片 · 已保存分片",
@@ -263,9 +263,8 @@ const zhHansRootPageContent = {
           "解压所有分片，把所有 frame-*.png 文件放到同一个文件夹，然后以所选 fps 将整个文件夹作为图像序列导入。不要将每个分片作为单独的倒计时导入。第一个 ZIP 中包含用于检查缺失帧的转换脚本。",
         autoDownloadNote:
           "浏览器已开始下载。请保持此标签页打开直到下载完成。",
-        openFolderHint:
-          "浏览器无法打开文件管理器；如有需要，请使用系统的文件夹窗口。",
-        cleanupButton: "清理浏览器临时文件",
+        openFolderHint: "请在文件管理器中打开该文件夹。",
+        cleanupButton: "删除临时文件",
         recoveryTitle: "发现未完成的 PNG 导出",
         recoveryBodyTemplate:
           "{total} 帧中有 {frames} 帧已安全保存到 {parts} 个分片中。未完成的分片将重做。",
@@ -291,17 +290,17 @@ const zhHansRootPageContent = {
           pngZipValidationFailed:
             "已保存的 ZIP 分片未通过校验。该分片将重做，更早的分片会保留。",
           pngFrameTooLarge:
-            "单个 PNG 帧或其所需的 ZIP 元数据超过分片上限。请降低分辨率或改用更简单的样式。",
+            "单个 PNG 帧超过了分片上限。请降低分辨率或改用更简单的样式。",
           pngMemoryLimitExceeded:
-            "此导出所需的临时内存超过了受限的内存内处理上限。长时导出请使用桌面版 Chrome 和可写入的文件夹。",
+            "此导出太大，此浏览器无法完成。请在电脑上使用 Chrome，并选择「保存文件夹」，让帧直接写入磁盘。",
           pngResumeVersionMismatch:
-            "已保存的导出使用了不同的设置、素材或旧版应用，无法安全接续。请开始新的导出，并保留现有的分片。",
+            "已保存的导出使用了不同的设置或旧版本，无法继续。请开始新的导出，现有分片会保留。",
           pngResumeFileMissing:
-            "某个已保存的 ZIP 分片缺失或已更改。该分片需要重做；请重新选择任务文件夹后继续。",
+            "某个已保存的 ZIP 分片缺失或已更改。该分片将重做；请重新选择任务文件夹后继续。",
           pngLocked:
-            "此导出已在另一个标签页中打开，或此浏览器无法锁定任务。请关闭其他标签页后重试。",
+            "此导出已在另一个标签页中打开。请关闭其他标签页后重试。",
           pngCheckpointFailed:
-            "此浏览器无法保留可续传 PNG 导出所需的本地检查点。请使用桌面版 Chrome，或导出一个能放进内存的短任务。",
+            "此浏览器无法保存进度供稍后继续。请在电脑上使用 Chrome，或导出更短的计时器。",
           pngFailedUnexpectedly:
             "PNG 导出意外停止。已保存的分片（如有）会保留；你可以继续或开始新的导出。",
         },

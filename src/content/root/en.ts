@@ -229,9 +229,9 @@ const enRootPageContent = {
         prepareSummaryTemplate:
           "{duration}s · {fps} fps · {frames} frames · {width}×{height}",
         estimateTemplate:
-          "About {size}, {parts} ZIP part(s), roughly {time} of encoding. Estimates update as the real frames are written.",
+          "About {size} in {parts} ZIP part(s), roughly {time} to export.",
         estimateUnknown:
-          "Sample frames were unavailable, so the size and time estimates are unknown. The export can still continue.",
+          "Size and time estimates will appear while the export runs.",
         sampleProgress: "Rendering sample frames to estimate size and time…",
         longJobTitle: "This is a long export",
         longJobBody:
@@ -245,17 +245,17 @@ const enRootPageContent = {
         continueButton: "Continue in this tab",
         cancelPrepButton: "Cancel preparation",
         adviceDesktopSafari:
-          "For better export performance, use desktop Chrome. You can continue, but long PNG exports are verified primarily in Chrome.",
+          "Safari can't save an export this large — its built-in storage will fill up before it finishes. Use Chrome or Edge on your computer for a timer this long.",
         adviceMobile:
-          "For better export performance, export on a computer. You can continue if this device passes the storage check.",
+          "For a timer this long, use a computer. Phones and tablets often run out of storage before the export finishes.",
         capabilityMissing:
-          "This export needs resumable local storage and a single active tab, which this browser or profile does not provide.",
+          "This browser can't save export files. Close other tabs on this page and retry, or use Chrome on your computer.",
         longStorageMissing:
-          "A long export needs either a writable folder or browser storage that actually accepts writes. This browser offers no safe destination, so no frames were generated.",
+          "Your browser couldn't create a place to save the frames. Free up storage or use Chrome on a computer, then try again.",
         runTitle: "PNG sequence export",
         modeDirectory: "Save folder",
-        modeBrowserStorage: "Browser storage",
-        modeMemory: "Temporary memory",
+        modeBrowserStorage: "Saved in browser",
+        modeMemory: "Kept in memory",
         runFramesTemplate: "Frames processed",
         runCommittedTemplate: "Frames safely saved",
         runPartTemplate: "Current part · saved parts",
@@ -276,9 +276,8 @@ const enRootPageContent = {
           "Unzip every part, move all frame-*.png files into one folder, then import that folder as an image sequence at the chosen fps. Do not import each part as a separate countdown. The first ZIP includes conversion scripts that check for missing frames.",
         autoDownloadNote:
           "The browser download has started. Keep this tab open until it finishes.",
-        openFolderHint:
-          "The browser cannot open your file manager; use your system folder window if needed.",
-        cleanupButton: "Clean browser temp files",
+        openFolderHint: "Open the folder in your file manager.",
+        cleanupButton: "Delete temporary files",
         recoveryTitle: "Unfinished PNG export found",
         recoveryBodyTemplate:
           "{frames} of {total} frames are safely saved across {parts} part(s). The unfinished part will be redone.",
@@ -294,7 +293,7 @@ const enRootPageContent = {
         errorTitle: "PNG export problem",
         errorMessages: {
           pngStorageUnavailable:
-            "This browser blocked the local storage needed for PNG exports. Use a regular window on desktop Chrome.",
+            "Your browser is blocking local file saving. Try a regular (non-private) window, or use Chrome on your computer.",
           pngDirectoryPermissionDenied:
             "Write access to the chosen folder was not granted. Choose the folder again and allow writes; no export was started.",
           pngStorageFull:
@@ -304,17 +303,17 @@ const enRootPageContent = {
           pngZipValidationFailed:
             "A saved ZIP part failed validation. It will be redone; earlier parts are kept.",
           pngFrameTooLarge:
-            "A single PNG frame or its required ZIP metadata is larger than the per-part limit. Reduce the resolution or use a simpler style.",
+            "A single PNG frame is larger than the per-part limit. Reduce the resolution or use a simpler style.",
           pngMemoryLimitExceeded:
-            "This export needs more temporary memory than the limited in-memory path allows. Use desktop Chrome with a writable folder for a long export.",
+            "This export is too large to finish in this browser. Use Chrome on your computer and choose “Save folder” so frames write straight to disk.",
           pngResumeVersionMismatch:
-            "The saved export was made with different settings, assets, or an older app version. It cannot be joined safely; start a new export and keep the existing parts.",
+            "The saved export was made with different settings or an older version. It can't be continued; start a new export and keep the existing parts.",
           pngResumeFileMissing:
-            "A saved ZIP part is missing or changed. The affected part must be redone; reselect the task folder and resume.",
+            "A saved ZIP part is missing or changed. That part will be redone; reselect the task folder and resume.",
           pngLocked:
-            "This export is open in another tab, or this browser cannot lock the task. Close the other tab and retry.",
+            "This export is open in another tab. Close the other tab and retry.",
           pngCheckpointFailed:
-            "This browser cannot keep the local checkpoint that resumable PNG exports need. Use desktop Chrome, or export a short job that fits in memory.",
+            "This browser can't save progress to resume later. Use Chrome on your computer, or export a shorter timer.",
           pngFailedUnexpectedly:
             "The PNG export stopped unexpectedly. Saved parts, if any, are kept; resume or start a new export.",
         },

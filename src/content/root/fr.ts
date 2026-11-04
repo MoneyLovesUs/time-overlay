@@ -208,9 +208,9 @@ const frRootPageContent = {
         prepareSummaryTemplate:
           "{duration} s · {fps} fps · {frames} images · {width}×{height}",
         estimateTemplate:
-          "Environ {size}, {parts} partie(s) ZIP et environ {time} d'encodage. Les estimations se mettent à jour au fil de l'écriture des images réelles.",
+          "Environ {size} en {parts} partie(s) ZIP, et environ {time} pour l'export.",
         estimateUnknown:
-          "Aucune image d'exemple n'était disponible : les estimations de taille et de durée sont inconnues. L'export peut quand même continuer.",
+          "Les estimations de taille et de durée s'afficheront pendant l'export.",
         sampleProgress:
           "Rendu d'images d'exemple pour estimer la taille et la durée…",
         longJobTitle: "Cet export est long",
@@ -225,17 +225,17 @@ const frRootPageContent = {
         continueButton: "Continuer dans cet onglet",
         cancelPrepButton: "Annuler la préparation",
         adviceDesktopSafari:
-          "Pour de meilleures performances, utilisez Chrome sur ordinateur. Vous pouvez continuer, mais les longs exports PNG sont surtout validés dans Chrome.",
+          "Safari ne peut pas enregistrer un export de cette taille : son stockage intégré sera plein avant la fin. Pour un compte à rebours aussi long, utilisez Chrome ou Edge sur votre ordinateur.",
         adviceMobile:
-          "Pour de meilleures performances, exportez sur ordinateur. Vous pouvez continuer si cet appareil réussit le test de stockage.",
+          "Pour un compte à rebours aussi long, utilisez un ordinateur. Les téléphones et tablettes manquent souvent de stockage avant la fin de l'export.",
         capabilityMissing:
-          "Cet export exige un stockage local reprenable et un seul onglet actif, ce que ce navigateur ou ce profil ne fournit pas.",
+          "Ce navigateur ne peut pas enregistrer les fichiers d'export. Fermez les autres onglets de cette page et réessayez, ou utilisez Chrome sur votre ordinateur.",
         longStorageMissing:
-          "Un long export nécessite soit un dossier accessible en écriture, soit un stockage du navigateur qui accepte vraiment les écritures. Ce navigateur n'offre aucune destination sûre : aucune image n'a été générée.",
+          "Votre navigateur n'a pas pu créer d'espace pour enregistrer les images. Libérez du stockage ou utilisez Chrome sur un ordinateur, puis réessayez.",
         runTitle: "Export de séquence PNG",
         modeDirectory: "Dossier de sauvegarde",
-        modeBrowserStorage: "Stockage du navigateur",
-        modeMemory: "Mémoire temporaire",
+        modeBrowserStorage: "Enregistré dans le navigateur",
+        modeMemory: "Conservé en mémoire",
         runFramesTemplate: "Images traitées",
         runCommittedTemplate: "Images enregistrées",
         runPartTemplate: "Partie en cours · parties enregistrées",
@@ -256,9 +256,8 @@ const frRootPageContent = {
           "Décompressez toutes les parties, regroupez les fichiers frame-*.png dans un seul dossier, puis importez ce dossier comme séquence d'images à la cadence choisie. N'importez pas chaque partie comme un compte à rebours séparé. Le premier ZIP contient des scripts de conversion qui détectent les images manquantes.",
         autoDownloadNote:
           "Le téléchargement du navigateur a démarré. Gardez cet onglet ouvert jusqu'à la fin.",
-        openFolderHint:
-          "Le navigateur ne peut pas ouvrir votre gestionnaire de fichiers ; utilisez la fenêtre de dossiers du système si besoin.",
-        cleanupButton: "Nettoyer les fichiers temporaires",
+        openFolderHint: "Ouvrez le dossier dans votre gestionnaire de fichiers.",
+        cleanupButton: "Supprimer les fichiers temporaires",
         recoveryTitle: "Export PNG inachevé détecté",
         recoveryBodyTemplate:
           "{frames} images sur {total} sont bien enregistrées dans {parts} partie(s). La partie inachevée sera reprise.",
@@ -284,17 +283,17 @@ const frRootPageContent = {
           pngZipValidationFailed:
             "Une partie ZIP enregistrée n'a pas passé la validation. Elle sera refaite ; les parties précédentes sont conservées.",
           pngFrameTooLarge:
-            "Une image PNG ou les métadonnées ZIP nécessaires dépassent la limite par partie. Réduisez la résolution ou utilisez un style plus simple.",
+            "Une seule image PNG dépasse la limite par partie. Réduisez la résolution ou utilisez un style plus simple.",
           pngMemoryLimitExceeded:
-            "Cet export demande plus de mémoire temporaire que la voie en mémoire limitée ne le permet. Pour un export long, utilisez Chrome sur ordinateur avec un dossier accessible en écriture.",
+            "Cet export est trop volumineux pour se terminer dans ce navigateur. Utilisez Chrome sur votre ordinateur et choisissez « Dossier de sauvegarde » pour que les images s'écrivent directement sur le disque.",
           pngResumeVersionMismatch:
-            "L'export enregistré a été créé avec d'autres réglages, d'autres ressources ou une version plus ancienne de l'app. Il ne peut pas être fusionné sans risque ; lancez un nouvel export et gardez les parties existantes.",
+            "L'export enregistré a été créé avec d'autres réglages ou une version plus ancienne. Il ne peut pas être repris ; lancez un nouvel export et gardez les parties existantes.",
           pngResumeFileMissing:
-            "Une partie ZIP enregistrée manque ou a changé. La partie concernée doit être refaite ; resélectionnez le dossier de tâche et reprenez.",
+            "Une partie ZIP enregistrée manque ou a changé. Cette partie sera refaite ; resélectionnez le dossier de tâche et reprenez.",
           pngLocked:
-            "Cet export est ouvert dans un autre onglet, ou ce navigateur ne peut pas verrouiller la tâche. Fermez l'autre onglet et réessayez.",
+            "Cet export est ouvert dans un autre onglet. Fermez l'autre onglet et réessayez.",
           pngCheckpointFailed:
-            "Ce navigateur ne peut pas conserver le point de contrôle local nécessaire aux exports PNG reprenables. Utilisez Chrome sur ordinateur, ou exportez une tâche courte qui tient en mémoire.",
+            "Ce navigateur ne peut pas enregistrer la progression pour reprendre plus tard. Utilisez Chrome sur votre ordinateur, ou exportez un compte à rebours plus court.",
           pngFailedUnexpectedly:
             "L'export PNG s'est arrêté de façon inattendue. Les parties enregistrées, s'il y en a, sont conservées ; reprenez ou lancez un nouvel export.",
         },

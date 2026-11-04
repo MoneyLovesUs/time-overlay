@@ -202,9 +202,9 @@ const nlRootPageContent = {
         prepareSummaryTemplate:
           "{duration} s · {fps} fps · {frames} frames · {width}×{height}",
         estimateTemplate:
-          "Ongeveer {size}, {parts} ZIP-deel(en), ongeveer {time} coderen. De schattingen worden bijgewerkt terwijl de echte frames worden weggeschreven.",
+          "Ongeveer {size} in {parts} ZIP-deel(en), grofweg {time} om te exporteren.",
         estimateUnknown:
-          "Er waren geen voorbeeldframes beschikbaar, dus de schatting van grootte en tijd is onbekend. De export kan gewoon doorgaan.",
+          "Schattingen van grootte en tijd verschijnen terwijl de export loopt.",
         sampleProgress:
           "Voorbeeldframes renderen om grootte en tijd te schatten…",
         longJobTitle: "Deze export duurt lang",
@@ -219,17 +219,17 @@ const nlRootPageContent = {
         continueButton: "Doorgaan in dit tabblad",
         cancelPrepButton: "Voorbereiding annuleren",
         adviceDesktopSafari:
-          "Gebruik Chrome op de desktop voor betere exportprestaties. Je kunt doorgaan, maar lange PNG-exports worden vooral in Chrome gecontroleerd.",
+          "Safari kan een zo grote export niet opslaan — de ingebouwde opslag raakt vol voordat het klaar is. Gebruik Chrome of Edge op je computer voor zo'n lange timer.",
         adviceMobile:
-          "Exporteer op een computer voor betere prestaties. Je kunt doorgaan als dit apparaat de opslagcontrole haalt.",
+          "Gebruik voor zo'n lange timer een computer. Telefoons en tablets raken vaak zonder opslag voordat de export klaar is.",
         capabilityMissing:
-          "Deze export vereist hervatbare lokale opslag en één actief tabblad, wat deze browser of dit profiel niet biedt.",
+          "Deze browser kan geen exportbestanden opslaan. Sluit andere tabbladen van deze pagina en probeer opnieuw, of gebruik Chrome op je computer.",
         longStorageMissing:
-          "Een lange export heeft een beschrijfbare map nodig of browseropslag die schrijfacties echt accepteert. Deze browser biedt geen veilige bestemming, dus er zijn geen frames gemaakt.",
+          "Je browser kon geen plek aanmaken om de frames op te slaan. Maak opslagruimte vrij of gebruik Chrome op een computer en probeer het daarna opnieuw.",
         runTitle: "PNG-sequentie exporteren",
         modeDirectory: "Opslagmap",
-        modeBrowserStorage: "Browseropslag",
-        modeMemory: "Tijdelijk geheugen",
+        modeBrowserStorage: "Opgeslagen in browser",
+        modeMemory: "In geheugen bewaard",
         runFramesTemplate: "Verwerkte frames",
         runCommittedTemplate: "Veilig opgeslagen frames",
         runPartTemplate: "Huidig deel · opgeslagen delen",
@@ -250,9 +250,8 @@ const nlRootPageContent = {
           "Pak elk deel uit, zet alle frame-*.png-bestanden in één map en importeer die map als beeldsequentie met de gekozen fps. Importeer elk deel niet als aparte countdown. De eerste ZIP bevat conversiescripts die ontbrekende frames controleren.",
         autoDownloadNote:
           "De download van de browser is gestart. Houd dit tabblad open tot hij klaar is.",
-        openFolderHint:
-          "De browser kan je bestandsbeheer niet openen; gebruik zo nodig het mapvenster van je systeem.",
-        cleanupButton: "Tijdelijke browserbestanden opruimen",
+        openFolderHint: "Open de map in je bestandsbeheer.",
+        cleanupButton: "Tijdelijke bestanden verwijderen",
         recoveryTitle: "Onvoltooide PNG-export gevonden",
         recoveryBodyTemplate:
           "{frames} van {total} frames zijn veilig opgeslagen over {parts} deel(en). Het onvoltooide deel wordt opnieuw gedaan.",
@@ -278,17 +277,17 @@ const nlRootPageContent = {
           pngZipValidationFailed:
             "Een opgeslagen ZIP-deel is niet door de validatie gekomen. Het wordt opnieuw gedaan; eerdere delen blijven bewaard.",
           pngFrameTooLarge:
-            "Een PNG-frame of de benodigde ZIP-metadata is groter dan de limiet per deel. Verlaag de resolutie of gebruik een eenvoudiger stijl.",
+            "Een enkel PNG-frame is groter dan de limiet per deel. Verlaag de resolutie of gebruik een eenvoudigere stijl.",
           pngMemoryLimitExceeded:
-            "Deze export vraagt meer tijdelijk geheugen dan het beperkte in-memory pad toestaat. Gebruik voor een lange export Chrome op de desktop met een beschrijfbare map.",
+            "Deze export is te groot om in deze browser af te maken. Gebruik Chrome op je computer en kies “Opslagmap” zodat frames direct naar schijf worden geschreven.",
           pngResumeVersionMismatch:
-            "De opgeslagen export is gemaakt met andere instellingen, assets of een oudere app-versie. Hij kan niet veilig worden samengevoegd; start een nieuwe export en bewaar de bestaande delen.",
+            "De opgeslagen export is gemaakt met andere instellingen of een oudere versie. Hij kan niet worden voortgezet; start een nieuwe export en bewaar de bestaande delen.",
           pngResumeFileMissing:
-            "Een opgeslagen ZIP-deel ontbreekt of is gewijzigd. Het getroffen deel moet opnieuw; selecteer de taakmap opnieuw en hervat.",
+            "Een opgeslagen ZIP-deel ontbreekt of is gewijzigd. Dat deel wordt opnieuw gedaan; selecteer de taakmap opnieuw en hervat.",
           pngLocked:
-            "Deze export is open in een ander tabblad, of deze browser kan de taak niet vergrendelen. Sluit het andere tabblad en probeer opnieuw.",
+            "Deze export is open in een ander tabblad. Sluit het andere tabblad en probeer opnieuw.",
           pngCheckpointFailed:
-            "Deze browser kan het lokale controlepunt niet bewaren dat hervatbare PNG-exports nodig hebben. Gebruik Chrome op de desktop, of exporteer een korte taak die in het geheugen past.",
+            "Deze browser kan geen voortgang opslaan om later te hervatten. Gebruik Chrome op je computer, of exporteer een kortere timer.",
           pngFailedUnexpectedly:
             "De PNG-export is onverwacht gestopt. Opgeslagen delen, als die er zijn, blijven bewaard; hervat of start een nieuwe export.",
         },

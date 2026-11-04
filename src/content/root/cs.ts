@@ -201,9 +201,9 @@ const csRootPageContent = {
         prepareSummaryTemplate:
           "{duration} s · {fps} fps · snímků: {frames} · {width}×{height}",
         estimateTemplate:
-          "Přibližně {size}, částí ZIP: {parts}, zhruba {time} kódování. Odhady se upravují podle skutečně zapsaných snímků.",
+          "Přibližně {size} v částech ZIP: {parts}, zhruba {time} exportu.",
         estimateUnknown:
-          "Vzorové snímky nebyly dostupné, takže odhad velikosti a času není znám. Export může pokračovat.",
+          "Odhady velikosti a času se zobrazí během exportu.",
         sampleProgress: "Vytvářím vzorové snímky pro odhad velikosti a času…",
         longJobTitle: "Toto je dlouhý export",
         longJobBody:
@@ -217,17 +217,17 @@ const csRootPageContent = {
         continueButton: "Pokračovat v této kartě",
         cancelPrepButton: "Zrušit přípravu",
         adviceDesktopSafari:
-          "Pro lepší výkon exportu použijte Chrome na počítači. Pokračovat můžete, ale dlouhé PNG exporty se ověřují hlavně v Chrome.",
+          "Safari nedokáže uložit takto velký export — jeho vestavěné úložiště se zaplní dřív, než export skončí. Pro takto dlouhý časovač použijte Chrome nebo Edge na počítači.",
         adviceMobile:
-          "Pro lepší výkon exportujte na počítači. Pokračovat můžete, pokud zařízení projde kontrolou úložiště.",
+          "Pro takto dlouhý časovač použijte počítač. Telefonům a tabletům často dojde úložiště dřív, než export skončí.",
         capabilityMissing:
-          "Tento export potřebuje obnovitelné místní úložiště a jedinou aktivní kartu, což tento prohlížeč nebo profil neposkytuje.",
+          "Tento prohlížeč nedokáže ukládat soubory exportu. Zavřete ostatní karty této stránky a zkuste to znovu, nebo použijte Chrome na počítači.",
         longStorageMissing:
-          "Dlouhý export potřebuje buď zapisovatelnou složku, nebo úložiště prohlížeče, které zápisy skutečně přijímá. Tento prohlížeč nenabízí bezpečné místo, takže nebyly vytvořeny žádné snímky.",
+          "Váš prohlížeč nemohl vytvořit místo pro ukládání snímků. Uvolněte úložiště nebo použijte Chrome na počítači a zkuste to znovu.",
         runTitle: "Export PNG sekvence",
         modeDirectory: "Složka",
-        modeBrowserStorage: "Úložiště prohlížeče",
-        modeMemory: "Dočasná paměť",
+        modeBrowserStorage: "Uloženo v prohlížeči",
+        modeMemory: "Drženo v paměti",
         runFramesTemplate: "Zpracované snímky",
         runCommittedTemplate: "Bezpečně uložené snímky",
         runPartTemplate: "Aktuální část · uložené části",
@@ -248,9 +248,8 @@ const csRootPageContent = {
           "Rozbalte všechny části, přesuňte soubory frame-*.png do jedné složky a importujte ji jako sekvenci obrázků se zvoleným fps. Neimportujte každou část jako samostatné odpočítávání. První ZIP obsahuje skripty pro kontrolu chybějících snímků.",
         autoDownloadNote:
           "Stahování v prohlížeči začalo. Nechte kartu otevřenou, dokud neskončí.",
-        openFolderHint:
-          "Prohlížeč nemůže otevřít správce souborů; v případě potřeby použijte okno složky v systému.",
-        cleanupButton: "Uklidit dočasné soubory prohlížeče",
+        openFolderHint: "Otevřete složku ve správci souborů.",
+        cleanupButton: "Smazat dočasné soubory",
         recoveryTitle: "Nalezen nedokončený export PNG",
         recoveryBodyTemplate:
           "Bezpečně uloženo {frames} z {total} snímků v {parts} částech. Nedokončená část bude zopakována.",
@@ -276,17 +275,17 @@ const csRootPageContent = {
           pngZipValidationFailed:
             "Uložená část ZIP neprošla ověřením. Bude zopakována; předchozí části zůstanou.",
           pngFrameTooLarge:
-            "Jeden snímek PNG nebo jeho povinná metadata ZIP přesahují limit části. Snižte rozlišení nebo použijte jednodušší styl.",
+            "Jeden snímek PNG je větší než limit části. Snižte rozlišení nebo použijte jednodušší styl.",
           pngMemoryLimitExceeded:
-            "Tento export potřebuje více dočasné paměti, než dovoluje omezená cesta v paměti. Pro dlouhý export použijte Chrome na počítači se zapisovatelnou složkou.",
+            "Tento export je příliš velký na to, aby se v tomto prohlížeči dokončil. Použijte Chrome na počítači a zvolte „Složka“, aby se snímky zapisovaly přímo na disk.",
           pngResumeVersionMismatch:
-            "Uložený export vznikl s jiným nastavením, podklady nebo starší verzí aplikace. Nelze jej bezpečně spojit; spusťte nový export a stávající části zachovejte.",
+            "Uložený export vznikl s jiným nastavením nebo ve starší verzi. Nelze v něm pokračovat; spusťte nový export a stávající části si ponechte.",
           pngResumeFileMissing:
-            "Uložená část ZIP chybí nebo byla změněna. Postiženou část je třeba zopakovat; znovu vyberte složku úlohy a pokračujte.",
+            "Uložená část ZIP chybí nebo byla změněna. Tato část se zopakuje; znovu vyberte složku úlohy a pokračujte.",
           pngLocked:
-            "Tento export je otevřený v jiné kartě nebo prohlížeč nemůže úlohu zamknout. Zavřete druhou kartu a zkuste to znovu.",
+            "Tento export je otevřený v jiné kartě. Zavřete druhou kartu a zkuste to znovu.",
           pngCheckpointFailed:
-            "Prohlížeč nemůže uchovat místní kontrolní bod, který obnovitelný export PNG potřebuje. Použijte Chrome na počítači nebo exportujte krátkou úlohu, která se vejde do paměti.",
+            "Tento prohlížeč nedokáže ukládat průběh pro pozdější pokračování. Použijte Chrome na počítači nebo exportujte kratší časovač.",
           pngFailedUnexpectedly:
             "Export PNG se neočekávaně zastavil. Uložené části, pokud existují, zůstávají; pokračujte nebo spusťte nový export.",
         },

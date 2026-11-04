@@ -201,9 +201,9 @@ const svRootPageContent = {
         prepareSummaryTemplate:
           "{duration} s · {fps} fps · {frames} bildrutor · {width}×{height}",
         estimateTemplate:
-          "Cirka {size}, {parts} ZIP-del(ar), ungefär {time} kodning. Uppskattningarna uppdateras när de riktiga bildrutorna skrivs.",
+          "Cirka {size} i {parts} ZIP-del(ar), ungefär {time} att exportera.",
         estimateUnknown:
-          "Inga exempelbildrutor fanns, så storleks- och tidsuppskattningen är okänd. Exporten kan ändå fortsätta.",
+          "Uppskattningar av storlek och tid visas medan exporten körs.",
         sampleProgress:
           "Renderar exempelbildrutor för att uppskatta storlek och tid…",
         longJobTitle: "Den här exporten tar lång tid",
@@ -218,17 +218,17 @@ const svRootPageContent = {
         continueButton: "Fortsätt i den här fliken",
         cancelPrepButton: "Avbryt förberedelsen",
         adviceDesktopSafari:
-          "Använd Chrome på datorn för bättre exportprestanda. Du kan fortsätta, men långa PNG-exporter verifieras främst i Chrome.",
+          "Safari kan inte spara en så här stor export — dess inbyggda lagring tar slut innan den är klar. Använd Chrome eller Edge på din dator för en så här lång timer.",
         adviceMobile:
-          "Exportera på en dator för bättre prestanda. Du kan fortsätta om enheten klarar lagringskontrollen.",
+          "Använd en dator för en så här lång timer. Telefoner och surfplattor får ofta slut på lagring innan exporten är klar.",
         capabilityMissing:
-          "Den här exporten kräver återupptagbar lokal lagring och en enda aktiv flik, vilket den här webbläsaren eller profilen inte erbjuder.",
+          "Den här webbläsaren kan inte spara exportfiler. Stäng andra flikar på den här sidan och försök igen, eller använd Chrome på din dator.",
         longStorageMissing:
-          "En lång export kräver antingen en skrivbar mapp eller webbläsarlagring som verkligen tar emot skrivningar. Den här webbläsaren erbjuder ingen säker målplats, så inga bildrutor skapades.",
+          "Din webbläsare kunde inte skapa en plats att spara bildrutorna på. Frigör lagringsutrymme eller använd Chrome på en dator och försök igen.",
         runTitle: "Export av PNG-sekvens",
         modeDirectory: "Sparmapp",
-        modeBrowserStorage: "Webbläsarlagring",
-        modeMemory: "Tillfälligt minne",
+        modeBrowserStorage: "Sparat i webbläsaren",
+        modeMemory: "Kvar i minnet",
         runFramesTemplate: "Bearbetade bildrutor",
         runCommittedTemplate: "Säkert sparade bildrutor",
         runPartTemplate: "Aktuell del · sparade delar",
@@ -249,9 +249,8 @@ const svRootPageContent = {
           "Packa upp alla delar, flytta alla frame-*.png-filer till en mapp och importera sedan mappen som bildsekvens med vald fps. Importera inte varje del som en egen nedräkning. Den första ZIP-filen innehåller konverteringsskript som kontrollerar saknade bildrutor.",
         autoDownloadNote:
           "Webbläsarens nedladdning har startat. Håll fliken öppen tills den är klar.",
-        openFolderHint:
-          "Webbläsaren kan inte öppna din filhanterare; använd systemets mappfönster vid behov.",
-        cleanupButton: "Rensa tillfälliga webbläsarfiler",
+        openFolderHint: "Öppna mappen i din filhanterare.",
+        cleanupButton: "Ta bort tillfälliga filer",
         recoveryTitle: "Oavslutad PNG-export hittades",
         recoveryBodyTemplate:
           "{frames} av {total} bildrutor är säkert sparade i {parts} del(ar). Den oavslutade delen görs om.",
@@ -277,17 +276,17 @@ const svRootPageContent = {
           pngZipValidationFailed:
             "En sparad ZIP-del klarade inte valideringen. Den görs om; tidigare delar behålls.",
           pngFrameTooLarge:
-            "En PNG-bildruta eller dess nödvändiga ZIP-metadata är större än gränsen per del. Minska upplösningen eller använd en enklare stil.",
+            "En enda PNG-bildruta är större än gränsen per del. Minska upplösningen eller använd en enklare stil.",
           pngMemoryLimitExceeded:
-            "Den här exporten behöver mer tillfälligt minne än den begränsade minnesvägen tillåter. Använd Chrome på datorn med en skrivbar mapp för en lång export.",
+            "Den här exporten är för stor för att slutföras i den här webbläsaren. Använd Chrome på din dator och välj ”Sparmapp” så att bildrutorna skrivs direkt till disk.",
           pngResumeVersionMismatch:
-            "Den sparade exporten skapades med andra inställningar, tillgångar eller en äldre appversion. Den kan inte slås ihop säkert; starta en ny export och behåll de befintliga delarna.",
+            "Den sparade exporten skapades med andra inställningar eller en äldre version. Den kan inte fortsättas; starta en ny export och behåll de befintliga delarna.",
           pngResumeFileMissing:
-            "En sparad ZIP-del saknas eller har ändrats. Den berörda delen måste göras om; välj uppgiftsmappen igen och återuppta.",
+            "En sparad ZIP-del saknas eller har ändrats. Den delen görs om; välj uppgiftsmappen igen och återuppta.",
           pngLocked:
-            "Den här exporten är öppen i en annan flik, eller så kan webbläsaren inte låsa uppgiften. Stäng den andra fliken och försök igen.",
+            "Den här exporten är öppen i en annan flik. Stäng den andra fliken och försök igen.",
           pngCheckpointFailed:
-            "Den här webbläsaren kan inte behålla den lokala kontrollpunkt som återupptagbara PNG-exporter behöver. Använd Chrome på datorn, eller exportera ett kort jobb som får plats i minnet.",
+            "Den här webbläsaren kan inte spara förloppet för att återuppta senare. Använd Chrome på din dator, eller exportera en kortare timer.",
           pngFailedUnexpectedly:
             "PNG-exporten stoppades oväntat. Sparade delar, om några, behålls; återuppta eller starta en ny export.",
         },

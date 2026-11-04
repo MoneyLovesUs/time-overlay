@@ -213,6 +213,17 @@ export class PngZipPartWriter {
     };
   }
 
+  /**
+   * Extend the part's declared frame range to the last processed frame. A
+   * de-duplicated export skips the tail of the last displayed second, so the
+   * writer stops advancing while the part still owns those frames.
+   */
+  setRangeEnd(nextFrameIndex: number) {
+    if (nextFrameIndex > this.nextFrameIndex) {
+      this.nextFrameIndex = nextFrameIndex;
+    }
+  }
+
   /** Whether the next frame still fits this part, using the exact final size. */
   canAddFrame(frameName: string, dataLength: number): boolean {
     if (this.frameCount >= PNG_PART_MAX_PNG_COUNT) {
@@ -344,6 +355,7 @@ export class PngZipPartWriter {
       fileName: this.fileName,
       firstFrameIndex: this.firstFrameIndex,
       nextFrameIndex: this.nextFrameIndex,
+      frameCount: this.frameCount,
       bytes: committed.size,
       entryCount: this.entryCount,
       directoryDigest,
@@ -493,6 +505,8 @@ export const PNG_HELPER_FILE_NAMES = [
   "convert-to-prores.bat",
   "README-prores.txt",
   "EXPORT-INSTRUCTIONS.txt",
+  "expand-sequence.sh",
+  "expand-sequence.ps1",
 ] as const;
 
 export function isPngPartNoteName(name: string): boolean {
@@ -556,7 +570,7 @@ export async function verifyPngPartFile(
   }
 
   const frameEntries = entries.filter((entry) => entry.name.endsWith(".png"));
-  const expectedFrames = descriptor.nextFrameIndex - descriptor.firstFrameIndex;
+  const expectedFrames = descriptor.frameCount;
   if (
     frameEntries.length !== expectedFrames ||
     descriptor.firstFrameIndex < 0 ||
@@ -572,13 +586,19 @@ export async function verifyPngPartFile(
     descriptor.firstFrameIndex,
     descriptor.frameNameWidth,
   );
+  // A de-duplicated part skips frames, so only the first entry is pinned to the
+  // part start; every other name must still be inside the part's range.
   const expectedLast = getPngFrameFileName(
     descriptor.nextFrameIndex - 1,
     descriptor.frameNameWidth,
   );
+  const lastEntryName = frameEntries[frameEntries.length - 1]?.name;
   if (
     frameEntries[0]?.name !== expectedFirst ||
-    frameEntries[frameEntries.length - 1]?.name !== expectedLast
+    !lastEntryName ||
+    (descriptor.frameCount ===
+      descriptor.nextFrameIndex - descriptor.firstFrameIndex &&
+      lastEntryName !== expectedLast)
   ) {
     throw new PngExportError(
       "pngZipValidationFailed",

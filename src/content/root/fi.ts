@@ -231,6 +231,11 @@ const fiRootPageContent = {
           "Tämä selain ei voi tallentaa vientitiedostoja. Sulje tämän sivun muut välilehdet ja yritä uudelleen, tai käytä tietokoneen Chromea.",
         longStorageMissing:
           "Selaimesi ei pystynyt luomaan paikkaa kuvien tallentamiseksi. Vapauta tallennustilaa tai käytä tietokoneen Chromea ja yritä uudelleen.",
+        dedupeLabel: "Kirjoita jokainen kuva kerran",
+        dedupeHint:
+          "Vain {unique} {total} kuvasta eroaa — loput toistavat edellisen kuvan. expand-sequence.sh täyttää ne takaisin, ja lataus pienenee noin kokoon {size}.",
+        dedupeResultNote:
+          "Toistuvat kuvat tallennettiin vain kerran. Aja ennen tuontia expand-sequence.sh (tai Windowsissa expand-sequence.ps1) yhdistettyjen kuvien kansiossa — se luo toistuvat kuvat uudelleen.",
         runTitle: "PNG-jakson vienti",
         modeDirectory: "Tallennuskansio",
         modeBrowserStorage: "Tallennettu selaimeen",

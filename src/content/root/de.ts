@@ -232,6 +232,11 @@ const deRootPageContent = {
           "Dieser Browser kann keine Exportdateien speichern. Schließe andere Tabs dieser Seite und versuche es erneut, oder nutze Chrome auf deinem Computer.",
         longStorageMissing:
           "Dein Browser konnte keinen Ort zum Speichern der Frames anlegen. Gib Speicher frei oder nutze Chrome auf einem Computer und versuche es dann erneut.",
+        dedupeLabel: "Jedes Bild nur einmal speichern",
+        dedupeHint:
+          "Nur {unique} von {total} Frames unterscheiden sich — die übrigen wiederholen das Bild davor. expand-sequence.sh füllt sie wieder auf, und der Download schrumpft auf etwa {size}.",
+        dedupeResultNote:
+          "Doppelte Frames wurden nur einmal gespeichert. Führe vor dem Import im Ordner der zusammengeführten Frames expand-sequence.sh aus (unter Windows expand-sequence.ps1) — es erzeugt die wiederholten Frames neu.",
         runTitle: "PNG-Sequenz-Export",
         modeDirectory: "Speicherordner",
         modeBrowserStorage: "Im Browser gespeichert",

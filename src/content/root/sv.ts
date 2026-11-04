@@ -225,6 +225,11 @@ const svRootPageContent = {
           "Den här webbläsaren kan inte spara exportfiler. Stäng andra flikar på den här sidan och försök igen, eller använd Chrome på din dator.",
         longStorageMissing:
           "Din webbläsare kunde inte skapa en plats att spara bildrutorna på. Frigör lagringsutrymme eller använd Chrome på en dator och försök igen.",
+        dedupeLabel: "Skriv varje bild en gång",
+        dedupeHint:
+          "Bara {unique} av {total} bildrutor skiljer sig — resten upprepar bilden före. expand-sequence.sh fyller tillbaka dem och nedladdningen krymper till ungefär {size}.",
+        dedupeResultNote:
+          "Dubbla bildrutor sparades bara en gång. Kör expand-sequence.sh (eller expand-sequence.ps1 på Windows) i mappen med sammanslagna bildrutor innan du importerar — den återskapar de upprepade bildrutorna.",
         runTitle: "Export av PNG-sekvens",
         modeDirectory: "Sparmapp",
         modeBrowserStorage: "Sparat i webbläsaren",

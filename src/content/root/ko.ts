@@ -215,6 +215,11 @@ const koRootPageContent = {
           "Safari에서는 이렇게 큰 내보내기를 저장할 수 없습니다. 완료되기 전에 내장 저장소가 가득 찹니다. 이렇게 긴 타이머에는 컴퓨터의 Chrome 또는 Edge를 사용하세요.",
         adviceMobile:
           "이렇게 긴 타이머에는 컴퓨터를 사용하세요. 휴대폰과 태블릿은 내보내기가 끝나기 전에 저장 공간이 부족해지는 경우가 많습니다.",
+        dedupeLabel: "같은 이미지는 한 번만 기록",
+        dedupeHint:
+          "{total}프레임 중 서로 다른 프레임은 {unique}개뿐이고, 나머지는 앞 이미지를 반복합니다. expand-sequence.sh가 이를 다시 채워 주며 다운로드 크기는 약 {size}로 줄어듭니다.",
+        dedupeResultNote:
+          "중복된 프레임은 한 번만 저장되었습니다. 가져오기 전에 프레임을 모은 폴더에서 expand-sequence.sh(Windows에서는 expand-sequence.ps1)를 실행하세요. 반복된 프레임이 다시 생성됩니다.",
         capabilityMissing:
           "이 브라우저는 내보내기 파일을 저장할 수 없습니다. 이 페이지의 다른 탭을 닫고 다시 시도하거나, 컴퓨터의 Chrome을 사용하세요.",
         longStorageMissing:

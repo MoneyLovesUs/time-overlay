@@ -232,6 +232,11 @@ const ptRootPageContent = {
           "Este navegador não consegue salvar arquivos de exportação. Feche as outras abas desta página e tente de novo, ou use o Chrome no seu computador.",
         longStorageMissing:
           "Seu navegador não conseguiu criar um lugar para salvar os quadros. Libere armazenamento ou use o Chrome em um computador e tente de novo.",
+        dedupeLabel: "Gravar cada imagem uma vez",
+        dedupeHint:
+          "Apenas {unique} de {total} quadros são diferentes — o resto repete a imagem anterior. O expand-sequence.sh preenche os demais e o download cai para cerca de {size}.",
+        dedupeResultNote:
+          "Quadros duplicados foram salvos apenas uma vez. Antes de importar, execute o expand-sequence.sh (ou expand-sequence.ps1 no Windows) na pasta de quadros mesclados — ele recria os quadros repetidos.",
         runTitle: "Exportação de sequência PNG",
         modeDirectory: "Pasta de salvamento",
         modeBrowserStorage: "Salvo no navegador",

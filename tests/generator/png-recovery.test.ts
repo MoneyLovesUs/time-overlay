@@ -10,6 +10,8 @@ import {
   runPngExport,
   type PngEngineContext,
 } from "@/lib/generator/export/png-engine";
+import { unzipSync } from "fflate";
+
 import type { PngCheckpoint } from "@/lib/generator/export/png-checkpoint";
 import { readLatestPngManifest } from "@/lib/generator/export/png-manifest";
 import { PngExportError } from "@/lib/generator/export/png-error";
@@ -177,6 +179,7 @@ function createPayload(
     outputDirectory: directory as unknown as FileSystemDirectoryHandle,
     outputDirectoryName: directory.name,
     enablePreview: false,
+    skipDuplicateFrames: false,
     ...overrides,
   };
 }
@@ -494,4 +497,68 @@ describe("PNG write backpressure and failures", () => {
       expect(checkpoints.at(-1)?.nextFrameIndex).toBe(0);
     },
   );
+});
+
+describe("PNG duplicate-frame skipping", () => {
+  it("writes one image per displayed second and ships the expand script", async () => {
+    const directory = new MemoryDirectory("time-overlay-job-recovery-test");
+    const encoded: number[] = [];
+    const { context } = createContext();
+    let checkpoint: PngCheckpoint | undefined;
+    await runPngExport(
+      context,
+      createPayload(directory, { skipDuplicateFrames: true }),
+      false,
+      {
+        encodeFrame: async (frameIndex) => {
+          encoded.push(frameIndex);
+          return new Uint8Array([frameIndex & 0xff, 1, 2, 3]);
+        },
+        persistCheckpoint: async (saved) => {
+          checkpoint = saved;
+        },
+      },
+    );
+
+    // 3 seconds at 30 fps: frames 0..89, but only 0/30/60 change the digits.
+    expect(encoded).toEqual([0, 30, 60]);
+    expect(checkpoint?.skipDuplicateFrames).toBe(true);
+    const manifest = JSON.parse(directory.latestManifestFile().text);
+    const manifestParts = (manifest.parts ?? manifest.partList ?? []) as Array<Record<string, number>>;
+    expect(manifestParts[0]?.frameCount).toBe(3);
+    expect(manifestParts[0]?.nextFrameIndex).toBe(90);
+
+    const part = directory.files.get("timer-part-001.zip")!;
+    const names = Object.keys(unzipSync(part.bytes));
+    expect(names).toContain("frame-0001.png");
+    expect(names).toContain("frame-0031.png");
+    expect(names).toContain("frame-0061.png");
+    expect(names).not.toContain("frame-0002.png");
+    expect(names).toContain("expand-sequence.sh");
+    expect(names).toContain("expand-sequence.ps1");
+    const instructions = new TextDecoder().decode(
+      unzipSync(part.bytes)["EXPORT-INSTRUCTIONS.txt"],
+    );
+    expect(instructions).toContain("expand-sequence.sh");
+  });
+
+  it("keeps every frame when the option is off", async () => {
+    const directory = new MemoryDirectory("time-overlay-job-recovery-test");
+    const encoded: number[] = [];
+    const { context } = createContext();
+    await runPngExport(context, createPayload(directory), false, {
+      encodeFrame: async (frameIndex) => {
+        encoded.push(frameIndex);
+        return new Uint8Array([frameIndex & 0xff, 1, 2, 3]);
+      },
+      persistCheckpoint: async () => undefined,
+    });
+
+    expect(encoded).toHaveLength(90);
+    const names = Object.keys(
+      unzipSync(directory.files.get("timer-part-001.zip")!.bytes),
+    );
+    expect(names).toContain("frame-0002.png");
+    expect(names).not.toContain("expand-sequence.sh");
+  });
 });

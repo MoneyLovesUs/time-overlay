@@ -232,6 +232,11 @@ const frRootPageContent = {
           "Ce navigateur ne peut pas enregistrer les fichiers d'export. Fermez les autres onglets de cette page et réessayez, ou utilisez Chrome sur votre ordinateur.",
         longStorageMissing:
           "Votre navigateur n'a pas pu créer d'espace pour enregistrer les images. Libérez du stockage ou utilisez Chrome sur un ordinateur, puis réessayez.",
+        dedupeLabel: "Écrire chaque image une seule fois",
+        dedupeHint:
+          "Seules {unique} des {total} images diffèrent : les autres répètent l'image précédente. expand-sequence.sh les reconstitue et le téléchargement passe à environ {size}.",
+        dedupeResultNote:
+          "Les images en double n'ont été enregistrées qu'une fois. Avant l'import, exécutez expand-sequence.sh (ou expand-sequence.ps1 sous Windows) dans le dossier des images fusionnées : il recrée les images répétées.",
         runTitle: "Export de séquence PNG",
         modeDirectory: "Dossier de sauvegarde",
         modeBrowserStorage: "Enregistré dans le navigateur",

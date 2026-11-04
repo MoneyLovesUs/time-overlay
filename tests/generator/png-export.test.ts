@@ -563,6 +563,7 @@ describe("manifest validation", () => {
             firstFrameIndex: 0,
             nextFrameIndex: 10,
             bytes: 1_000,
+            frameCount: 10,
             entryCount: 10,
             directoryDigest: "b".repeat(64),
             directoryOffset: 900,

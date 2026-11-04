@@ -32,6 +32,8 @@ export type PngCheckpoint = {
   totalFrames: number;
   fps: number;
   frameNameWidth: number;
+  /** Absent on records written before de-duplication existed. */
+  skipDuplicateFrames?: boolean;
   outputMode: Exclude<PngOutputMode, "memory">;
   outputDirectory?: FileSystemDirectoryHandle;
   outputDirectoryName?: string;

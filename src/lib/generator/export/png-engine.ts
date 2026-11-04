@@ -10,7 +10,15 @@ import {
   type PngCheckpoint,
 } from "@/lib/generator/export/png-checkpoint";
 import { PngExportError } from "@/lib/generator/export/png-error";
-import { drawExportFrame } from "@/lib/generator/export/frame-drawer";
+import {
+  drawExportFrame,
+  getExportFrameText,
+} from "@/lib/generator/export/frame-drawer";
+import {
+  EXPAND_BUNDLE_FILES,
+  buildExpandBundle,
+} from "@/lib/generator/export/png-expand-bundle";
+import { encodePalettePng } from "@/lib/generator/export/png-palette";
 import {
   estimatePngArchiveBytes,
   estimatePngParts,
@@ -181,6 +189,19 @@ async function emitPreview(
   }
 }
 
+/**
+ * Encode the current canvas as an indexed PNG. `convertToBlob` can only emit
+ * truecolor RGBA, which measured 2-3.5x larger on this content, so the export
+ * reads the pixels back and runs the palette encoder instead.
+ */
+function encodeCanvasFrame(
+  canvas: OffscreenCanvas,
+  context: OffscreenCanvasRenderingContext2D,
+): Uint8Array<ArrayBuffer> {
+  const image = context.getImageData(0, 0, canvas.width, canvas.height);
+  return encodePalettePng(image.data, canvas.width, canvas.height);
+}
+
 export async function runPngPreflight(
   context: PngEngineContext,
   payload: PngPreflightPayload,
@@ -219,8 +240,7 @@ export async function runPngPreflight(
       fps: settings.export.fps,
     });
     const startedAt = performance.now();
-    const blob = await canvas.convertToBlob({ type: "image/png" });
-    const bytes = await blob.arrayBuffer();
+    const bytes = encodeCanvasFrame(canvas, canvasContext);
     sampledElapsedMs += performance.now() - startedAt;
     sampledBytes += bytes.byteLength;
     samples += 1;
@@ -348,6 +368,7 @@ function buildInstructions(
   jobId: string,
   totalFrames: number,
   frameNameWidth: number,
+  skipDuplicateFrames: boolean,
 ) {
   return buildPngExportInstructions({
     jobId,
@@ -355,6 +376,7 @@ function buildInstructions(
     totalFrames,
     frameNameWidth,
     layout: "zipped",
+    skipDuplicateFrames,
   });
 }
 
@@ -499,6 +521,7 @@ export async function runPngExport(
       totalFrames,
       fps,
       frameNameWidth,
+      skipDuplicateFrames: payload.skipDuplicateFrames,
       outputMode: outputMode === "memory" ? "opfs" : outputMode,
       outputDirectory:
         outputMode === "directory" ? payload.outputDirectory : undefined,
@@ -550,7 +573,13 @@ export async function runPngExport(
     await writeTextFile(
       location.directory,
       EXPORT_INSTRUCTIONS_FILE,
-      buildInstructions(settings, jobId, totalFrames, frameNameWidth),
+      buildInstructions(
+        settings,
+        jobId,
+        totalFrames,
+        frameNameWidth,
+        payload.skipDuplicateFrames,
+      ),
     );
     for (const name of PRORES_BUNDLE_FILES) {
       await writeTextFile(location.directory, name, bundle[name]);
@@ -686,14 +715,31 @@ export async function runPngExport(
           frameNameWidth,
           layout: "zipped",
         });
+        const expandBundle = payload.skipDuplicateFrames
+          ? buildExpandBundle({ totalFrames })
+          : null;
         const files: PngZipHelperFile[] = [
           {
             name: EXPORT_INSTRUCTIONS_FILE,
             bytes: encodeText(
-              buildInstructions(settings, jobId, totalFrames, frameNameWidth),
+              buildInstructions(
+                settings,
+                jobId,
+                totalFrames,
+                frameNameWidth,
+                payload.skipDuplicateFrames,
+              ),
             ),
           },
           ...getBundleFiles(bundle),
+          ...(expandBundle
+            ? EXPAND_BUNDLE_FILES.map((name) => ({
+                name,
+                bytes: encodeText(
+                  (expandBundle as Record<string, string>)[name],
+                ),
+              }))
+            : []),
         ];
         return { reserve: files, finish: () => files };
       }
@@ -801,6 +847,7 @@ export async function runPngExport(
       helpers: { finish: () => PngZipHelperFile[] },
     ) => {
       emitProgress("closing", processedFrames, true);
+      currentWriter.setRangeEnd(processedFrames);
       const result = await currentWriter.finish(
         frameNameWidth,
         helpers.finish(),
@@ -835,12 +882,31 @@ export async function runPngExport(
     if (nextFrameIndex < totalFrames) {
       helpers = await openPart();
     }
+    // Whole-second countdowns repeat the same image for every frame inside a
+    // second, so the previous frame's text identifies the previous image.
+    let previousFrameText =
+      payload.skipDuplicateFrames && nextFrameIndex > 0
+        ? getExportFrameText(settings, nextFrameIndex - 1, fps)
+        : null;
+
     while (nextFrameIndex < totalFrames && helpers) {
       if (context.isCancelled()) {
         cancelled = true;
         break;
       }
       const frameIndex = nextFrameIndex;
+      if (payload.skipDuplicateFrames) {
+        const frameText = getExportFrameText(settings, frameIndex, fps);
+        const duplicate =
+          previousFrameText !== null && previousFrameText === frameText;
+        previousFrameText = frameText;
+        if (duplicate) {
+          processedFrames = frameIndex + 1;
+          nextFrameIndex = processedFrames;
+          emitProgress("rendering", processedFrames, false);
+          continue;
+        }
+      }
       const partWriter = getWriter();
       if (!partWriter) {
         throw new PngExportError(
@@ -858,8 +924,7 @@ export async function runPngExport(
           frameIndex,
           fps,
         });
-        const blob = await canvas!.convertToBlob({ type: "image/png" });
-        bytes = new Uint8Array(await blob.arrayBuffer());
+        bytes = encodeCanvasFrame(canvas!, canvasContext!);
       }
       const frameName = getPngFrameFileName(frameIndex, frameNameWidth);
 

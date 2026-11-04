@@ -214,6 +214,14 @@ function validatePartDescriptor(
     65535,
     "part entry count",
   );
+  // Manifests written before de-duplication have no frameCount; those parts
+  // stored every frame in the range.
+  const frameCount = requireInteger(
+    part.frameCount ?? nextFrameIndex - firstFrameIndex,
+    1,
+    nextFrameIndex - firstFrameIndex,
+    "part frame count",
+  );
   const directoryOffset = requireInteger(
     part.directoryOffset,
     0,
@@ -259,6 +267,7 @@ function validatePartDescriptor(
     fileName,
     firstFrameIndex,
     nextFrameIndex,
+    frameCount,
     bytes,
     entryCount,
     directoryDigest,

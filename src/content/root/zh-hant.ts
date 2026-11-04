@@ -209,10 +209,15 @@ const zhHantRootPageContent = {
           "Safari 無法儲存這麼大的匯出——它的內建儲存空間會在匯出完成前被占滿。這麼長的計時器，請在電腦上使用 Chrome 或 Edge。",
         adviceMobile:
           "這麼長的計時器請用電腦匯出。手機與平板的儲存空間常常撐不到匯出完成。",
+        dedupeResultNote:
+          "重複影格只存了一份。匯入前，請在合併後的 frames 資料夾中執行 expand-sequence.sh（Windows 用 expand-sequence.ps1），它會把重複的影格補齊。",
         capabilityMissing:
           "此瀏覽器無法儲存匯出檔案。請關閉此頁面的其他分頁後重試，或在電腦上使用 Chrome。",
         longStorageMissing:
           "你的瀏覽器無法建立儲存影格的位置。請釋放儲存空間，或在電腦上使用 Chrome 後重試。",
+        dedupeLabel: "每張圖只寫一次",
+        dedupeHint:
+          "{total} 個影格中只有 {unique} 個不同——其餘影格重複前一張圖。expand-sequence.sh 會把它們補回來，下載大小將縮小至約 {size}。",
         runTitle: "PNG 序列匯出",
         modeDirectory: "儲存資料夾",
         modeBrowserStorage: "儲存在瀏覽器中",

@@ -151,6 +151,11 @@ export function buildProResBundle(
 
 export type PngInstructionsOptions = ProResBundleOptions & {
   jobId: string;
+  /**
+   * Frames inside one displayed second are identical, so the export wrote each
+   * image once. expand-sequence.* has to run before anything imports the folder.
+   */
+  skipDuplicateFrames?: boolean;
 };
 
 /**
@@ -162,9 +167,44 @@ export function buildPngExportInstructions({
   totalFrames,
   frameNameWidth,
   jobId,
+  skipDuplicateFrames = false,
 }: PngInstructionsOptions): string {
   const pattern = getPngFramePattern(frameNameWidth);
   const lastFrame = `frame-${String(totalFrames).padStart(frameNameWidth, "0")}.png`;
+  const expandStep = skipDuplicateFrames
+    ? `3. RUN expand-sequence.sh (macOS/Linux) or expand-sequence.ps1 (Windows)
+   inside that folder FIRST. The export stored each distinct image only once,
+   so consecutive frames are missing until this fills them in with links.
+4. Import the whole sequence in your editor at ${fps} fps. Do not import each
+   part separately and do not restart the timeline at 00:00 for later parts.
+5. To create ProRes 4444, place convert-to-prores.sh / convert-to-prores.bat
+   in the merged frames folder and run it after step 3. It checks all
+   ${totalFrames} frames before converting and refuses to run if one is missing.
+6. Keep the PNG sequence. It is the lossless source if the edit changes.`
+    : `3. Import the whole sequence in your editor at ${fps} fps. Do not import each
+   part separately and do not restart the timeline at 00:00 for later parts.
+4. To create ProRes 4444, place the first part's convert-to-prores.sh /
+   convert-to-prores.bat in the merged frames folder and run it. It checks all
+   ${totalFrames} frames before converting and refuses to run if one is missing.
+   The copy at this task root reads ./frames instead.
+5. Keep the PNG sequence. It is the lossless source if the edit changes.`;
+  const expandStepZh = skipDuplicateFrames
+    ? `3. 先在该文件夹内运行 expand-sequence.sh（macOS/Linux）或
+   expand-sequence.ps1（Windows）。本次导出每张不同画面只存了一份，
+   补齐之前相邻帧号是缺失的。
+4. 在剪辑软件中按 ${fps} fps 导入整条序列。不要把每卷分别导入，也不要让后
+   面的卷从 00:00 重新开始。
+5. 如需 ProRes 4444，把 convert-to-prores.sh / convert-to-prores.bat 放进
+   合并后的 frames 文件夹，在第 3 步之后运行。脚本会先检查全部 ${totalFrames}
+   帧，缺任何一帧都会报错并拒绝转换，避免生成悄悄截短的视频。
+6. 保留 PNG 序列，它是后续修改的无损源文件。`
+    : `3. 在剪辑软件中按 ${fps} fps 导入整条序列。不要把每卷分别导入，也不要让后
+   面的卷从 00:00 重新开始。
+4. 如需 ProRes 4444，把第一卷中的 convert-to-prores.sh /
+   convert-to-prores.bat 放进合并后的 frames 文件夹后运行。脚本会先检查全部
+   ${totalFrames} 帧，缺任何一帧都会报错并拒绝转换，避免生成悄悄截短的视频。
+   任务根目录下的脚本副本读取 ./frames。
+5. 保留 PNG 序列，它是后续修改的无损源文件。`;
   return `Time Overlay PNG sequence / Time Overlay PNG 序列
 Job ${jobId}
 
@@ -179,13 +219,7 @@ parts: timer-part-001.zip, timer-part-002.zip, ...
    single folder (for example "frames"). The names do not collide because the
    numbering is global: frame-${"1".padStart(frameNameWidth, "0")}.png through
    ${lastFrame}.
-3. Import the whole sequence in your editor at ${fps} fps. Do not import each
-   part separately and do not restart the timeline at 00:00 for later parts.
-4. To create ProRes 4444, place the first part's convert-to-prores.sh /
-   convert-to-prores.bat in the merged frames folder and run it. It checks all
-   ${totalFrames} frames before converting and refuses to run if one is missing.
-   The copy at this task root reads ./frames instead.
-5. Keep the PNG sequence. It is the lossless source if the edit changes.
+${expandStep}
 
 中文
 ----
@@ -197,13 +231,7 @@ timer-part-001.zip、timer-part-002.zip……
 2. 部分解压工具会为每个 ZIP 单独建目录。请把所有 frame-*.png 合并到同一个
    文件夹（例如 frames）。编号是全局连续的，从 frame-${"1".padStart(frameNameWidth, "0")}.png
    到 ${lastFrame}，文件名不会冲突。
-3. 在剪辑软件中按 ${fps} fps 导入整条序列。不要把每卷分别导入，也不要让后
-   面的卷从 00:00 重新开始。
-4. 如需 ProRes 4444，把第一卷中的 convert-to-prores.sh /
-   convert-to-prores.bat 放进合并后的 frames 文件夹后运行。脚本会先检查全部
-   ${totalFrames} 帧，缺任何一帧都会报错并拒绝转换，避免生成悄悄截短的视频。
-   任务根目录下的脚本副本读取 ./frames。
-5. 保留 PNG 序列，它是后续修改的无损源文件。
+${expandStepZh}
 
 Frame pattern / 帧文件名格式: ${pattern}
 `;

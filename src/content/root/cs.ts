@@ -220,6 +220,11 @@ const csRootPageContent = {
           "Safari nedokáže uložit takto velký export — jeho vestavěné úložiště se zaplní dřív, než export skončí. Pro takto dlouhý časovač použijte Chrome nebo Edge na počítači.",
         adviceMobile:
           "Pro takto dlouhý časovač použijte počítač. Telefonům a tabletům často dojde úložiště dřív, než export skončí.",
+        dedupeLabel: "Zapsat každý obrázek jednou",
+        dedupeHint:
+          "Odlišných je jen {unique} z {total} snímků — ostatní opakují předchozí obrázek. expand-sequence.sh je doplní zpět a velikost ke stažení klesne na přibližně {size}.",
+        dedupeResultNote:
+          "Duplicitní snímky byly uloženy pouze jednou. Před importem spusťte expand-sequence.sh (v systému Windows expand-sequence.ps1) ve složce se sloučenými snímky — znovu vytvoří opakované snímky.",
         capabilityMissing:
           "Tento prohlížeč nedokáže ukládat soubory exportu. Zavřete ostatní karty této stránky a zkuste to znovu, nebo použijte Chrome na počítači.",
         longStorageMissing:

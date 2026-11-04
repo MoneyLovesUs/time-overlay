@@ -20,6 +20,12 @@ export type PngPartDescriptor = {
   firstFrameIndex: number;
   /** Exclusive, 0-based global frame index after the last frame. */
   nextFrameIndex: number;
+  /**
+   * PNG entries actually stored. Equal to the frame range for a dense export;
+   * smaller when duplicate frames were skipped and expand-sequence.* will
+   * recreate them.
+   */
+  frameCount: number;
   bytes: number;
   entryCount: number;
   /** SHA-256 (hex) of the bounded ZIP central directory + EOCD. */
@@ -54,6 +60,13 @@ export type PngStartPayload = {
   outputDirectoryName?: string;
   resumeFrom?: PngResumePoint;
   enablePreview: boolean;
+  /**
+   * Write each distinct image once. A countdown holds the same pixels for every
+   * frame inside a displayed second, so a 30 fps job of 25 minutes contains 45,000
+   * frames but only ~1,500 distinct images. Gaps are filled by
+   * expand-sequence.* before the frames are imported.
+   */
+  skipDuplicateFrames: boolean;
 };
 
 export type PngPreflightPayload = {

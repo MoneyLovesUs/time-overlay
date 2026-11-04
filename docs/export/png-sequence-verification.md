@@ -44,6 +44,39 @@ Raw evidence and retained ZIPs: `.dispatch/e2e/png1500`, `png108k`, `png216k`,
 host disk-full error during download; that run's recovery report is historical
 evidence, not the final 27-part manifest.
 
+## Frame deduplication and palette encoding (2026-11-04)
+
+Two size changes landed after the runs above, so the byte totals in the matrix
+describe the previous encoder.
+
+1. **Indexed palette PNG.** `canvas.convertToBlob` can only emit truecolor RGBA.
+   Export frames now go through `encodePalettePng` (median cut over exact source
+   colors, PNG color type 3 with `tRNS`), which is lossless for frames with fewer
+   than 256 distinct colors and otherwise bounded by the palette size. Measured
+   against synthetic frames of the same shape: 1280×720 glow frame 37.6 KB ->
+   11.9 KB, 1920×1080 64.6 KB -> 18.0 KB, PSNR 56-70 dB.
+2. **Duplicate-frame skipping.** `formatCountdownTime` floors to whole seconds,
+   so every frame inside a displayed second renders identical pixels. With
+   `skipDuplicateFrames` the export writes only the distinct images, at their
+   true frame numbers, and ships `expand-sequence.sh` / `expand-sequence.ps1` to
+   rebuild the sequence with hard links (copies where links are unavailable).
+   `EXPORT-INSTRUCTIONS.txt` puts that step before import and ProRes conversion.
+
+Observed in Chrome on this build, Center Mono, 1280×720, transparent, 30 fps:
+
+| Run | Frames stored | ZIP bytes | Bytes per stored frame |
+|---|---:|---:|---:|
+| 300 s, dedupe off | 9,000 | 13,483,000 | 44.5 KB |
+| 20 s, dedupe on | 20 of 600 | 871,305 | 41.5 KB |
+
+`expand-sequence.sh` rebuilt the 20 s job to all 600 frames (580 hard links,
+`st_nlink` 30 on the linked frames) and the corner alpha stayed `(0,0,0,0)`.
+Scaling the measured per-frame size: 1500 s at 720p/30 fps is ~1.9 GB with
+dedupe off and ~62 MB with dedupe on, against 7.82 GB for the truecolor dense
+run in the matrix above. Resumed exports keep the flag in the checkpoint, and a
+manifest part records `frameCount`; manifests written before this change are
+still accepted and assumed dense.
+
 ## Memory and process observations
 
 Chrome 156, persistent profile, pages kept open; JS heap from CDP, worker heap

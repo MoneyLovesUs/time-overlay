@@ -102,6 +102,7 @@ import {
   type PngPlatformAdvice,
 } from "@/lib/generator/export/png-limits";
 import { readLatestPngManifest } from "@/lib/generator/export/png-manifest";
+import { countDistinctFrameTexts } from "@/lib/generator/export/frame-drawer";
 import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
 import {
   claimPngStart,
@@ -192,6 +193,7 @@ type PngRunState = {
   cancelling: boolean;
   autoDownload: boolean;
   resumed: boolean;
+  skipDuplicateFrames: boolean;
 };
 
 type PngResultState = PngResultView & {
@@ -327,6 +329,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     Record<string, UploadedFont>
   >({});
   const [pngImportError, setPngImportError] = useState<string | null>(null);
+  const [skipDuplicateFrames, setSkipDuplicateFrames] = useState(true);
 
   // Preview ownership is a three-state protocol: committed (state holds it),
   // drawn (React's effect actually painted it), and retired (no longer the
@@ -1510,6 +1513,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       cancelling: false,
       autoDownload: destination.autoDownload,
       resumed: false,
+      skipDuplicateFrames,
     };
     setPngRunState(run);
     abandonFiredRef.current = false;
@@ -1527,6 +1531,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       outputDirectory: destination.directory,
       outputDirectoryName: destination.directoryName,
       enablePreview: !isMobileDevice && pixelFrames < 4_000_000_000,
+      skipDuplicateFrames,
     };
     trackEvent("export_started", {
       ...activeExportTelemetryRef.current,
@@ -1843,6 +1848,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       totalBytes: payload.totalBytes,
       outputDirectoryName: payload.outputDirectoryName,
       autoDownloaded,
+      skipDuplicateFrames: run.skipDuplicateFrames,
       blob: resultBlob,
       cleanupAvailable: payload.outputMode === "opfs",
       downloadError,
@@ -2088,6 +2094,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
         cancelling: false,
         autoDownload: false,
         resumed: true,
+        skipDuplicateFrames: offer.checkpoint?.skipDuplicateFrames ?? false,
       };
       setPngRunState(run);
       const initialProgress: ExportProgressState = {
@@ -2118,6 +2125,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           manifest.outputMode === "directory"
             ? directory?.name ?? offer.checkpoint?.outputDirectoryName
             : manifest.jobId,
+        skipDuplicateFrames: offer.checkpoint?.skipDuplicateFrames ?? false,
         resumeFrom: {
           nextFrameIndex: manifest.nextFrameIndex,
           nextPartNumber: manifest.nextPartNumber,
@@ -3045,7 +3053,14 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
                 checkpointAvailable: pngPrep.checkpointAvailable,
                 lockAvailable: pngPrep.lockAvailable,
                 memoryAllowed: pngPrep.memoryAllowed,
+                uniqueFrames: countDistinctFrameTexts(
+                  pngPrep.settings,
+                  pngPrep.totalFrames,
+                  pngPrep.settings.export.fps,
+                ),
               }}
+              skipDuplicateFrames={skipDuplicateFrames}
+              onToggleSkipDuplicateFrames={setSkipDuplicateFrames}
             />
           ) : null}
 

@@ -1,8 +1,3 @@
-import { spawnSync } from "node:child_process";
-import { chmodSync, mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-
 import { unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 
@@ -41,9 +36,8 @@ import {
 import {
   buildPngExportInstructions,
   buildPngPartNote,
-  buildProResBundle,
   getPngPartNoteReservedBytes,
-} from "@/lib/generator/export/prores-bundle";
+} from "@/lib/generator/export/png-helpers";
 import {
   validatePngManifest,
   PNG_MANIFEST_SCHEMA,
@@ -75,7 +69,7 @@ function fakeSink(initialBytes = 0): PngPartSink & {
 function helper() {
   return [
     {
-      name: "README-prores.txt",
+      name: "EXPORT-INSTRUCTIONS.txt",
       bytes: new TextEncoder().encode("readme"),
     },
   ];
@@ -276,7 +270,7 @@ describe("PNG ZIP writer", () => {
     const entries = unzipSync(archive);
     expect([...entries["frame-00005.png"]]).toEqual([1, 2, 3]);
     expect([...entries["frame-00006.png"]]).toEqual([4, 5]);
-    expect(new TextDecoder().decode(entries["README-prores.txt"])).toBe(
+    expect(new TextDecoder().decode(entries["EXPORT-INSTRUCTIONS.txt"])).toBe(
       "readme",
     );
 
@@ -459,75 +453,18 @@ describe("merged framing templates", () => {
     expect(new TextEncoder().encode(note.content).byteLength).toBe(reserved);
   });
 
-  it("generates a script that rejects a missing middle frame", () => {
-    const directory = mkdtempSync(path.join(tmpdir(), "png-frames-"));
-    const frames = path.join(directory, "frames");
-    mkdirSync(frames);
-    writeFileSync(path.join(frames, "frame-0001.png"), "1");
-    writeFileSync(path.join(frames, "frame-0003.png"), "3");
-    const bundle = buildProResBundle({
-      fps: 30,
-      totalFrames: 3,
-      frameNameWidth: 4,
-      layout: "directory",
-    });
-    const scriptPath = path.join(directory, "convert-to-prores.sh");
-    writeFileSync(scriptPath, bundle["convert-to-prores.sh"]);
-    chmodSync(scriptPath, 0o755);
-
-    const missing = spawnSync(scriptPath, { cwd: directory, encoding: "utf8" });
-    expect(missing.status).not.toBe(0);
-    expect(missing.stderr).toContain("Missing frame");
-    expect(missing.stdout).not.toContain("output.mov (frame-%04d.png");
-
-    writeFileSync(path.join(frames, "frame-0002.png"), "2");
-    writeFileSync(path.join(directory, "ffmpeg"), "#!/bin/sh\nexit 0\n");
-    chmodSync(path.join(directory, "ffmpeg"), 0o755);
-    const complete = spawnSync(scriptPath, {
-      cwd: directory,
-      encoding: "utf8",
-      env: { ...process.env, PATH: `${directory}:${process.env.PATH}` },
-    });
-    expect(complete.status).toBe(0);
-  });
-
-  it("names both conversion entry points and both frame patterns", () => {
-    const zipped = buildProResBundle({
+  it("ships only the instruction file as a helper", () => {
+    const instructions = buildPngExportInstructions({
+      jobId: "job-1234abcd",
       fps: 30,
       totalFrames: 108_000,
       frameNameWidth: 6,
-      layout: "zipped",
     });
-    const directory = buildProResBundle({
-      fps: 30,
-      totalFrames: 108_000,
-      frameNameWidth: 6,
-      layout: "directory",
-    });
-    expect(zipped["convert-to-prores.sh"]).toContain('-start_number 1');
-    expect(zipped["convert-to-prores.sh"]).toContain("frame-%06d.png");
-    expect(zipped["convert-to-prores.sh"]).toContain('FRAMES_DIR="${1:-.}"');
-    expect(directory["convert-to-prores.sh"]).toContain(
-      'FRAMES_DIR="${1:-frames}"',
-    );
-    expect(directory["convert-to-prores.bat"]).toMatch(
-      /set "FRAMES=%~dp0frames\\"/,
-    );
-    expect(zipped["convert-to-prores.bat"]).toContain('set "FRAMES=%~dp0"');
-    expect(zipped["convert-to-prores.bat"]).toContain("-start_number 1");
-    expect(zipped["convert-to-prores.bat"]).toContain("TOTAL=108000");
-    // cmd expands %0, so the batch pattern must be escaped for ffmpeg.
-    expect(zipped["convert-to-prores.bat"]).toContain("frame-%%06d.png");
-    expect(zipped["README-prores.txt"]).toContain("timer-part-*.zip");
-    expect(
-      buildPngExportInstructions({
-        jobId: "job-1234abcd",
-        fps: 30,
-        totalFrames: 108_000,
-        frameNameWidth: 6,
-        layout: "zipped",
-      }),
-    ).toContain("frame-108000.png");
+    expect(instructions).toContain("frame-108000.png");
+    expect(instructions).toContain("frame-%06d.png");
+    expect(instructions).toContain("timer-part-001.zip");
+    // The ProRes bundle was removed from exports: no script is offered there.
+    expect(instructions).not.toContain("convert-to-prores");
   });
 });
 
@@ -563,7 +500,6 @@ describe("manifest validation", () => {
             firstFrameIndex: 0,
             nextFrameIndex: 10,
             bytes: 1_000,
-            frameCount: 10,
             entryCount: 10,
             directoryDigest: "b".repeat(64),
             directoryOffset: 900,

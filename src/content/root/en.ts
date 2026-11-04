@@ -248,11 +248,6 @@ const enRootPageContent = {
           "Safari can't save an export this large — its built-in storage will fill up before it finishes. Use Chrome or Edge on your computer for a timer this long.",
         adviceMobile:
           "For a timer this long, use a computer. Phones and tablets often run out of storage before the export finishes.",
-        dedupeLabel: "Write each image once",
-        dedupeHint:
-          "Only {unique} of {total} frames differ — the rest repeat the image before them. expand-sequence.sh fills them back in, and the download shrinks to about {size}.",
-        dedupeResultNote:
-          "Duplicate frames were stored once. Before importing, run expand-sequence.sh (or expand-sequence.ps1 on Windows) in the merged frames folder — it recreates the repeated frames.",
         capabilityMissing:
           "This browser can't save export files. Close other tabs on this page and retry, or use Chrome on your computer.",
         longStorageMissing:

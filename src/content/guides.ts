@@ -204,7 +204,7 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
       },
     ],
     closer:
-      "If a folder of frames is inconvenient on a long timeline, convert the PNG sequence to ProRes 4444 with the bundled `convert-to-prores` script and use that master clip instead. Keep the PNG source until the final composite has been checked.",
+      "If a folder of frames is inconvenient on a long timeline, convert the PNG sequence to ProRes 4444 with one ffmpeg command and use that master clip instead. Keep the PNG source until the final composite has been checked.",
   },
   "add-countdown-to-davinci-resolve": {
     title: "How to add a transparent countdown timer in DaVinci Resolve",
@@ -255,7 +255,7 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
       {
         title: "Convert the frames to ProRes 4444",
         body:
-          "Extract the PNG package and run the bundled convert-to-prores script. It uses FFmpeg to create one output.mov with a 4444 profile and an alpha-capable pixel format.",
+          "Extract the PNG package and run one ffmpeg command inside the merged frames folder. It creates a single output.mov with a 4444 profile and an alpha-capable pixel format.",
       },
       {
         title: "Import and connect above the primary storyline",
@@ -274,9 +274,9 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
   "png-to-prores": {
     title: "How to convert a PNG sequence to ProRes 4444 with alpha (ffmpeg)",
     description:
-      "Convert a Time Overlay PNG sequence to Apple ProRes 4444 with the alpha channel intact using the bundled script or a one-line ffmpeg command.",
+      "Convert a Time Overlay PNG sequence to Apple ProRes 4444 with the alpha channel intact using one ffmpeg command.",
     intro:
-      "To convert a Time Overlay PNG sequence to ProRes 4444 with alpha, run the bundled conversion script or a one-line ffmpeg command - both keep the alpha and color quality in a single file editors prefer. The PNG sequence export already ships with that script for macOS, Linux, and Windows.",
+      "To convert a Time Overlay PNG sequence to ProRes 4444 with alpha, merge the exported parts into one folder and run one ffmpeg command. It keeps the alpha and color quality in a single file that editors prefer.",
     recommendedFormat: "PNG sequence export, then convert with ffmpeg.",
     steps: [
       {
@@ -287,12 +287,12 @@ const enGuides: Record<GuideSlug, GuideBaseContent> = {
       {
         title: "Download and merge every Time Overlay PNG part",
         body:
-          "Export 'PNG Sequence' from the Time Overlay generator. Long exports arrive as `timer-part-001.zip`, `timer-part-002.zip`, and so on. Unzip every part and move all `frame-*.png` files into one folder; the numbering is global, so the names do not collide. The first part includes `convert-to-prores.sh`, `convert-to-prores.bat`, and a README.",
+          "Export 'PNG Sequence' from the Time Overlay generator. Long exports arrive as `timer-part-001.zip`, `timer-part-002.zip`, and so on. Unzip every part and move all `frame-*.png` files into one folder; the numbering is global, so the names do not collide.",
       },
       {
-        title: "Run the bundled script",
+        title: "Check the frame count, then convert",
         body:
-          "Put the script in the merged frames folder. On macOS or Linux, run `./convert-to-prores.sh` from a terminal. On Windows, double-click `convert-to-prores.bat`. The script checks every numbered frame before calling ffmpeg and refuses to run if one is missing, then writes `output.mov` next to the frames.",
+          "Count the `frame-*.png` files before converting: the total must equal duration × fps, otherwise a part is still unmerged and the video would be silently short. Then run the command below inside that folder.",
       },
       {
         title: "Manual one-liner if you prefer",
@@ -417,7 +417,7 @@ const zhHansGuides: Record<GuideSlug, GuideBaseContent> = {
       },
     ],
     closer:
-      "如果长时间线里管理一组帧不方便，可以用附带的 `convert-to-prores` 脚本转成 ProRes 4444，再使用这个母版文件。最终合成验证完成前，请保留 PNG 源序列。",
+      "如果长时间线里管理一组帧不方便，可以用一条 ffmpeg 命令转成 ProRes 4444，再使用这个母版文件。最终合成验证完成前，请保留 PNG 源序列。",
   },
   "add-countdown-to-davinci-resolve": {
     title: "如何在 DaVinci Resolve 中添加透明倒计时",
@@ -463,7 +463,7 @@ const zhHansGuides: Record<GuideSlug, GuideBaseContent> = {
       {
         title: "导出并合并全部 PNG 分卷",
         body:
-          "在 Time Overlay 中选择与剪辑节奏一致的时长和样式预设，然后在导出面板选择“PNG 序列”。长任务会得到 timer-part-001.zip、timer-part-002.zip 等多个普通 ZIP。请解压全部卷，把所有 frame-*.png 合并到同一个文件夹；编号全局连续，文件名不会冲突。第一卷包含 convert-to-prores 脚本。",
+          "在 Time Overlay 中选择与剪辑节奏一致的时长和样式预设，然后在导出面板选择“PNG 序列”。长任务会得到 timer-part-001.zip、timer-part-002.zip 等多个普通 ZIP。请解压全部卷，把所有 frame-*.png 合并到同一个文件夹；编号全局连续，文件名不会冲突。",
       },
       {
         title: "转换为 ProRes 4444",
@@ -500,12 +500,12 @@ const zhHansGuides: Record<GuideSlug, GuideBaseContent> = {
       {
         title: "下载 Time Overlay PNG 序列",
         body:
-          "在 Time Overlay 生成器中导出“PNG 序列”。下载的 zip 包含所有帧，以及 `convert-to-prores.sh`、`convert-to-prores.bat` 和 README。",
+          "在 Time Overlay 生成器中导出“PNG 序列”。长任务的 zip 会分成 timer-part-001.zip、timer-part-002.zip 等多卷，解压后把所有 frame-*.png 合并到同一个文件夹。",
       },
       {
         title: "运行附带脚本",
         body:
-          "解压压缩包。在 macOS 或 Linux 上，从终端运行 `./convert-to-prores.sh`。在 Windows 上，双击 `convert-to-prores.bat`。脚本会在帧文件旁生成 `output.mov`。",
+          "在合并后的文件夹内运行 `ffmpeg -framerate 30 -i frame-%04d.png -c:v prores_ks -profile:v 4444 -pix_fmt yuva444p10le output.mov`，生成带 alpha 的 output.mov。",
       },
       {
         title: "也可以手动运行一行命令",
@@ -735,7 +735,7 @@ const enGuideEvidence: Record<GuideSlug, GuideEvidence> = {
       {
         symptom: "The PNG files do not behave like one video clip",
         resolution:
-          "Use the bundled FFmpeg conversion step to create one ProRes 4444 MOV, then import that file instead of managing individual stills in the timeline.",
+          "Use a single FFmpeg conversion to create one ProRes 4444 MOV, then import that file instead of managing individual stills in the timeline.",
       },
       {
         symptom: "The clip is opaque after conversion",

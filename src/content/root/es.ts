@@ -232,11 +232,6 @@ const esRootPageContent = {
           "Este navegador no puede guardar archivos de exportación. Cierra las demás pestañas de esta página y reintenta, o usa Chrome en tu ordenador.",
         longStorageMissing:
           "Tu navegador no pudo crear un lugar donde guardar los fotogramas. Libera almacenamiento o usa Chrome en un ordenador e inténtalo de nuevo.",
-        dedupeLabel: "Escribir cada imagen una vez",
-        dedupeHint:
-          "Solo {unique} de {total} fotogramas cambian: el resto repite la imagen anterior. expand-sequence.sh los rellena de nuevo y la descarga baja a unos {size}.",
-        dedupeResultNote:
-          "Los fotogramas duplicados se guardaron una sola vez. Antes de importar, ejecuta expand-sequence.sh (o expand-sequence.ps1 en Windows) en la carpeta de fotogramas combinados: vuelve a crear los fotogramas repetidos.",
         runTitle: "Exportación de secuencia PNG",
         modeDirectory: "Carpeta de guardado",
         modeBrowserStorage: "Guardado en el navegador",

@@ -6,10 +6,7 @@ import type {
   PngPartDescriptor,
   PngPreflightResult,
 } from "@/lib/generator/export/png-contract";
-import {
-  PNG_PART_MAX_BYTES,
-  formatPngBytes,
-} from "@/lib/generator/export/png-limits";
+import { formatPngBytes } from "@/lib/generator/export/png-limits";
 import type { PngPlatformAdvice } from "@/lib/generator/export/png-limits";
 
 const panelClassName =
@@ -29,7 +26,6 @@ export type PngPrepViewState = {
   checkpointAvailable: boolean;
   lockAvailable: boolean;
   memoryAllowed: boolean;
-  uniqueFrames: number;
 };
 
 function formatElapsed(ms: number | null): string | null {
@@ -68,8 +64,6 @@ export function PngPrepareDialog({
   isResuming,
   busy,
   error,
-  skipDuplicateFrames,
-  onToggleSkipDuplicateFrames,
   onChooseFolder,
   onUseOpfs,
   onContinueMemory,
@@ -81,8 +75,6 @@ export function PngPrepareDialog({
   isResuming: boolean;
   busy: boolean;
   error: string | null;
-  skipDuplicateFrames: boolean;
-  onToggleSkipDuplicateFrames: (next: boolean) => void;
   onChooseFolder: () => void;
   onUseOpfs: () => void;
   onContinueMemory: () => void;
@@ -102,28 +94,12 @@ export function PngPrepareDialog({
     !state.isLongJob &&
     !state.memoryAllowed &&
     !diskCapable;
-  const dedupeApplies =
-    skipDuplicateFrames && state.uniqueFrames < state.totalFrames;
-  // Skipped frames cost no bytes, so the estimate and the part count both
-  // scale by the share of frames that are actually written.
-  const estimatedBytes = preflight?.estimatedArchiveBytes ?? null;
-  const adjustedBytes =
-    estimatedBytes === null
-      ? null
-      : dedupeApplies
-        ? Math.round(
-            (estimatedBytes * state.uniqueFrames) / Math.max(1, state.totalFrames),
-          )
-        : estimatedBytes;
   const estimateText = preflight
-    ? adjustedBytes === null
+    ? preflight.estimatedArchiveBytes === null
       ? copy.estimateUnknown
       : fill(copy.estimateTemplate, {
-          size: formatPngBytes(adjustedBytes),
-          parts:
-            dedupeApplies && adjustedBytes !== null
-              ? Math.max(1, Math.ceil(adjustedBytes / PNG_PART_MAX_BYTES))
-              : (preflight.estimatedParts ?? 1),
+          size: formatPngBytes(preflight.estimatedArchiveBytes),
+          parts: preflight.estimatedParts ?? 1,
           time: formatElapsed(preflight.estimatedElapsedMs) ?? "?",
         })
     : null;
@@ -201,35 +177,6 @@ export function PngPrepareDialog({
 
         {error ? (
           <p className="mt-3 text-sm leading-6 text-destructive">{error}</p>
-        ) : null}
-
-        {state.uniqueFrames < state.totalFrames ? (
-          <label className="mt-3 flex cursor-pointer items-start gap-2 border border-border/70 bg-background/60 px-3 py-2 text-[13px] leading-5">
-            <input
-              checked={skipDuplicateFrames}
-              className="mt-1 size-3 accent-primary"
-              disabled={busy || !state.preflight}
-              onChange={(event) => onToggleSkipDuplicateFrames(event.target.checked)}
-              type="checkbox"
-            />
-            <span>
-              <span className="font-medium text-foreground">{copy.dedupeLabel}</span>
-              <span className="mt-1 block text-muted-foreground">
-                {fill(copy.dedupeHint, {
-                  unique: state.uniqueFrames,
-                  total: state.totalFrames,
-                  size: formatPngBytes(
-                    estimatedBytes === null
-                      ? 0
-                      : Math.round(
-                          (estimatedBytes * state.uniqueFrames) /
-                            Math.max(1, state.totalFrames),
-                        ),
-                  ),
-                })}
-              </span>
-            </span>
-          </label>
         ) : null}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -497,8 +444,6 @@ export type PngResultView = {
   totalBytes: number;
   outputDirectoryName?: string;
   autoDownloaded: boolean;
-  /** Set when the export stored each distinct image once. */
-  skipDuplicateFrames?: boolean;
 };
 
 export function PngResultCard({
@@ -588,11 +533,6 @@ export function PngResultCard({
         <p className="mt-1 text-[12px] leading-5 text-muted-foreground">
           {copy.mergeInstructionsBody}
         </p>
-        {result.skipDuplicateFrames ? (
-          <p className="mt-2 border-l-2 border-secondary/60 pl-2 text-[12px] leading-5 text-foreground">
-            {copy.dedupeResultNote}
-          </p>
-        ) : null}
       </div>
       {cleanupAvailable ? (
         <button

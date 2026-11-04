@@ -235,15 +235,10 @@ const zhHansRootPageContent = {
           "Safari 无法保存这么大的导出——它的内置存储会在导出完成前被占满。这么长的计时器，请在电脑上使用 Chrome 或 Edge。",
         adviceMobile:
           "这么长的计时器请用电脑导出。手机和平板的存储常常撑不到导出完成。",
-        dedupeResultNote:
-          "重复帧只存了一份。导入前，请在合并后的 frames 文件夹中运行 expand-sequence.sh（Windows 用 expand-sequence.ps1），它会把重复的帧补齐。",
         capabilityMissing:
           "此浏览器无法保存导出文件。请关闭此页面的其他标签页后重试，或在电脑上使用 Chrome。",
         longStorageMissing:
           "你的浏览器无法创建保存帧的位置。请释放存储空间，或在电脑上使用 Chrome 后重试。",
-        dedupeLabel: "每张图只写一次",
-        dedupeHint:
-          "{total} 帧中只有 {unique} 帧不同——其余帧重复上一张图。expand-sequence.sh 会把它们补回来，下载体积将缩小到约 {size}。",
         runTitle: "PNG 序列导出",
         modeDirectory: "保存文件夹",
         modeBrowserStorage: "保存在浏览器中",

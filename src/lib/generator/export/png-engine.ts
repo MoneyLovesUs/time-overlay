@@ -10,14 +10,7 @@ import {
   type PngCheckpoint,
 } from "@/lib/generator/export/png-checkpoint";
 import { PngExportError } from "@/lib/generator/export/png-error";
-import {
-  drawExportFrame,
-  getExportFrameText,
-} from "@/lib/generator/export/frame-drawer";
-import {
-  EXPAND_BUNDLE_FILES,
-  buildExpandBundle,
-} from "@/lib/generator/export/png-expand-bundle";
+import { drawExportFrame } from "@/lib/generator/export/frame-drawer";
 import { encodePalettePng } from "@/lib/generator/export/png-palette";
 import {
   estimatePngArchiveBytes,
@@ -59,12 +52,9 @@ import {
 import {
   buildPngExportInstructions,
   buildPngPartNote,
-  buildProResBundle,
   EXPORT_INSTRUCTIONS_FILE,
   getPngPartNoteReservedBytes,
-  type ProResBundleFile,
-  PRORES_BUNDLE_FILES,
-} from "@/lib/generator/export/prores-bundle";
+} from "@/lib/generator/export/png-helpers";
 import type { ExportWorkerMessage } from "@/lib/generator/export/job";
 import { loadFontIntoWorker, type UploadedFont } from "@/lib/generator/font-loader";
 import type { GeneratorSettings } from "@/lib/generator/types";
@@ -143,15 +133,6 @@ function padToLength(
   padded.fill(0x20);
   padded.set(bytes);
   return padded;
-}
-
-function getBundleFiles(
-  bundle: Record<ProResBundleFile, string>,
-): PngZipHelperFile[] {
-  return PRORES_BUNDLE_FILES.map((name) => ({
-    name,
-    bytes: encodeText(bundle[name]),
-  }));
 }
 
 async function emitPreview(
@@ -368,15 +349,12 @@ function buildInstructions(
   jobId: string,
   totalFrames: number,
   frameNameWidth: number,
-  skipDuplicateFrames: boolean,
 ) {
   return buildPngExportInstructions({
     jobId,
     fps: settings.export.fps,
     totalFrames,
     frameNameWidth,
-    layout: "zipped",
-    skipDuplicateFrames,
   });
 }
 
@@ -521,7 +499,6 @@ export async function runPngExport(
       totalFrames,
       fps,
       frameNameWidth,
-      skipDuplicateFrames: payload.skipDuplicateFrames,
       outputMode: outputMode === "memory" ? "opfs" : outputMode,
       outputDirectory:
         outputMode === "directory" ? payload.outputDirectory : undefined,
@@ -564,26 +541,11 @@ export async function runPngExport(
     if (!location || outputMode !== "directory") {
       return;
     }
-    const bundle = buildProResBundle({
-      fps,
-      totalFrames,
-      frameNameWidth,
-      layout: "directory",
-    });
     await writeTextFile(
       location.directory,
       EXPORT_INSTRUCTIONS_FILE,
-      buildInstructions(
-        settings,
-        jobId,
-        totalFrames,
-        frameNameWidth,
-        payload.skipDuplicateFrames,
-      ),
+      buildInstructions(settings, jobId, totalFrames, frameNameWidth),
     );
-    for (const name of PRORES_BUNDLE_FILES) {
-      await writeTextFile(location.directory, name, bundle[name]);
-    }
   };
 
   try {
@@ -709,37 +671,13 @@ export async function runPngExport(
       finish: () => PngZipHelperFile[];
     }> => {
       if (nextPartNumber === 1) {
-        const bundle = buildProResBundle({
-          fps,
-          totalFrames,
-          frameNameWidth,
-          layout: "zipped",
-        });
-        const expandBundle = payload.skipDuplicateFrames
-          ? buildExpandBundle({ totalFrames })
-          : null;
         const files: PngZipHelperFile[] = [
           {
             name: EXPORT_INSTRUCTIONS_FILE,
             bytes: encodeText(
-              buildInstructions(
-                settings,
-                jobId,
-                totalFrames,
-                frameNameWidth,
-                payload.skipDuplicateFrames,
-              ),
+              buildInstructions(settings, jobId, totalFrames, frameNameWidth),
             ),
           },
-          ...getBundleFiles(bundle),
-          ...(expandBundle
-            ? EXPAND_BUNDLE_FILES.map((name) => ({
-                name,
-                bytes: encodeText(
-                  (expandBundle as Record<string, string>)[name],
-                ),
-              }))
-            : []),
         ];
         return { reserve: files, finish: () => files };
       }
@@ -847,7 +785,6 @@ export async function runPngExport(
       helpers: { finish: () => PngZipHelperFile[] },
     ) => {
       emitProgress("closing", processedFrames, true);
-      currentWriter.setRangeEnd(processedFrames);
       const result = await currentWriter.finish(
         frameNameWidth,
         helpers.finish(),
@@ -882,31 +819,12 @@ export async function runPngExport(
     if (nextFrameIndex < totalFrames) {
       helpers = await openPart();
     }
-    // Whole-second countdowns repeat the same image for every frame inside a
-    // second, so the previous frame's text identifies the previous image.
-    let previousFrameText =
-      payload.skipDuplicateFrames && nextFrameIndex > 0
-        ? getExportFrameText(settings, nextFrameIndex - 1, fps)
-        : null;
-
     while (nextFrameIndex < totalFrames && helpers) {
       if (context.isCancelled()) {
         cancelled = true;
         break;
       }
       const frameIndex = nextFrameIndex;
-      if (payload.skipDuplicateFrames) {
-        const frameText = getExportFrameText(settings, frameIndex, fps);
-        const duplicate =
-          previousFrameText !== null && previousFrameText === frameText;
-        previousFrameText = frameText;
-        if (duplicate) {
-          processedFrames = frameIndex + 1;
-          nextFrameIndex = processedFrames;
-          emitProgress("rendering", processedFrames, false);
-          continue;
-        }
-      }
       const partWriter = getWriter();
       if (!partWriter) {
         throw new PngExportError(

@@ -44,38 +44,41 @@ Raw evidence and retained ZIPs: `.dispatch/e2e/png1500`, `png108k`, `png216k`,
 host disk-full error during download; that run's recovery report is historical
 evidence, not the final 27-part manifest.
 
-## Frame deduplication and palette encoding (2026-11-04)
+## Indexed palette encoding (2026-11-04)
 
-Two size changes landed after the runs above, so the byte totals in the matrix
-describe the previous encoder.
+`canvas.convertToBlob` can only emit truecolor RGBA, which measured 2-3.5x
+larger than an indexed PNG for this content. Export frames now go through
+`encodePalettePng` (median cut over the exact source colors, PNG color type 3
+with `tRNS`) instead. Nothing else about the artifact changes: every frame is
+still written, the sequence is still import-ready after unzipping, and no extra
+step is added for the user.
 
-1. **Indexed palette PNG.** `canvas.convertToBlob` can only emit truecolor RGBA.
-   Export frames now go through `encodePalettePng` (median cut over exact source
-   colors, PNG color type 3 with `tRNS`), which is lossless for frames with fewer
-   than 256 distinct colors and otherwise bounded by the palette size. Measured
-   against synthetic frames of the same shape: 1280×720 glow frame 37.6 KB ->
-   11.9 KB, 1920×1080 64.6 KB -> 18.0 KB, PSNR 56-70 dB.
-2. **Duplicate-frame skipping.** `formatCountdownTime` floors to whole seconds,
-   so every frame inside a displayed second renders identical pixels. With
-   `skipDuplicateFrames` the export writes only the distinct images, at their
-   true frame numbers, and ships `expand-sequence.sh` / `expand-sequence.ps1` to
-   rebuild the sequence with hard links (copies where links are unavailable).
-   `EXPORT-INSTRUCTIONS.txt` puts that step before import and ProRes conversion.
+Quality and size, measured against rendered frames of the same shape:
 
-Observed in Chrome on this build, Center Mono, 1280×720, transparent, 30 fps:
-
-| Run | Frames stored | ZIP bytes | Bytes per stored frame |
+| Frame | Truecolor PNG | Palette PNG | PSNR |
 |---|---:|---:|---:|
-| 300 s, dedupe off | 9,000 | 13,483,000 | 44.5 KB |
-| 20 s, dedupe on | 20 of 600 | 871,305 | 41.5 KB |
+| 1280x720, plain text | 15.3 KB | 6.5 KB | 68.6 dB |
+| 1280x720, glow + box | 37.6 KB | 11.9 KB | 62.7 dB |
+| 1920x1080, plain text | 25.0 KB | 9.9 KB | 70.4 dB |
+| 1920x1080, glow + box | 64.6 KB | 18.0 KB | 64.1 dB |
 
-`expand-sequence.sh` rebuilt the 20 s job to all 600 frames (580 hard links,
-`st_nlink` 30 on the linked frames) and the corner alpha stayed `(0,0,0,0)`.
-Scaling the measured per-frame size: 1500 s at 720p/30 fps is ~1.9 GB with
-dedupe off and ~62 MB with dedupe on, against 7.82 GB for the truecolor dense
-run in the matrix above. Resumed exports keep the flag in the checkpoint, and a
-manifest part records `frameCount`; manifests written before this change are
-still accepted and assumed dense.
+Real end-to-end run in Chrome for this build (Center Mono, 1080p, transparent,
+30 fps): 3,600 frames -> 5.1 MB, i.e. 41 KB per frame against the 77 KB per
+frame of the 1080p60 truecolor run in the matrix above. Scaling the 720p
+measurement (174 KB -> 41.5 KB per frame): 1500 s at 720p/30 fps drops from
+7,820,000,000 bytes to roughly 1.9 GB with an unchanged frame count.
+
+The package no longer carries the ProRes conversion bundle. A PNG sequence
+export now contains only `frame-*.png` plus `EXPORT-INSTRUCTIONS.txt` (and one
+`PART-NNN-README.txt` in every part after the first). `convert-to-prores.sh`,
+`convert-to-prores.bat` and `README-prores.txt` were removed from the ZIP, the
+task directory and the guide copy; the PNG-to-ProRes guide now teaches the
+single ffmpeg command instead of pointing at a bundled script.
+
+Frame de-duplication was prototyped and removed again: storing one image per
+displayed second cut the same job to ~62 MB but required running an
+`expand-sequence.sh` helper before import, which is a workflow change, not an
+optimization. The export never ships a partial sequence.
 
 ## Memory and process observations
 

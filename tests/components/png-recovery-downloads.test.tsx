@@ -34,7 +34,6 @@ function render(partsDownloadable: boolean) {
           fileName: "timer-part-001.zip",
           firstFrameIndex: 0,
           nextFrameIndex: 10,
-          frameCount: 10,
           bytes: 100,
           entryCount: 10,
           directoryDigest: "a".repeat(64),

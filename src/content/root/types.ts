@@ -56,9 +56,6 @@ export type PngExportCopy = {
   adviceMobile: string;
   capabilityMissing: string;
   longStorageMissing: string;
-  dedupeLabel: string;
-  dedupeHint: string;
-  dedupeResultNote: string;
   runTitle: string;
   modeDirectory: string;
   modeBrowserStorage: string;

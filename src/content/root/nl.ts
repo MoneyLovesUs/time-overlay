@@ -226,11 +226,6 @@ const nlRootPageContent = {
           "Deze browser kan geen exportbestanden opslaan. Sluit andere tabbladen van deze pagina en probeer opnieuw, of gebruik Chrome op je computer.",
         longStorageMissing:
           "Je browser kon geen plek aanmaken om de frames op te slaan. Maak opslagruimte vrij of gebruik Chrome op een computer en probeer het daarna opnieuw.",
-        dedupeLabel: "Elke afbeelding één keer opslaan",
-        dedupeHint:
-          "Slechts {unique} van {total} frames verschillen — de rest herhaalt de afbeelding ervoor. expand-sequence.sh vult ze weer aan en de download krimpt tot ongeveer {size}.",
-        dedupeResultNote:
-          "Dubbele frames zijn maar één keer opgeslagen. Voer vóór het importeren expand-sequence.sh (of expand-sequence.ps1 op Windows) uit in de map met samengevoegde frames — die maakt de herhaalde frames opnieuw aan.",
         runTitle: "PNG-sequentie exporteren",
         modeDirectory: "Opslagmap",
         modeBrowserStorage: "Opgeslagen in browser",

@@ -214,11 +214,6 @@ const jaRootPageContent = {
           "この大きさの書き出しは Safari では保存できません。完了する前に内蔵ストレージがいっぱいになります。これほど長いタイマーにはパソコンの Chrome または Edge をお使いください。",
         adviceMobile:
           "これほど長いタイマーにはパソコンをお使いください。スマートフォンやタブレットでは、書き出しが終わる前にストレージが足りなくなることがよくあります。",
-        dedupeLabel: "同じ画像は一度だけ書き出す",
-        dedupeHint:
-          "{total} フレームのうち異なるのは {unique} フレームだけで、残りは直前の画像を繰り返します。expand-sequence.sh で元どおりに戻せ、ダウンロードサイズは約 {size} まで小さくなります。",
-        dedupeResultNote:
-          "重複したフレームは 1 回だけ保存されています。読み込む前に、まとめたフレームのフォルダーで expand-sequence.sh（Windows では expand-sequence.ps1）を実行してください。繰り返しのフレームが復元されます。",
         capabilityMissing:
           "このブラウザでは書き出しファイルを保存できません。このページの他のタブを閉じて再試行するか、パソコンの Chrome をお使いください。",
         longStorageMissing:

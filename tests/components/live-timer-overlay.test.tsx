@@ -6,8 +6,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("posthog-js", () => ({
   default: { capture: vi.fn() },
 }));
+const fontState = vi.hoisted(() => ({
+  promise: Promise.resolve(),
+}));
 vi.mock("@/lib/generator/export/font-assets", () => ({
-  ensurePreviewFontsLoaded: () => Promise.resolve(),
+  ensurePreviewFontsLoaded: () => fontState.promise,
 }));
 
 import { LiveTimerOverlay } from "@/components/live/live-timer-overlay";
@@ -65,6 +68,7 @@ describe("LiveTimerOverlay clock", () => {
   beforeEach(() => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
       true;
+    fontState.promise = Promise.resolve();
     rafQueue = [];
     now = 0;
     painted = [];
@@ -91,6 +95,32 @@ describe("LiveTimerOverlay clock", () => {
     container.remove();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  it("starts rendering the fallback clock immediately when fonts fail", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    fontState.promise = Promise.reject(new Error("font unavailable"));
+
+    await act(async () => {
+      root.render(<LiveTimerOverlay />);
+    });
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(rafQueue).toHaveLength(1);
+
+    for (let frame = 1; frame <= 80; frame += 1) {
+      now = frame * 16;
+      const callback = rafQueue.shift();
+      await act(async () => {
+        callback?.(now);
+        await Promise.resolve();
+      });
+    }
+
+    expect(painted[0]).toBe("05:00");
+    expect(painted).toContain("04:59");
   });
 
   it("counts down across animation frames instead of resetting its start time", async () => {

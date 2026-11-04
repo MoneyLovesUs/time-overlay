@@ -510,6 +510,10 @@ describe("merged framing templates", () => {
     expect(directory["convert-to-prores.sh"]).toContain(
       'FRAMES_DIR="${1:-frames}"',
     );
+    expect(directory["convert-to-prores.bat"]).toMatch(
+      /set "FRAMES=%~dp0frames\\"/,
+    );
+    expect(zipped["convert-to-prores.bat"]).toContain('set "FRAMES=%~dp0"');
     expect(zipped["convert-to-prores.bat"]).toContain("-start_number 1");
     expect(zipped["convert-to-prores.bat"]).toContain("TOTAL=108000");
     // cmd expands %0, so the batch pattern must be escaped for ffmpeg.

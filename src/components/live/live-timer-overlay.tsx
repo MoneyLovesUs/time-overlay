@@ -165,6 +165,15 @@ export function LiveTimerOverlay() {
       })
       .catch((error) => {
         console.error("Live overlay fonts failed to load.", error);
+        if (cancelled) {
+          return;
+        }
+        // The live overlay is not an export-critical surface. Degrade to the
+        // platform font rather than remaining permanently blank; export paths
+        // still fail explicitly when their pinned face cannot load.
+        fontsReady = true;
+        startedAt = performance.now();
+        rafId = requestAnimationFrame(tick);
       });
 
     const controller = new AbortController();

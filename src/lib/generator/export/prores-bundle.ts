@@ -63,7 +63,7 @@ function buildBatchScript({
   const framePattern = getPngFramePattern(frameNameWidth);
   // A batch file expands %0, so ffmpeg's %0Nd pattern must be doubled.
   const batchFramePattern = framePattern.replaceAll("%", "%%");
-  const framesDir = layout === "directory" ? "%~dp0frames" : "%~dp0";
+  const framesDir = layout === "directory" ? "%~dp0frames\\" : "%~dp0";
   const zeroPadding = "0".repeat(frameNameWidth);
   return `@echo off
 setlocal enabledelayedexpansion

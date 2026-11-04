@@ -103,6 +103,10 @@ import {
 } from "@/lib/generator/export/png-limits";
 import { readLatestPngManifest } from "@/lib/generator/export/png-manifest";
 import { ensurePreviewFontsLoaded } from "@/lib/generator/export/font-assets";
+import {
+  claimPngStart,
+  createPngStartGuard,
+} from "@/lib/generator/export/png-start-guard";
 import { sha256Hex } from "@/lib/generator/export/png-zip";
 import {
   PngPrepareDialog,
@@ -308,6 +312,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   const pngPrepRef = useRef<PngPrepState | null>(null);
   const pngRunRef = useRef<PngRunState | null>(null);
   const pngJobLockRef = useRef<PngJobLock | null>(null);
+  const pngStartGuardRef = useRef(createPngStartGuard());
   const pngCancelTimerRef = useRef<number | null>(null);
   const pngWatchdogRef = useRef<number | null>(null);
   const pngProgressSignatureRef = useRef<string | null>(null);
@@ -1151,6 +1156,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   }
 
   function resetPngRuntime() {
+    pngStartGuardRef.current.release();
     clearPngWatchdog();
     clearPngCancelTimer();
     releasePngJobLock();
@@ -1287,6 +1293,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
   async function beginPngExport(exportSettings: GeneratorSettings) {
     const exportId = activeExportIdRef.current + 1;
     activeExportIdRef.current = exportId;
+    pngStartGuardRef.current.release();
     activeExportKindRef.current = "png";
     isExportingRef.current = true;
     const jobId = createPngId("job");
@@ -1440,6 +1447,20 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
     failPngPrep("pngMemoryLimitExceeded");
   }
 
+  function claimPngPrep(prep: PngPrepState): boolean {
+    return claimPngStart(
+      pngStartGuardRef.current,
+      pngPrepRef.current?.jobId,
+      prep.jobId,
+      () => {
+        // Claim synchronously: the second click must see no preparation and
+        // return without touching the worker or lock held by the winner.
+        pngPrepRef.current = null;
+        setPngPrep(null);
+      },
+    );
+  }
+
   async function startPngRunFromPrep(
     exportId: number,
     prep: PngPrepState,
@@ -1449,28 +1470,29 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       directoryName?: string;
       autoDownload: boolean;
     },
+    alreadyClaimed = false,
   ) {
-    if (pngPrepRef.current?.jobId !== prep.jobId) {
+    if (!alreadyClaimed && !claimPngPrep(prep)) {
       return;
+    }
+    if (alreadyClaimed) {
+      pngPrepRef.current = null;
+      setPngPrep(null);
     }
     if (destination.outputMode !== "memory") {
       if (!prep.checkpointAvailable) {
         failPngPrep("pngCheckpointFailed");
+        pngStartGuardRef.current.release();
         return;
       }
       const lock = await tryAcquirePngJobLock(prep.jobId);
       if (!lock) {
         failPngPrep("pngLocked");
-        return;
-      }
-      if (pngPrepRef.current?.jobId !== prep.jobId) {
-        lock.release();
+        pngStartGuardRef.current.release();
         return;
       }
       pngJobLockRef.current = lock;
     }
-    pngPrepRef.current = null;
-    setPngPrep(null);
     const parts: PngPartDescriptor[] = [];
     const committedFrames = 0;
     const run: PngRunState = {
@@ -1525,38 +1547,51 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       );
       setPngRunState(null);
     }
+    pngStartGuardRef.current.release();
   }
 
   async function handlePngChooseFolder() {
     const prep = pngPrepRef.current;
-    if (!prep?.preflight) {
+    if (!prep?.preflight || pngStartGuardRef.current.isBusy()) {
       return;
     }
-    let picked: FileSystemDirectoryHandle | "cancelled";
-    try {
-      // First await in the click handler: the picker needs this activation.
-      picked = await pickPngDirectory();
-    } catch {
-      updatePngPrepError(pngCopy.capabilityMissing);
-      return;
-    }
-    if (picked === "cancelled") {
-      cancelPngPrep();
+    // Hold the guard across picker + directory creation so a double-click
+    // cannot create two task directories.
+    if (!pngStartGuardRef.current.claim()) {
       return;
     }
     try {
+      let picked: FileSystemDirectoryHandle | "cancelled";
+      try {
+        // First await in the click handler: the picker needs this activation.
+        picked = await pickPngDirectory();
+      } catch {
+        updatePngPrepError(pngCopy.capabilityMissing);
+        return;
+      }
+      if (picked === "cancelled") {
+        cancelPngPrep();
+        return;
+      }
       const job = await createPngJobDirectory(picked, prep.jobId);
       const next: PngPrepState = { ...prep, jobId: job.jobId };
       pngPrepRef.current = next;
       setPngPrep(next);
-      await startPngRunFromPrep(activeExportIdRef.current, next, {
-        outputMode: "directory",
-        directory: job.directory,
-        directoryName: job.directoryName,
-        autoDownload: false,
-      });
+      await startPngRunFromPrep(
+        activeExportIdRef.current,
+        next,
+        {
+          outputMode: "directory",
+          directory: job.directory,
+          directoryName: job.directoryName,
+          autoDownload: false,
+        },
+        true,
+      );
     } catch {
       updatePngPrepError(pngErrorText("pngDirectoryPermissionDenied"));
+    } finally {
+      pngStartGuardRef.current.release();
     }
   }
 
@@ -2682,17 +2717,6 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
       armWorkerWatchdog(exportId);
 
       const enablePreview = !isMobileDevice && pixelFrames < 4_000_000_000;
-      if (exportSettings.export.format === "png-sequence") {
-        exportWorker.postMessage({
-          kind: "export-png-sequence",
-          payload: {
-            settings: exportSettings,
-            uploadedFont: uploadedFont ?? undefined,
-            enablePreview,
-          },
-        });
-        return;
-      }
       if (exportSettings.export.format === "mp4") {
         exportWorker.postMessage({
           kind: "export-mp4",
@@ -2818,6 +2842,7 @@ export function GeneratorShell({ hero, ui }: GeneratorShellProps) {
           onDownloadPart={(part) =>
             void handlePngDownloadPartForJob(activePngRecovery.jobId, part)
           }
+          partsDownloadable={activePngRecovery.source === "opfs"}
           onRestore={() => void handlePngRecoveryRestore(activePngRecovery)}
           onSelectFolder={() =>
             void handlePngRecoverySelectFolder(activePngRecovery)

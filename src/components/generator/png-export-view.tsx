@@ -309,6 +309,7 @@ export function PngRecoveryCard({
   onSelectFont,
   onRemoveRecord,
   onDownloadPart,
+  partsDownloadable,
   cleanupAvailable,
   onCleanup,
 }: {
@@ -328,6 +329,7 @@ export function PngRecoveryCard({
   onSelectFont: () => void;
   onRemoveRecord: () => void;
   onDownloadPart: (part: PngPartDescriptor) => void;
+  partsDownloadable: boolean;
   cleanupAvailable: boolean;
   onCleanup: () => void;
 }) {
@@ -361,13 +363,15 @@ export function PngRecoveryCard({
               <span>
                 {part.fileName} · {formatPngBytes(part.bytes)}
               </span>
-              <button
-                className="border border-primary/40 px-2 py-0.5 uppercase tracking-[0.16em] text-primary"
-                onClick={() => onDownloadPart(part)}
-                type="button"
-              >
-                {copy.partDownloadButton}
-              </button>
+              {partsDownloadable ? (
+                <button
+                  className="border border-primary/40 px-2 py-0.5 uppercase tracking-[0.16em] text-primary"
+                  onClick={() => onDownloadPart(part)}
+                  type="button"
+                >
+                  {copy.partDownloadButton}
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>
